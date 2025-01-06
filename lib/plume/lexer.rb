@@ -293,14 +293,17 @@ module Plume
 			it[126]	=	:BITNOT		# ~
 		end
 
-		attr_reader :sql
+		attr_reader :sql, :cursor, :token_pos
 
-		def initialize(sql)
+		def initialize(sql, skip_spaces: false)
 			@sql = sql.force_encoding("ASCII-8BIT")
+			@skip_spaces = skip_spaces
 			@cursor, @token_pos = 0
+			@token_positions = []
 		end
 
 		def tokens(with_values = false)
+			@cursor, @token_pos = 0
 			Enumerator.new do |yielder|
 				loop do
 					token = next_token
@@ -313,9 +316,24 @@ module Plume
 
 		def next_token
 			@token_pos = @cursor
+			token = lex_next_token
+			return next_token if token == :SPACE && @skip_spaces
+			@token_positions << [@token_pos, @cursor]
+			token
+		end
+
 		def value
 			@sql.byteslice(@token_pos...@cursor)
 		end
+
+		def value_at(index)
+			start, end_pos = @token_positions[index]
+			@sql.byteslice(start...end_pos)
+		end
+
+		private
+
+		def lex_next_token
 			current_byte = scan
 
 			return nil if current_byte.nil?
