@@ -2,6 +2,7 @@
 
 require "plume/version"
 require "plume/lexer"
+require "plume/ref"
 
 module Plume
 	def self.tokenize(str)
