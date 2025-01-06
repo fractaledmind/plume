@@ -297,8 +297,7 @@ module Plume
 
 		def initialize(sql)
 			@sql = sql.force_encoding("ASCII-8BIT")
-			@cursor = 0
-			@start_cursor = 0
+			@cursor, @token_pos = 0
 		end
 
 		def tokens(with_values = false)
@@ -313,7 +312,10 @@ module Plume
 		end
 
 		def next_token
-			@start_cursor = @cursor
+			@token_pos = @cursor
+		def value
+			@sql.byteslice(@token_pos...@cursor)
+		end
 			current_byte = scan
 
 			return nil if current_byte.nil?
@@ -568,7 +570,7 @@ module Plume
 
 					step while xdigit?(peek)
 
-					if peek != 39 || ((@cursor - @start_cursor) % 2) != 0
+					if peek != 39 || ((@cursor - @token_pos) % 2) != 0
 						token_type = :ILLEGAL
 						step until (b = peek).nil? || b == 39 # "'"
 					end
@@ -596,12 +598,6 @@ module Plume
 				:ILLEGAL
 			end
 		end
-
-		def value
-			@sql.byteslice(@start_cursor, @cursor - @start_cursor)
-		end
-
-		private
 
 		def peek(n = 0) = @sql.getbyte(@cursor+n)
 		def step(n = 1) = @cursor += n
