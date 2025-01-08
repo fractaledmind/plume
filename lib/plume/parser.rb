@@ -233,11 +233,6 @@ module Plume
 			end
 		end
 
-		{
-			node1: [:node2, :node3],
-			node2: [:PLAN]
-		}
-
 		def sql_stmt
 			# ◯─┬─────────────┬▶─────────────────────┬─┬─▶[ alter-table-stmt ]──────────▶─┬─▶◯
 			#   └─{ EXPLAIN }─┴─▶{ QUERY }─▶{ PLAN }─┘ ├─▶[ analyze-stmt ]──────────────▶─┤
@@ -301,12 +296,13 @@ module Plume
 				when :TRIGGER	then drop_trigger_stmt
 				when :VIEW		then drop_view_stmt
 				else
-					unexpected_token = peek
-					*context, unexpected = values(2)
-					raise SyntaxError, <<~TXT
-						Unexpected token after '#{context.join(" ")}': #{unexpected_token}[#{unexpected.inspect}]
-						Expected one of: INDEX, TABLE, TRIGGER, VIEW
-					TXT
+					error!()
+					# unexpected_token = peek
+					# *context, unexpected = values(2)
+					# raise SyntaxError, <<~TXT
+					# 	Unexpected token after '#{context.join(" ")}': #{unexpected_token}[#{unexpected.inspect}]
+					# 	Expected one of: INDEX, TABLE, TRIGGER, VIEW
+					# TXT
 				end
 			when :INSERT, :REPLACE	then insert_stmt
 			when :PRAGMA						then pragma_stmt
@@ -411,29 +407,18 @@ module Plume
 			accept :CREATE
 			temporary = maybe(:TEMP) or maybe(:TEMPORARY)
 			accept :TABLE
-			if_not_exists = maybe(:IF, :NOT, :EXISTS)
-			schema_or_table_name = identifier
-			ref = if maybe :DOT
-							TableRef[schema_or_table_name, identifier]
-						else
-							TableRef[schema_or_table_name]
-						end
+			if_not_exists = maybe_all(:IF, :NOT, :EXISTS)
+			ref = table_ref
+
 			if maybe :AS
-				accept :AS
+				# TODO
 			elsif maybe :LP
-				accept :LP
-				columns = [].tap do |a|
-					a << column_def
-					a << column_def while maybe :COMMA
-				end
-				constraints = [].tap do |a|
-					a << table_constraint while maybe :COMMA
-				end
+				columns = one_or_more { column_def }
+				constraints = zero_or_more { table_constraint }
 				accept :RP
 			else
 				error!(current_token, current_value, [:AS, :LP])
 			end
-
 
 			{
 				CREATE_TABLE: {
@@ -446,20 +431,101 @@ module Plume
 			}
 		end
 
+		def table_constraint
+			# ◯─▶┬▶{ CONSTRAINT }─▶{ name }─┐
+			#    ├─────────────◀────────────┘
+			#    ├─▶{ PRIMARY }─▶{ KEY }──┬▶{ ( }┬▶[ indexed-column ]┬▶{ ) }─▶[ conflict-clause ]───┬─▶◯
+			#    ├─▶{ UNIQUE }─────────▶──┘      └───────{ , }◀──────┘                              │
+			#    ├─▶{ CHECK }─▶{ ( }─▶[ expr ]─▶{ ) }─────────────────────────────────────────────▶─┤
+			#    ├─▶[ foreign-key-clause ]────────────────────────────────────────────────────────▶─┤
+			#    └─▶{ FOREIGN }─▶{ KEY }─▶{ ( }┬▶{ column-name }┬▶{ ) }─▶[ foreign-key-clause ]───▶─┘
+			#                                  └─────{ , }◀─────┘
+			name = identifier if maybe :CONSTRAINT
+			if maybe :UNIQUE
+				accept :LP
+				columns = one_or_more { indexed_column }
+				accept :RP
+				on_conflict = conflict_clause
+				if on_conflict or name
+					{ UNIQUE: [columns, on_conflict, ({NAME: name} if name)].compact! }
+				else
+					{ UNIQUE: columns }
+				end
+			elsif maybe :CHECK
+				accept :LP
+				check = expr
+				accept :RP
+				{ CHECK: check }
+			elsif maybe_all :PRIMARY, :KEY
+				accept :LP
+				columns = one_or_more { indexed_column }
+				accept :RP
+				on_conflict = conflict_clause
+				if on_conflict or name
+					{ PRIMARY_KEY: [columns, on_conflict, ({NAME: name} if name)].compact! }
+				else
+					{ PRIMARY_KEY: columns }
+				end
+			elsif maybe_all :FOREIGN, :KEY
+				accept :LP
+				columns = one_or_more { column_name }
+				accept :RP
+				clause = foreign_key_clause
+				{ FOREIGN_KEY: [columns, clause] }
+			else
+				error!(current_token, current_value, [:CONSTRAINT, :PRIMARY, :UNIQUE, :CHECK, :FOREIGN])
+			end
+		end
+
+		def indexed_column
+			# ◯─▶┬▶{ column-name }─┬┬─▶───────────────────────────────┬┬────────▶───┬────▶◯
+			#    └▶[ expr ]─────▶──┘└─▶{ COLLATE }─▶{ collation-name }┘├─▶{ ASC }─▶─┤
+			#                                                          └─▶{ DESC }──┘
+			if :ID == current_token
+				name = identifier
+			elsif (e = optional { expr })
+			else
+				error!(current_token, current_value, [:ID, "expr"])
+			end
+			collation = nil
+			if maybe :COLLATE
+				collation = identifier
+			end
+			direction = nil
+			if maybe :ASC
+				direction = :ASC
+			elsif maybe :DESC
+				direction = :DESC
+			end
+
+			if name && collation && direction
+				{ ColumnRef[name] => [collation, direction] }
+			elsif name && collation
+				{ ColumnRef[name] => collation }
+			elsif name && direction
+				{ ColumnRef[name] => direction }
+			elsif name
+				ColumnRef[name]
+			elsif e && collation && direction
+				{ e => [collation, direction] }
+			elsif e && collation
+				{ e => collation }
+			elsif e && direction
+				{ e => direction }
+			elsif e
+				e
+			else
+				error!(current_token, current_value, [:ID, "expr"])
+			end
+		end
+
 		def column_def
 			# ◯─▶{ column-name }─┬─▶[ type-name ]─┬▶┬─▶───────────────────▶──┬─▶◯
 			#                    └────────▶───────┘ └─[ column-constraint ]◀─┘
 
 			column_name = identifier
 			type = optional { type_name }
-
-			# constraints = [] << x while (x = optional { column_constraint })
-
-			constraints = [].tap do |a|
-				while (x = optional { column_constraint })
-					a << x
-				end
-			end
+			constraints = zero_or_more(sep: nil) { column_constraint }
 
 			{ ColumnRef[column_name] => [type, constraints] }
 		end
@@ -468,39 +534,21 @@ module Plume
 			# ◯─┬▶{ name }─┬┬──────────────────────────────▶─────────────────────────────┬─▶◯
 			#   └────◀─────┘├─▶{ ( }─▶[ signed-number ]─▶{ ) }─────────────────────────▶─┤
 			#               └─▶{ ( }─▶[ signed-number ]─▶{ , }─▶[ signed-number ]─▶{ ) }─┘
-
-			name = String.new.tap do |a|
-				a << identifier
-				while (x = optional { identifier })
-					a << " " << x
-				end
-			end
-
-			a, b = nil, nil
-			case current_token
-			when :LP
-				accept :LP
-				a = signed_number
-				case current_token
-				when :COMMA
-					accept :COMMA
-					b = signed_number
-					accept :RP
-				when :RP
-					accept :RP
-				end
+			name = one_or_more(sep: nil) { identifier }.join(" ")
+			if maybe :LP
+				constraints = one_or_more { signed_number }
+				accept :RP
 			end
 
 			case name
-			when /INT/i							then	Type::Integer.new(name, a, b)
-			when /CHAR|CLOB|TEXT/i	then	Type::Text.new(name, a, b)
-			when /BLOB/i						then	Type::Blob.new(name, a, b)
-			when /REAL|FLOA|DOUB/i	then	Type::Real.new(name, a, b)
-			else													Type::Any.new(name, a, b)
+			when /INT/i							then	Type::Integer.new(name, *constraints)
+			when /CHAR|CLOB|TEXT/i	then	Type::Text.new(name, *constraints)
+			when /BLOB/i						then	Type::Blob.new(name, *constraints)
+			when /REAL|FLOA|DOUB/i	then	Type::Real.new(name, *constraints)
+			else													Type::Any.new(name, *constraints)
 			end
 		end
 
-		# TODO
 		def column_constraint
 			# ◯─▶┬▶{ CONSTRAINT }─▶{ name }─┐
 			#    ├─────────────◀────────────┘
@@ -517,9 +565,9 @@ module Plume
 			#    ├─▶[ foreign-key-clause ]────────────────────────────────────────────────────────▶─┤
 			#    ├─▶{ GENERATED }─▶{ ALWAYS }┬▶{ AS }─▶{ ( }─▶[ expr ]─▶{ ) }┬────────────────────▶─┤
 			#    └──────────────▶────────────┘                               ├─▶{ STORED }────────▶─┤
-			#                                                                └─▶{ VIRUAL }────────▶─┘
+			#                                                                └─▶{ VIRTUAL }───────▶─┘
 			name = identifier if maybe :CONSTRAINT
-			if maybe :PRIMARY, :KEY
+			if maybe_all :PRIMARY, :KEY
 				direction = maybe(:ASC) || maybe(:DESC) || true
 				on_conflict = conflict_clause
 				autoincrement = { AUTOINCREMENT: true } if maybe(:AUTOINCR)
@@ -529,7 +577,7 @@ module Plume
 				else
 					{ PRIMARY_KEY: direction }
 				end
-			elsif maybe :NOT, :NULL
+			elsif maybe_all :NOT, :NULL
 				on_conflict = conflict_clause
 
 				if on_conflict or name
@@ -555,20 +603,36 @@ module Plume
 					{ CHECK: check }
 				end
 			elsif maybe :DEFAULT
-
+				if maybe :LP
+					default = expr
+					accept :RP
+					{ DEFAULT: default }
+				elsif (number = optional { signed_number })
+					{ DEFAULT: number }
+				elsif (value = optional { literal_value })
+					{ DEFAULT: value }
+				else
+					error!(current_token, current_value, [:LP, "literal-value", "signed-number"])
+				end
 			elsif maybe :COLLATE
 				{ COLLATE: identifier }
 			elsif :REFERENCES == current_token
 				foreign_key_clause
-			elsif maybe(:GENERATED, :ALWAYS, :AS) or maybe(:AS)
+			elsif maybe_all(:GENERATED, :ALWAYS, :AS) or maybe(:AS)
 				accept :LP
-				expr = expr
+				default = expr
 				accept :RP
-				{ GENERATED_AS: expr }
+				if maybe :STORED
+					{ GENERATED_AS: [default, :STORED] }
+				elsif maybe :VIRTUAL
+					{ GENERATED_AS: [default, :VIRTUAL] }
+				else
+					{ GENERATED_AS: default }
+				end
+			else
 			end
 		end
 
-		# TODO
 		def expr
 			# ◯┬─▶[ literal-value ]───────────────────────────────────────────────────────────────────────────────────┬─▶◯
 			#  ├─▶{ bind-parameter }────────────────────────────────────────────────────────────────────────────────▶─┤
@@ -623,7 +687,7 @@ module Plume
 
 					return { NOT: e }
 				end
-			elsif if maybe :EXISTS
+			elsif maybe :EXISTS
 				accept :LP
 				s = select_stmt
 				accept :RP
@@ -673,43 +737,40 @@ module Plume
 				end
 				accept :RP
 
-				return exprs
+				exprs
 			elsif (v = optional { literal_value })
 				v
 			elsif :VARIABLE == current_token
 			elsif :ID == current_token
-				schema_or_table_or_column_or_function_name = identifier
-				if maybe :LP
-					args = function_arguments
-					accept :RP
-				elsif maybe :DOT
+				case peek(2)
+				when [_, :LP]
+					optional { simple_function_invocation } ||
+						optional { aggregate_function_invocation } ||
+						optional { window_function_invocation }
+				when [_, :DOT]
+					schema_or_table_name = identifier
+					accept :DOT
 					table_or_column_name = identifier
 					if maybe :DOT
 						column_name = identifier
-					 	ref = ColumnRef[schema_or_table_or_column_name, table_or_column_name, column_name]
+						ColumnRef[schema_or_table_name, table_or_column_name, column_name]
 					else
-						ref = ColumnRef[schema_or_table_or_column_name, table_or_column_name]
+						ColumnRef[schema_or_table_name, table_or_column_name]
 					end
 				else
-					ref = ColumnRef[schema_or_table_or_column_name]
+					column_name = identifier
+					ColumnRef[column_name]
 				end
 			elsif maybe :PLUS
-				return expr
+				expr
 			elsif maybe :MINUS
-				return { NEGATE: expr }
+				{ NEGATE: expr }
 			elsif maybe :BITNOT
-				return { INVERT: expr }
+				{ INVERT: expr }
+			elsif (func = optional { aggregate_function_invocation })
 			elsif (lexpr = optional { expr })
 				if maybe :COLLATE
 					{ lexpr => { COLLATE: identifier } }
-				elsif maybe :NOT, :LIKE
-					rexpr = expr
-					if maybe :ESCAPE
-						escape = expr
-						{ lexpr => { NOT_LIKE: [rexpr, { ESCAPE: escape }] } }
-					else
-						{ lexpr => { NOT_LIKE: rexpr } }
-					end
 				elsif maybe :LIKE
 					rexpr = expr
 					if maybe :ESCAPE
@@ -718,94 +779,27 @@ module Plume
 					else
 						{ lexpr => { LIKE: rexpr } }
 					end
-				elsif maybe :NOT, :GLOB
-					{ lexpr => { NOT_GLOB: expr } }
 				elsif maybe :GLOB
 					{ lexpr => { GLOB: expr } }
-				elsif maybe :NOT, :REGEXP
-					{ lexpr => { NOT_REGEXP: expr } }
 				elsif maybe :REGEXP
 					{ lexpr => { REGEXP: expr } }
-				elsif maybe :NOT, :MATCH
-					{ lexpr => { NOT_MATCH: expr } }
 				elsif maybe :MATCH
 					{ lexpr => { MATCH: expr } }
 				elsif maybe :ISNULL
 					{ lexpr => { IS: nil } }
 				elsif maybe :NOTNULL
 					{ lexpr => { IS_NOT: nil } }
-				elsif maybe :NOT, :NULL
-					{ lexpr => { IS_NOT: nil } }
-				elsif maybe :IS, :NOT
-					if maybe :DISTINCT, :FROM
-						{ lexpr => { IS: expr } }
-					else
-						{ lexpr => { IS_NOT: expr } }
-					end
 				elsif maybe :IS
 					if maybe :DISTINCT, :FROM
 						{ lexpr => { IS_NOT: expr } }
 					else
 						{ lexpr => { IS: expr } }
 					end
-				elsif maybe :NOT, :BETWEEN
-					rexpr1 = expr
-					accept :AND
-					rexpr2 = expr
-					{ lexpr => { NOT_BETWEEN: [rexpr1, rexpr2] } }
 				elsif maybe :BETWEEN
 					rexpr1 = expr
 					accept :AND
 					rexpr2 = expr
 					{ lexpr => { BETWEEN: [rexpr1, rexpr2] } }
-				elsif maybe :NOT, :IN
-					if maybe :LP
-						if maybe :RP
-							{ lexpr => { NOT_IN: [] } }
-						elsif (s = optional { select_stmt })
-							accept :RP
-
-							{ lexpr => { NOT_IN: s } }
-						elsif (e = optional { expr })
-							exprs = [].tap do |a|
-								a << e
-								a << expr while maybe :COMMA
-							end
-							accept :RP
-
-							{ lexpr => { NOT_IN: exprs } }
-						else
-							error!(current_token, current_value, [:RP, "select-stmt", "expr"])
-						end
-					elsif :ID == current_token
-						schema_or_table = identifier
-						if maybe :DOT
-							table = identifier
-							ref = TableRef[schema_or_table, table]
-						else
-							ref = TableRef[schema_or_table]
-						end
-
-						if maybe :LP
-							if maybe :RP
-								{ lexpr => { NOT_IN: { FN: { ref => [] } } } }
-							elsif (e = optional { expr })
-								exprs = [].tap do |a|
-									a << e
-									a << expr while maybe :COMMA
-								end
-								accept :RP
-
-								{ lexpr => { NOT_IN: { FN: { ref => exprs } } } }
-							else
-								error!(current_token, current_value, [:RP, "expr"])
-							end
-						else
-							{ lexpr => { NOT_IN: ref } }
-						end
-					else
-						error!(current_token, current_value, [:LP, :ID])
-					end
 				elsif maybe :IN
 					if maybe :LP
 						if maybe :RP
@@ -815,35 +809,21 @@ module Plume
 
 							{ lexpr => { IN: s } }
 						elsif (e = optional { expr })
-							exprs = [].tap do |a|
-								a << e
-								a << expr while maybe :COMMA
-							end
+							expr = one_or_more(given: e) { expr }
 							accept :RP
-
 							{ lexpr => { IN: exprs } }
 						else
 							error!(current_token, current_value, [:RP, "select-stmt", "expr"])
 						end
 					elsif :ID == current_token
-						schema_or_table = identifier
-						if maybe :DOT
-							table = identifier
-							ref = TableRef[schema_or_table, table]
-						else
-							ref = TableRef[schema_or_table]
-						end
+						ref = table_ref
 
 						if maybe :LP
 							if maybe :RP
 								{ lexpr => { IN: { FN: { ref => [] } } } }
 							elsif (e = optional { expr })
-								exprs = [].tap do |a|
-									a << e
-									a << expr while maybe :COMMA
-								end
+								expr = one_or_more(given: e) { expr }
 								accept :RP
-
 								{ lexpr => { IN: { FN: { ref => exprs } } } }
 							else
 								error!(current_token, current_value, [:RP, "expr"])
@@ -856,14 +836,10 @@ module Plume
 					end
 				elsif maybe :CONCAT
 					{ lexpr => { CONCAT: expr } }
-				elsif :PTR == current_token
-					if current_value == "->"
-						{ lexpr => { EXTRACT: expr } }
-					elsif current_value == "->>"
-						{ lexpr => { RETRIEVE: expr } }
-					else
-						error!(current_token, current_value, ["->", "->>"])
-					end
+				elsif maybe :PTR1
+					{ lexpr => { EXTRACT: expr } }
+				elsif maybe :PTR2
+					{ lexpr => { RETRIEVE: expr } }
 				elsif maybe :STAR
 					{ lexpr => { MULTIPLY: expr } }
 				elsif maybe :SLASH
@@ -898,34 +874,855 @@ module Plume
 					{ ALL: [lexpr, expr] }
 				elsif maybe :OR
 					{ ANY: [lexpr, expr] }
+				elsif maybe_all :NOT, :LIKE
+					rexpr = expr
+					if maybe :ESCAPE
+						escape = expr
+						{ lexpr => { NOT_LIKE: [rexpr, { ESCAPE: escape }] } }
+					else
+						{ lexpr => { NOT_LIKE: rexpr } }
+					end
+				elsif maybe_all :NOT, :GLOB
+					{ lexpr => { NOT_GLOB: expr } }
+				elsif maybe_all :NOT, :REGEXP
+					{ lexpr => { NOT_REGEXP: expr } }
+				elsif maybe_all :NOT, :MATCH
+					{ lexpr => { NOT_MATCH: expr } }
+				elsif maybe_all :NOT, :NULL
+					{ lexpr => { IS_NOT: nil } }
+				elsif maybe_all :IS, :NOT
+					if maybe :DISTINCT, :FROM
+						{ lexpr => { IS: expr } }
+					else
+						{ lexpr => { IS_NOT: expr } }
+					end
+				elsif maybe_all :NOT, :BETWEEN
+					rexpr1 = expr
+					accept :AND
+					rexpr2 = expr
+					{ lexpr => { NOT_BETWEEN: [rexpr1, rexpr2] } }
+				elsif maybe_all :NOT, :IN
+					if maybe :LP
+						if maybe :RP
+							{ lexpr => { NOT_IN: [] } }
+						elsif (s = optional { select_stmt })
+							accept :RP
+
+							{ lexpr => { NOT_IN: s } }
+						elsif (e = optional { expr })
+							exprs = one_or_more(given: e) { expr }
+							accept :RP
+
+							{ lexpr => { NOT_IN: exprs } }
+						else
+							error!(current_token, current_value, [:RP, "select-stmt", "expr"])
+						end
+					elsif :ID == current_token
+						ref = table_ref
+
+						if maybe :LP
+							if maybe :RP
+								{ lexpr => { NOT_IN: { FN: { ref => [] } } } }
+							elsif (e = optional { expr })
+								expr = one_or_more(given: e) { expr }
+								accept :RP
+
+								{ lexpr => { NOT_IN: { FN: { ref => exprs } } } }
+							else
+								error!(current_token, current_value, [:RP, "expr"])
+							end
+						else
+							{ lexpr => { NOT_IN: ref } }
+						end
+					else
+						error!(current_token, current_value, [:LP, :ID])
+					end
 				else
 				end
 			else
 			end
 		end
 
-		def function_arguments
-			#     ┌─▶{ DISTINCT }─▶┐ ┌──{ , }◀─┐
-			# ◯─▶─┼────────────────┴▶┴▶[ expr ]┼───────────┬─┬─▶◯
-			#     │ ┌──────────────────────────┘           │ │
-			#     │ └▶{ ORDER }─▶{ BY }┬▶[ ordering-term ]─┤ │
-			#     │                    └───────{ , }◀──────┘ │
-			#     └─────────────────┬▶{ * }┬▶────────────────┘
-			#                       └───▶──┘
+		def simple_function_invocation
+			#                           ┌──{ , }◀─┐
+			# ◯─▶{ simple-func }─▶{ ( }┬┴▶[ expr ]┴┬▶{ ) }─▶◯
+			#                          ├─────▶─────┤
+			#                          └──▶{ * }───┘
+			#
+			# Built-in scalar functions: (https://www.sqlite.org/lang_corefunc.html)
+			#		abs(X), changes(), char(X1,X2,...,XN), coalesce(X,Y,...), concat(X,...), concat_ws(SEP,X,...),
+			#		format(FORMAT,...), glob(X,Y), hex(X), ifnull(X,Y), iif(X,Y,Z), instr(X,Y), last_insert_rowid(),
+			#		length(X), like(X,Y|X,Y,Z), likelihood(X,Y), likely(X), load_extension(X|X,Y), lower(X),
+			#		ltrim(X|X,Y), max(X,Y,...), min(X,Y,...), nullif(X,Y), octet_length(X), printf(FORMAT,...),
+			#		quote(X), random(), randomblob(N), replace(X,Y,Z), round(X|X,Y), rtrim(X|X,Y), sign(X),
+			#		soundex(X), sqlite_compileoption_get(N), sqlite_compileoption_used(X), sqlite_offset(X),
+			#		sqlite_source_id(), sqlite_version(), substr(X,Y|X,Y,Z), substring(X,Y|X,Y,Z), total_changes(),
+			#		trim(X|X,Y), typeof(X), unhex(X|X,Y), unicode(X), unlikely(X), upper(X), zeroblob(N)
+			# Built-in date and time functions: (https://www.sqlite.org/lang_datefunc.html)
+			#		date(time-value, modifier, modifier, ...), time(time-value, modifier, modifier, ...),
+			#		datetime(time-value, modifier, modifier, ...), julianday(time-value, modifier, modifier, ...),
+			#		unixepoch(time-value, modifier, modifier, ...), strftime(format, time-value, modifier, modifier, ...),
+			#		timediff(time-value, time-value)
+			# Built-in math functions: (https://www.sqlite.org/lang_mathfunc.html)
+			#		acos(X), acosh(X), asin(X), asinh(X), atan(X), atan2(Y,X), atanh(X), ceil(X), ceiling(X), cos(X),
+			#		cosh(X), degrees(X), exp(X), floor(X), ln(X), log(B,X), log(X), log10(X), log2(X), mod(X,Y), pi(),
+			#		pow(X,Y), power(X,Y), radians(X), sin(X), sinh(X), sqrt(X), tan(X), tanh(X), trunc(X)
+			# Built-in JSON functions: (https://www.sqlite.org/json1.html)
+			#		json(json), jsonb(json), json_array(value1,value2,...), jsonb_array(value1,value2,...),
+			#		json_array_length(json|json,path), json_error_position(json), json_extract(json,path,...),
+			#		jsonb_extract(json,path,...), json_insert(json,path,value,...),, jsonb_insert(json,path,value,...),
+			#		json_object(label1,value1,...), jsonb_object(label1,value1,...), json_patch(json1,json2),
+			#		jsonb_patch(json1,json2), json_pretty(json), json_remove(json,path,...), jsonb_remove(json,path,...),
+			#		json_replace(json,path,value,...), jsonb_replace(json,path,value,...), json_set(json,path,value,...),
+			#		jsonb_set(json,path,value,...), json_type(json|json,path), json_valid(json|json,flags), json_quote(value)
+			func = identifier
+			accept :LP
+			case (func = func.to_sym.upcase)
+			when :ABS
+				arg = expr
+				accept :RP
+				{ ABS: arg }
+			when :ACOS
+				arg = expr
+				accept :RP
+				{ ACOS: arg }
+			when :ACOSH
+				arg = expr
+				accept :RP
+				{ ACOSH: arg }
+			when :ASIN
+				arg = expr
+				accept :RP
+				{ ASIN: arg }
+			when :ASINH
+				arg = expr
+				accept :RP
+				{ ASINH: arg }
+			when :ATAN
+				arg = expr
+				accept :RP
+				{ ATAN: arg }
+			when :ATAN2
+				args = one_or_more { expr }
+				accept :RP
+				{ ATAN2: args }
+			when :ATANH
+				arg = expr
+				accept :RP
+				{ ATANH: arg }
+			when :CEIL
+				arg = expr
+				accept :RP
+				{ CEIL: arg }
+			when :CEILING
+				arg = expr
+				accept :RP
+				{ CEILING: arg }
+			when :CHANGES
+				maybe(:STAR)
+				accept :RP
+				:CHANGES
+			when :CHAR
+				args = one_or_more { expr }
+				accept :RP
+				{ CHAR: args }
+			when :COALESCE
+				args = one_or_more { expr }
+				accept :RP
+				{ COALESCE: args }
+			when :CONCAT
+				args = one_or_more { expr }
+				accept :RP
+				{ CONCAT: args }
+			when :CONCAT_WS
+				args = one_or_more { expr }
+				accept :RP
+				{ CONCAT_WS: args }
+			when :COS
+				arg = expr
+				accept :RP
+				{ COS: arg }
+			when :COSH
+				arg = expr
+				accept :RP
+				{ COSH: arg }
+			when :DATE
+				args = one_or_more { expr }
+				accept :RP
+				{ DATE: args }
+			when :DATETIME
+				args = one_or_more { expr }
+				accept :RP
+				{ DATETIME: args }
+			when :DEGREES
+				arg = expr
+				accept :RP
+				{ ACOSH: arg }
+			when :EXP
+				arg = expr
+				accept :RP
+				{ ACOSH: arg }
+			when :FLOOR
+				arg = expr
+				accept :RP
+				{ ACOSH: arg }
+			when :FORMAT
+				args = one_or_more { expr }
+				accept :RP
+				{ FORMAT: args }
+			when :GLOB
+				args = one_or_more { expr }
+				accept :RP
+				{ GLOB: args }
+			when :HEX
+				arg = expr
+				accept :RP
+				{ HEX: args }
+			when :IFNULL
+				args = one_or_more { expr }
+				accept :RP
+				{ IFNULL: args }
+			when :IIF
+				args = one_or_more { expr }
+				accept :RP
+				{ IIF: args }
+			when :INSTR
+				args = one_or_more { expr }
+				accept :RP
+				{ INSTR: args }
+			when :JULIANDAY
+				args = one_or_more { expr }
+				accept :RP
+				{ JULIANDAY: args }
+			when :JSON
+				arg = expr
+				accept :RP
+				{ JSON: arg }
+			when :JSONB
+				arg = expr
+				accept :RP
+				{ JSONB: arg }
+			when :JSON_ARRAY
+				args = one_or_more { expr }
+				accept :RP
+				{ JSON_ARRAY: args }
+			when :JSONB_ARRAY
+				args = one_or_more { expr }
+				accept :RP
+				{ JSONB_ARRAY: args }
+			when :JSON_ARRAY_LENGTH
+				args = one_or_more { expr }
+				accept :RP
+				{ JSON_ARRAY_LENGTH: args }
+			when :JSON_ERROR_POSITION
+				arg = expr
+				accept :RP
+				{ JSON_ERROR_POSITION: arg }
+			when :JSON_EXTRACT
+				args = one_or_more { expr }
+				accept :RP
+				{ JSON_EXTRACT: args }
+			when :JSONB_EXTRACT
+				args = one_or_more { expr }
+				accept :RP
+				{ JSONB_EXTRACT: args }
+			when :JSON_INSERT
+				args = one_or_more { expr }
+				accept :RP
+				{ JSON_INSERT: args }
+			when :JSONB_INSERT
+				args = one_or_more { expr }
+				accept :RP
+				{ JSONB_INSERT: args }
+			when :JSON_OBJECT
+				args = one_or_more { expr }
+				accept :RP
+				{ JSON_OBJECT: args }
+			when :JSONB_OBJECT
+				args = one_or_more { expr }
+				accept :RP
+				{ JSONB_OBJECT: args }
+			when :JSON_PATCH
+				args = one_or_more { expr }
+				accept :RP
+				{ JSON_PATCH: args }
+			when :JSONB_PATCH
+				args = one_or_more { expr }
+				accept :RP
+				{ JSONB_PATCH: args }
+			when :JSON_PRETTY
+				arg = expr
+				accept :RP
+				{ JSON_PRETTY: arg }
+			when :JSON_REMOVE
+				args = one_or_more { expr }
+				accept :RP
+				{ JSON_REMOVE: args }
+			when :JSONB_REMOVE
+				args = one_or_more { expr }
+				accept :RP
+				{ JSONB_REMOVE: args }
+			when :JSON_REPLACE
+				args = one_or_more { expr }
+				accept :RP
+				{ JSON_REPLACE: args }
+			when :JSONB_REPLACE
+				args = one_or_more { expr }
+				accept :RP
+				{ JSONB_REPLACE: args }
+			when :JSON_SET
+				args = one_or_more { expr }
+				accept :RP
+				{ JSON_SET: args }
+			when :JSONB_SET
+				args = one_or_more { expr }
+				accept :RP
+				{ JSONB_SET: args }
+			when :JSON_TYPE
+				args = one_or_more { expr }
+				accept :RP
+				{ JSON_TYPE: args }
+			when :JSON_VALID
+				args = one_or_more { expr }
+				accept :RP
+				{ JSON_VALID: args }
+			when :JSON_QUOTE
+				arg = expr
+				accept :RP
+				{ JSON_QUOTE: arg }
+			when :LAST_INSERT_ROWID
+				maybe(:STAR)
+				accept :RP
+				:LAST_INSERT_ROWID
+			when :LENGTH
+				arg = expr
+				accept :RP
+				{ LENGTH: arg }
+			when :LIKE
+				args = one_or_more { expr }
+				accept :RP
+				{ LIKE: args }
+			when :LIKELIHOOD
+				args = one_or_more { expr }
+				accept :RP
+				{ LIKELIHOOD: args }
+			when :LIKELY
+				arg = expr
+				accept :RP
+				{ LIKELY: arg }
+			when :LN
+				arg = expr
+				accept :RP
+				{ ACOSH: arg }
+			when :LOAD_EXTENSION
+				args = one_or_more { expr }
+				accept :RP
+				{ LOAD_EXTENSION: args }
+			when :LOG
+				args = one_or_more { expr }
+				accept :RP
+				{ LOG: args }
+			when :LOG10
+				arg = expr
+				accept :RP
+				{ LOG10: arg }
+			when :LOG2
+				arg = expr
+				accept :RP
+				{ LOG2: arg }
+			when :LOWER
+				arg = expr
+				accept :RP
+				{ LOWER: arg }
+			when :LTRIM
+				args = one_or_more { expr }
+				accept :RP
+				{ LTRIM: args }
+			when :MAX
+				args = one_or_more { expr }
+				accept :RP
+				{ MAX: args }
+			when :MIN
+				args = one_or_more { expr }
+				accept :RP
+				{ MIN: args }
+			when :MOD
+				args = one_or_more { expr }
+				accept :RP
+				{ MOD: arg }
+			when :NULLIF
+				args = one_or_more { expr }
+				accept :RP
+				{ NULLIF: args }
+			when :OCTET_LENGTH
+				arg = expr
+				accept :RP
+				{ OCTET_LENGTH: arg }
+			when :PI
+				maybe(:STAR)
+				accept :RP
+				:PI
+			when :POW
+				args = one_or_more { expr }
+				accept :RP
+				{ POW: args }
+			when :POWER
+				args = one_or_more { expr }
+				accept :RP
+				{ POWER: args }
+			when :PRINTF
+				args = one_or_more { expr }
+				accept :RP
+				{ PRINTF: args }
+			when :QUOTE
+				arg = expr
+				accept :RP
+				{ QUOTE: arg }
+			when :RADIANS
+				arg = expr
+				accept :RP
+				{ RADIANS: arg }
+			when :RANDOM
+				maybe(:STAR)
+				accept :RP
+				:RANDOM
+			when :RANDOMBLOB
+				arg = expr
+				accept :RP
+				{ RANDOMBLOB: arg }
+			when :REPLACE
+				args = one_or_more { expr }
+				accept :RP
+				{ REPLACE: args }
+			when :ROUND
+				args = one_or_more { expr }
+				accept :RP
+				{ ROUND: args }
+			when :RTRIM
+				args = one_or_more { expr }
+				accept :RP
+				{ RTRIM: args }
+			when :SIGN
+				arg = expr
+				accept :RP
+				{ SIGN: arg }
+			when :SIN
+				arg = expr
+				accept :RP
+				{ SIN: arg }
+			when :SINH
+				arg = expr
+				accept :RP
+				{ SINH: arg }
+			when :SOUNDEX
+				arg = expr
+				accept :RP
+				{ SOUNDEX: arg }
+			when :SQLITE_COMPILEOPTION_GET
+				arg = expr
+				accept :RP
+				{ SQLITE_COMPILEOPTION_GET: arg }
+			when :SQLITE_COMPILEOPTION_USED
+				arg = expr
+				accept :RP
+				{ SQLITE_COMPILEOPTION_USED: arg }
+			when :SQLITE_OFFSET
+				arg = expr
+				accept :RP
+				{ SQLITE_OFFSET: arg }
+			when :SQLITE_SOURCE_ID
+				maybe(:STAR)
+				accept :RP
+				:SQLITE_SOURCE_ID
+			when :SQLITE_VERSION
+				maybe(:STAR)
+				accept :RP
+				:SQLITE_VERSION
+			when :SQRT
+				arg = expr
+				accept :RP
+				{ SQRT: arg }
+			when :STRFTIME
+				args = one_or_more { expr }
+				accept :RP
+				{ STRFTIME: args }
+			when :SUBSTR
+				args = one_or_more { expr }
+				accept :RP
+				{ SUBSTR: args }
+			when :SUBSTRING
+				args = one_or_more { expr }
+				accept :RP
+				{ SUBSTRING: args }
+			when :TAN
+				arg = expr
+				accept :RP
+				{ TAN: arg }
+			when :TANH
+				arg = expr
+				accept :RP
+				{ TANH: arg }
+			when :TIME
+				args = one_or_more { expr }
+				accept :RP
+				{ TIME: args }
+			when :TIMEDIFF
+				args = one_or_more { expr }
+				accept :RP
+				{ TIMEDIFF: args }
+			when :TOTAL_CHANGES
+				maybe(:STAR)
+				accept :RP
+				:TOTAL_CHANGES
+			when :TRIM
+				args = one_or_more { expr }
+				accept :RP
+				{ TRIM: args }
+			when :TRUNC
+				arg = expr
+				accept :RP
+				{ TRUNC: arg }
+			when :TYPEOF
+				arg = expr
+				accept :RP
+				{ TYPEOF: arg }
+			when :UNHEX
+				args = one_or_more { expr }
+				accept :RP
+				{ UNHEX: args }
+			when :UNICODE
+				arg = expr
+				accept :RP
+				{ UNICODE: arg }
+			when :UNIXEPOCH
+				args = one_or_more { expr }
+				accept :RP
+				{ UNIXEPOCH: args }
+			when :UNLIKELY
+				arg = expr
+				accept :RP
+				{ UNLIKELY: arg }
+			when :UPPER
+				arg = expr
+				accept :RP
+				{ UPPER: arg }
+			when :ZEROBLOB
+				arg = expr
+				accept :RP
+				{ ZEROBLOB: arg }
+			else
+				args = one_or_more { expr }
+				accept :RP
+				{ FN: { func => args } }
+			end
+		end
+
+		def aggregate_function_invocation
+			#                              ┌─▶{ DISTINCT }─▶┐ ┌──{ , }◀─┐
+			# ◯─▶{ aggregate-func }─▶{ ( }─┼────────────────┴▶┴▶[ expr ]┼───────────┬─┬─▶{ ) }┬─────────▶─────────┬─▶◯
+			#                              │ ┌──────────────────────────┘           │ │       └▶[ filter-clause ]─┘
+			#                              │ └▶{ ORDER }─▶{ BY }┬▶[ ordering-term ]─┤ │
+			#                              │                    └───────{ , }◀──────┘ │
+			#                              └─────────────────┬▶{ * }┬▶────────────────┘
+			#                                                └───▶──┘
+			#
+			# Built-in aggregate functions: (https://www.sqlite.org/lang_aggfunc.html)
+			#		avg(X), count(*), count(X), group_concat(X|X,Y), max(X), min(X), string_agg(X,Y), sum(X), total(X)
+			func = identifier
+			accept :LP
+
+			args = nil
 			if maybe :DISTINCT
-				exprs = [].tap do |a|
-					a << expr
-					a << expr while maybe :COMMA
-				end
-				if maybe :ORDER, :BY
-					terms = [].tap do |a|
-						a << ordering_term
-						a << ordering_term while maybe :COMMA
-					end
+				exprs = one_or_more { expr }
+				if maybe_all :ORDER, :BY
+					terms = one_or_more { ordering_term }
+					args = { DISTINCT: exprs << { ORDER_BY: terms } }
 				else
+					args = { DISTINCT: exprs }
 				end
 			elsif maybe :STAR
+				args = :*
 			elsif (e = optional { expr })
+				exprs = one_or_more(given: e) { expr }
+				if maybe_all :ORDER, :BY
+					terms = one_or_more { ordering_term }
+					args = exprs << { ORDER_BY: terms }
+				else
+					args = exprs
+				end
+			elsif :RP == current_token
+			else
+				error!(current_token, current_value, [:DISTINCT, :STAR, :RP, "expr"])
+			end
+
+			key = nil
+			case (func = func.to_sym.upcase)
+			when :AVG
+				key = { AVG: args }
+			when :COUNT
+				key = { COUNT: args }
+			when :GROUP_CONCAT
+				key = { GROUP_CONCAT: args }
+			when :MAX
+				key = { MAX: args }
+			when :MIN
+				key = { MIN: args }
+			when :STRING_AGG
+				key = { STRING_AGG: args }
+			when :SUM
+				key = { SUM: args }
+			when :TOTAL
+				key = { TOTAL: args }
+			else
+				key = { FN: { func => args } }
+			end
+			accept :RP
+
+			if (filter = optional { filter_clause })
+				{ key => filter }
+			else
+				key
+			end
+		end
+
+		def window_function_invocation
+			#                           ┌──{ , }◀─┐
+			# ◯─▶{ window-func }─▶{ ( }┬┴▶[ expr ]┴┬▶{ ) }┬───────────────────────┬▶{ OVER }┬─▶[ window-defn ]───┬─▶◯
+			#                          ├─────▶─────┤      └──▶[ filter-clause ]───┘         └─▶{ window-name }───┘
+			#                          └──▶{ * }───┘
+			# Built-in window functions: (https://www.sqlite.org/windowfunctions.html)
+			#		row_number(), rank(), dense_rank(), percent_rank(), cume_dist(), ntile(N), lag(X|X,Y|X,Y,Z),
+			#		lead(X|X,Y|X,Y,Z), first_value(X), last_value(X), nth_value(X,N)
+			# Built-in aggregate functions: (https://www.sqlite.org/lang_aggfunc.html)
+			#		avg(X), count(*|X), group_concat(X|X,Y), max(X), min(X), string_agg(X,Y), sum(X), total(X)
+			func = identifier
+			accept :LP
+			key = nil
+			case (func = func.to_sym.upcase)
+			when :ROW_NUMBER
+				maybe(:STAR)
+				accept :RP
+				key = :ROW_NUMBER
+			when :RANK
+				maybe(:STAR)
+				accept :RP
+				key = :RANK
+			when :DENSE_RANK
+				maybe(:STAR)
+				accept :RP
+				key = :DENSE_RANK
+			when :PERCENT_RANK
+				maybe(:STAR)
+				accept :RP
+				key = :PERCENT_RANK
+			when :CUME_DIST
+				maybe(:STAR)
+				accept :RP
+				key = :CUME_DIST
+			when :NTILE
+				arg = expr
+				accept :RP
+				key = { NTILE: arg }
+			when :LAG
+				args = one_or_more { expr }
+				accept :RP
+				key = { LAG: args }
+			when :LEAD
+				args = one_or_more { expr }
+				accept :RP
+				key = { LEAD: args }
+			when :FIRST_VALUE
+				arg = expr
+				accept :RP
+				key = { FIRST_VALUE: arg }
+			when :LAST_VALUE
+				arg = expr
+				accept :RP
+				key = { LAST_VALUE: arg }
+			when :NTH_VALUE
+				args = one_or_more { expr }
+				accept :RP
+				key = { NTH_VALUE: args }
+			when :AVG
+				arg = expr
+				accept :RP
+				key = { AVG: arg }
+			when :COUNT
+				arg = maybe(:STAR) ? :* : expr
+				accept :RP
+				key = { COUNT: arg }
+			when :GROUP_CONCAT
+				args = one_or_more { expr }
+				accept :RP
+				key = { GROUP_CONCAT: args }
+			when :MAX
+				arg = expr
+				accept :RP
+				key = { MAX: arg }
+			when :MIN
+				arg = expr
+				accept :RP
+				key = { MIN: arg }
+			when :STRING_AGG
+				args = one_or_more { expr }
+				accept :RP
+				key = { STRING_AGG: args }
+			when :SUM
+				arg = expr
+				accept :RP
+				key = { SUM: arg }
+			when :TOTAL
+				arg = expr
+				accept :RP
+				key = { TOTAL: arg }
+			else
+				args = one_or_more { expr }
+				accept :RP
+				key = { FN: { func => args } }
+			end
+
+			filter = optional { filter_clause }
+			accept :OVER
+			window = :LP == current_token ? window_defn : identifier
+
+			{ key => { OVER: window }.merge!(filter || {}) }
+		end
+
+		def filter_clause
+			# ◯─▶{ FILTER }─▶{ ( }─▶{ WHERE }─▶[ expr ]─▶{ ) }─▶◯
+			accept_all :FILTER, :LP, :WHERE
+			expr = expr
+			accept :RP
+
+			{ FILTER: expr }
+		end
+
+		def window_defn
+			# ◯─▶{ ( }┬───────────────────────┐
+			#         └─▶{ base-window-name }─┤
+			#      ┌──────────────────────────┘
+			#      ├─▶{ PARTITION }─▶{ BY }┬[ expr ]┐
+			#      │                       └─{ , }◀─┤
+			#      ├────────────────────────────────┘
+			#      ├─▶{ ORDER }─▶{ BY }┬[ ordering-term ]┐
+			#      │                   └──────{ , }◀─────┤
+			#      ├─────────────────────────────────────┘
+			#      ├─▶[ frame-spec ]┬─▶──────────────────{ ) }─▶◯
+			#      └─────────▶──────┘
+			accept :LP
+			name = optional { identifier }
+			partition_by = {}
+			if maybe_all :PARTITION, :BY
+				partition_by = { PARTITION_BY: one_or_more { expr } }
+			end
+			order_by = {}
+			if maybe_all :ORDER, :BY
+				order_by = { ORDER_BY: one_or_more { ordering_term } }
+			end
+			frame = optional { frame_spec }
+			accept :RP
+
+			if name.nil? && partitions.nil? && orders.nil? && frame.nil?
+				{ OVER: [] }
+			elsif name && partitions.nil? && orders.nil? && frame.nil?
+				{ OVER: Ref[name] }
+			elsif name
+				{ OVER: [Ref[name], partition_by.merge!(order_by)] }
+			else
+				{ OVER: partition_by.merge!(order_by) }
+			end
+		end
+
+		def frame_spec
+			# ◯┬─▶{ RANGE }──┬┬▶{ BETWEEN }┬─▶{ UNBOUNDED }─▶{ PRECEDING }┬▶{ AND }┬─▶[ expr ]─▶{ PRECEDING }────▶─┐
+			#  ├─▶{ ROWS }───┤│            ├─▶[ expr ]─▶{ PRECEDING }─────┤        ├─▶{ CURRENT }─▶{ ROW }───────▶─┤
+			#  └─▶{ GROUPS }─┘│            ├─▶{ CURRENT }─▶{ ROW }────────┤        ├─▶[ expr ]─▶{ FOLLOWING }────▶─┤
+			#                 │            └─▶[ expr ]─▶{ FOLLOWING }─────┘        └─▶{ UNBOUNDED }─▶{ FOLLOWING }─┤
+			#                 ├─▶{ UNBOUNDED }─▶{ PRECEDING }────────────────────────────────────────────────────▶─┤
+			#                 ├─▶[ expr ]─▶{ PRECEDING }─────────────────────────────────────────────────────────▶─┤
+			#                 └─▶{ CURRENT }─▶{ ROW }────────────────────────────────────────────────────────────▶─┤
+			#                                         ┌────────────────────────────────────────────────────────────┘
+			#                                         ├─▶{ EXCLUDE }─▶{ NO }─▶{ OTHERS }───▶─┐
+			#                                         ├─▶{ EXCLUDE }─▶{ CURRENT }─▶{ ROW }─▶─┤
+			#                                         ├─▶{ EXCLUDE }─▶{ GROUP }────────────▶─┤
+			#                                         ├─▶{ EXCLUDE }─▶{ TIES }─────────────▶─┤
+			#                                         └──────────────────────────────────────┴─────────▶◯
+			if one_of? :RANGE, :ROWS, :GROUPS
+				type = accept current_token
+				if maybe :BETWEEN
+					if maybe_all :UNBOUNDED, :PRECEDING
+						precedence = 1
+						starting = :UNBOUNDED_PRECEDING
+					elsif maybe_all :CURRENT, :ROW
+						precedence = 3
+						starting = :CURRENT_ROW
+					elsif (e = optional { expr })
+						if maybe :PRECEDING
+							precedence = 2
+							starting = { PRECEDING: e }
+						elsif maybe :FOLLOWING
+							precedence = 4
+							starting = { FOLLOWING: e }
+						else
+							error!(current_token, current_value, [:PRECEDING, :FOLLOWING])
+						end
+					else
+						error!(current_token, current_value, ["UNBOUNDED PRECEDING", "CURRENT ROW", "expr"])
+					end
+					accept :AND
+					if maybe_all :CURRENT, :ROW
+						error!(current_token, current_value, ["UNBOUNDED FOLLOWING", "expr"]) if 3 < precedence
+						ending = :CURRENT_ROW
+					elsif maybe_all :UNBOUNDED, :FOLLOWING
+						ending = :UNBOUNDED_FOLLOWING
+					elsif (e = optional { expr })
+						if maybe :PRECEDING
+							error!(current_token, current_value, ["CURRENT ROW", "UNBOUNDED FOLLOWING", "expr"]) if 2 < precedence
+							ending = { PRECEDING: e }
+						elsif maybe :FOLLOWING
+							error!(current_token, current_value, ["UNBOUNDED FOLLOWING"]) if 4 < precedence
+							ending = { FOLLOWING: e }
+						else
+							error!(current_token, current_value, [:PRECEDING, :FOLLOWING])
+						end
+					else
+						error!(current_token, current_value, ["CURRENT ROW", "UNBOUNDED FOLLOWING", "expr"])
+					end
+					boundary = { BETWEEN: [starting, ending] }
+				elsif maybe_all :UNBOUNDED, :PRECEDING
+					boundary = :UNBOUNDED_PRECEDING
+				elsif maybe_all :CURRENT, :ROW
+					boundary = :CURRENT_ROW
+				elsif (e = optional { expr })
+					accept :PRECEDING
+					boundary = { PRECEDING: e }
+				else
+					error!(current_token, current_value, [:BETWEEN, :UNBOUNDED, :CURRENT, "expr"])
+				end
+				exclude = nil
+				if maybe :EXCLUDE
+					if maybe :GROUP
+						exclude = :GROUP
+					elsif maybe :TIES
+						exclude = :TIES
+					elsif maybe_all :NO, :OTHERS
+						exclude = :NO_OTHERS
+					elsif maybe_all :CURRENT, :ROW
+						exclude = :CURRENT_ROW
+					else
+						error!(current_token, current_value, [:GROUP, :TIES, "NO OTHERS", "CURRENT ROW"])
+					end
+				end
+
+				if exclude && Hash === boundary
+					{ type => boundary.merge!({ EXCLUDE: exclude }) }
+				elsif exclude
+					{ type => [boundary, { EXCLUDE: exclude }] }
+				else
+					{ type => boundary }
+				end
+			else
+				error!(current_token, current_value, [:RANGE, :ROWS, :GROUPS])
 			end
 		end
 
@@ -957,29 +1754,27 @@ module Plume
 			#                    ├─▶{ ROLLBACK }─┬▶{ , }─▶{ error-message }─┘
 			#                    ├─▶{ ABORT }──▶─┤
 			#                    └─▶{ FAIL }───▶─┘
-			accept :RAISE, :LP
+			accept_all :RAISE, :LP
 			if maybe :IGNORE
 				accept :RP
-
 				{ RAISE: :IGNORE }
 			elsif maybe :ROLLBACK
 				accept :COMMA
 				error_message = identifier
 				accept :RF
-
 				{ RAISE: { ROLLBACK: error_message } }
 			elsif maybe :ABORT
 				accept :COMMA
 				error_message = identifier
 				accept :RF
-
 				{ RAISE: { ABORT: error_message } }
 			elsif maybe :FAIL
 				accept :COMMA
 				error_message = identifier
 				accept :RF
-
 				{ RAISE: { FAIL: error_message } }
+			else
+				error!(current_token, current_value, [:IGNORE, :ROLLBACK, :ABORT, :FAIL])
 			end
 		end
 
@@ -990,7 +1785,7 @@ module Plume
 			#                           ├─▶{ FAIL }─────▶─┤
 			#                           ├─▶{ IGNORE }───▶─┤
 			#                           └─▶{ REPLACE }──▶─┘
-			if maybe :ON, :CONFLICT
+			if maybe_all :ON, :CONFLICT
 				case current_token
 				when :ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE
 					{ ON_CONFLICT: accept(current_token) }
@@ -1004,12 +1799,9 @@ module Plume
 			# ◯─┬───▶────┬─▶{ numeric-literal }─▶◯
 			#   ├─▶{ + }─┤
 			#   └─▶{ - }─┘
-			sign =	case current_token
-							when :PLUS
-								accept :PLUS
+			sign =	if maybe :PLUS
 								+1
-							when :MINUS
-								accept :MINUS
+							elsif maybe :MINUS
 								-1
 							else
 								+1
@@ -1102,10 +1894,7 @@ module Plume
 			foreign_table = identifier
 			columns = nil
 			if maybe :LP
-				columns = [].tap do |a|
-					a << identifier
-					a << identifier while maybe :COMMA
-				end
+				columns = one_or_more { identifier }
 				accept :RP
 			end
 			meta = {}
@@ -1119,15 +1908,15 @@ module Plume
 				end
 
 				meta[key] = nil
-				if maybe :SET, :NULL
-					meta[key] = :SET_NULL
-				elsif maybe :SET, :DEFAULT
-					meta[key] = :SET_DEFAULT
-				elsif maybe :CASCADE
+				if maybe :CASCADE
 					meta[key] = :CASCADE
 				elsif maybe :RESTRICT
 					meta[key] = :RESTRICT
-				elsif maybe :NO, :ACTION
+				elsif maybe_all :SET, :NULL
+					meta[key] = :SET_NULL
+				elsif maybe_all :SET, :DEFAULT
+					meta[key] = :SET_DEFAULT
+				elsif maybe_all :NO, :ACTION
 					meta[key] = :NO_ACTION
 				else
 					error!(current_token, current_value, [:SET, :CASCADE, :RESTRICT, :NO])
@@ -1136,17 +1925,17 @@ module Plume
 			while maybe :MATCH
 				meta[:MATCH] = identifier
 			end
-			if maybe :DEFERRABLE, :INITIALLY, :DEFERRED
+			if maybe_all :DEFERRABLE, :INITIALLY, :DEFERRED
 				meta[:DEFERRED] = true
 			elsif maybe :DEFERRABLE
 				meta[:DEFERRED] = false
-			elsif maybe :NOT, :DEFERRABLE
+			elsif maybe_all :NOT, :DEFERRABLE
 				meta[:DEFERRED] = false
-			elsif maybe :DEFERRABLE, :INITIALLY, :IMMEDIATE
+			elsif maybe_all :DEFERRABLE, :INITIALLY, :IMMEDIATE
 				meta[:DEFERRED] = false
-			elsif maybe :NOT, :DEFERRABLE, :INITIALLY, :IMMEDIATE
+			elsif maybe_all :NOT, :DEFERRABLE, :INITIALLY, :IMMEDIATE
 				meta[:DEFERRED] = false
-			elsif maybe :NOT, :DEFERRABLE, :INITIALLY, :IMMEDIATE
+			elsif maybe_all :NOT, :DEFERRABLE, :INITIALLY, :DEFERRED
 				meta[:DEFERRED] = false
 			end
 
@@ -1422,34 +2211,48 @@ module Plume
 
 		# ---
 
-		def accept(*tokens)
-			return advance && tokens.first if tokens.size == 1 && tokens.first == current_token
+		def accept(token)
+			if token == current_token
+				advance && token
+			else
+				error!(current_token, current_value, token)
+			end
+		end
 
-			tokens.each do |token|
+		def maybe(token)
+			advance && token if token == current_token
+		end
+
+		def accept_all(*tokens)
+			# save one allocation as `Array#each` (at least up to Ruby 3.3) actually allocates one object
+			i, len = 0, tokens.length
+			while i < len
+				token = tokens[i]
 				if token == current_token
 					advance
+					i += 1
 				else
 					error!(current_token, current_value, tokens)
 				end
 			end
 		end
 
-		def maybe(*tokens)
-			return accept(tokens.first) if tokens.size == 1 && tokens.first == current_token
-
-			tokens.all? do |token|
-				if token == current_token
-					accept token
-				else
-					false
+		def maybe_all(*tokens)
+			advance = true
+			i, len = 0, tokens.length
+			peek_buffer = ensure_buffer(len)
+			while i < len
+				if tokens[i] != peek_buffer[i]
+					advance = false
+					break
 				end
+				i += 1
 			end
+			accept_all(*tokens) if advance
 		end
 
 		def one_of?(*tokens)
-			tokens.any? do |token|
-				token == current_token
-			end
+			tokens.any?(current_token)
 		end
 
 		def optional
@@ -1461,6 +2264,41 @@ module Plume
 			@current_index = start_index
 			@peek_buffer = start_buffer
 			nil
+		end
+
+		def one_or_more(sep: :COMMA, given: nil)
+			[].tap do |a|
+				a << given ? given : yield
+				if sep
+					a << yield while maybe sep
+				else
+					while (x = optional { yield })
+						a << x
+					end
+				end
+			end
+		end
+
+		def zero_or_more(sep: :COMMA)
+			[].tap do |a|
+				if sep
+					a << yield while maybe sep
+				else
+					while (x = optional { yield })
+						a << x
+					end
+				end
+			end
+		end
+
+		def table_ref
+			schema_or_table = identifier
+			if maybe :DOT
+				table = identifier
+				TableRef[schema_or_table, table]
+			else
+				TableRef[schema_or_table]
+			end
 		end
 
 		def current_token
@@ -1490,9 +2328,11 @@ module Plume
 		end
 
 		def ensure_buffer(size = 1)
-			while @peek_buffer.size < size
-				@peek_buffer << @lexer.next_token
+			peek_buffer = @peek_buffer
+			while peek_buffer.size < size
+				peek_buffer << @lexer.next_token
 			end
+			peek_buffer
 		end
 
 		def error!(token, value, expected)
