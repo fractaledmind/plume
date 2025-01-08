@@ -47,12 +47,12 @@ test "tokenizes a double dash sign as a comment SPACE" do
 	assert_token "--", :SPACE
 end
 
-test "tokenizes -> as PTR (pointer)" do
-	assert_token "->", :PTR
+test "tokenizes -> as PTR1 (pointer)" do
+	assert_token "->", :PTR1
 end
 
-test "tokenizes ->> as PRT (pointer)" do
-	assert_token "->>", :PTR
+test "tokenizes ->> as PRT2 (pointer)" do
+	assert_token "->>", :PTR2
 end
 
 test "tokenizes a full inline comment as SPACE" do
@@ -719,17 +719,17 @@ test "tokenizes CURRENT as CURRENT" do
 	assert_token "CURRENT", :CURRENT
 end
 
-test "tokenizes CURRENT_DATE as CTIME_KW" do
-	assert_token "CURRENT_DATE", :CTIME_KW
+test "tokenizes CURRENT_DATE as CURRENT_DATE" do
+	assert_token "CURRENT_DATE", :CURRENT_DATE
 end
 
-test "tokenizes CURRENT_TIME as CTIME_KW" do
-	assert_token "CURRENT_TIME", :CTIME_KW
+test "tokenizes CURRENT_TIME as CURRENT_TIME" do
+	assert_token "CURRENT_TIME", :CURRENT_TIME
 end
 
-	test "tokenizes CURRENT_TIMESTAMP as CTIME_KW" do
-		assert_token "CURRENT_TIMESTAMP", :CTIME_KW
-	end
+test "tokenizes CURRENT_TIMESTAMP as CURRENT_TIMESTAMP" do
+	assert_token "CURRENT_TIMESTAMP", :CURRENT_TIMESTAMP
+end
 
 test "tokenizes DATABASE as DATABASE" do
 	assert_token "DATABASE", :DATABASE
