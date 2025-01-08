@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "plume"
-
 if ENV["COVERAGE"] == "true"
 	require "simplecov"
 
@@ -10,5 +8,8 @@ if ENV["COVERAGE"] == "true"
 		enable_coverage_for_eval
 		enable_for_subprocesses true
 		enable_coverage :branch
+		add_filter %r{^/fixtures/}
 	end
 end
+
+require "plume"
