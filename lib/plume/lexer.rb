@@ -337,13 +337,9 @@ module Plume
 			current_byte = scan
 
 			return nil if current_byte.nil?
-
-			if (token = SINGLE_CHAR_TOKENS[current_byte])
-				return token
-			end
+			return token if (token = SINGLE_CHAR_TOKENS[current_byte])
 
 			character_type = CHARACTER_TYPES[current_byte]
-
 			case character_type
 			when :SPACE
 				# useless branch conditions to drive branch test coverage results
@@ -382,7 +378,7 @@ module Plume
 				step until (b = peek).nil? || (b == 42 && peek(1) == 47) # consume until EOF or "*/"
 				step(2) if peek == 42 && peek(1) == 47 # consume the "*/"
 
-				:SPACE # IMP: R-22934-2513]
+				:SPACE # comments are encoded as SPACE tokens [IMP: R-22934-2513]
 			when :EQ
 				step if peek == 61 # "="
 				:EQ
