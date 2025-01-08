@@ -13,3 +13,14 @@ if ENV["COVERAGE"] == "true"
 end
 
 require "plume"
+
+class Quickdraw::Test
+	def assert_statement(sql, structure)
+		parsed = parse(sql)
+		assert_equal parsed, [structure]
+	end
+
+	def parse(sql)
+		Plume::Parser.new(sql).parse
+	end
+end

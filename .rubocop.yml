@@ -39,3 +39,6 @@ Style/TrailingCommaInHashLiteral:
 
 Layout/EmptyLineAfterMultilineCondition:
   Enabled: false
+
+Layout/HeredocIndentation:
+  Enabled: false

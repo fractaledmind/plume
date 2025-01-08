@@ -50,7 +50,7 @@ module Plume
 		def hash = @parts.hash
 
 		def ==(other)
-			other.is_a?(Ref) && other.parts == @parts
+			other.is_a?(ColumnRef) && other.parts == @parts
 		end
 		alias_method :eql?, :==
 	end

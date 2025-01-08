@@ -296,7 +296,12 @@ module Plume
 		attr_reader :sql, :cursor, :token_pos
 
 		def initialize(sql, skip_spaces: false)
-			@sql = sql.force_encoding("ASCII-8BIT")
+			if sql.encoding.ascii_compatible?
+				@sql = sql
+			else
+				@sql = sql.dup.force_encoding("ASCII-8BIT").freeze
+			end
+
 			@skip_spaces = skip_spaces
 			@cursor, @token_pos = 0
 			@token_positions = []

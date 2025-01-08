@@ -422,15 +422,11 @@ module Plume
 				error!(current_token, current_value, [:AS, :LP])
 			end
 
-			{
-				CREATE_TABLE: {
-					ref => columns,
-					TEMPORARY: temporary,
-					IF_NOT_EXISTS: if_not_exists,
-					WITHOUT_ROWID: false,
-					STRICT: false,
-				}
-			}
+			options = { ref => columns }
+			options[:TEMPORARY] = true if temporary
+			options[:IF_NOT_EXISTS] = true if if_not_exists
+
+			{ CREATE_TABLE: options }
 		end
 
 		def table_constraint
@@ -2344,8 +2340,9 @@ module Plume
 		end
 
 		def error!(token, value, expected)
+			# TODO: we should handle multi-line sql highlighting
 			highlight = (" " * @lexer.token_pos) + ("^" * (@lexer.cursor - @lexer.token_pos))
-			msg = "Unexpected token #{token}[#{value.inspect}] at:\n\t#{@sql}\n\t#{highlight}\n\tExpected one of: #{expected.join(", ")}\n"
+			msg = "Unexpected token #{token}[#{value.inspect}] at:\n  #{@sql.strip}\n  #{highlight}\n  Expected one of: #{expected.join(", ")}\n"
 
 			raise SyntaxError, msg
 		end
