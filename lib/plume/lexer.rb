@@ -363,9 +363,14 @@ module Plume
 
 					:SPACE # IMP: R-22934-2513
 				elsif peek == 62 # ">"
-					step(peek(1) == 62 ? 2 : 1)
-
-					:PTR
+					# differentiate between different pointers
+					if peek(1) == 62 # ">"
+						step(2)
+						:PTR2
+					else
+						step
+						:PTR1
+					end
 				else
 					:MINUS
 				end
