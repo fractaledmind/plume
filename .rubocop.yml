@@ -1,48 +1,41 @@
-require:
-  - standard
-  - standard-custom
-  - rubocop-minitest
-  - rubocop-rake
-
-inherit_gem:
-  standard: config/base.yml
-  standard-custom: config/base.yml
+inherit_from:
+  - "https://www.goodcop.style/tabs.yml"
 
 AllCops:
-  NewCops: enable
+  TargetRubyVersion: 3.3
 
-Layout/IndentationStyle:
-  EnforcedStyle: tabs
-
-Layout/IndentationWidth:
-  Width: 1
-
-Style/GlobalVars:
+Layout/HashAlignment:
   Enabled: false
 
-Style/FrozenStringLiteralComment:
-  Enabled: true
-  EnforcedStyle: always_true
-  Exclude:
-    - 'test/feather/test_lexer.rb'
-
-Minitest/AssertEmptyLiteral:
+Layout/MultilineArrayLineBreaks:
   Enabled: false
-
-Minitest/EmptyLineBeforeAssertionMethods:
-  Enabled: false
-
-Layout/EmptyLineBetweenDefs:
-  Exclude:
-    - 'lib/feather/tokens.rb'
-    - 'lib/feather/lexer/character.rb'
 
 Layout/ExtraSpacing:
-  Exclude:
-    - 'lib/feather/lexer/character.rb'
-    - 'lib/feather/lexer/characters.rb'
-    - 'lib/feather/lexer/keywords.rb'
+  Enabled: false
 
-Naming/ClassAndModuleCamelCase:
-  Exclude:
-    - 'lib/feather/tokens.rb'
+Style/HashSyntax:
+  Enabled: false
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
+
+Layout/EndAlignment:
+  EnforcedStyleAlignWith: keyword
+
+Layout/MultilineAssignmentLayout:
+  Enabled: false
+
+Style/EmptyElse:
+  AllowComments: true
+
+Layout/SpaceAroundOperators:
+  Enabled: false
+
+Style/RaiseArgs:
+  Enabled: false
+
+Style/TrailingCommaInHashLiteral:
+  Enabled: false
+
+Layout/EmptyLineAfterMultilineCondition:
+  Enabled: false

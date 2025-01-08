@@ -33,19 +33,19 @@ module Plume
 
 		def to_s
 			if		@schema && @table && @columns&.any?
-				"#{@schema}.#{@table}(#{@columns.join(',')})"
+				"#{@schema}.#{@table}(#{@columns.join(",")})"
 			elsif @schema && @table && !@columns&.any?
 				"#{@schema}.#{@table}"
 			elsif	!@schema && @table && @columns&.any?
-				"#{@table}(#{@columns.join(',')})"
+				"#{@table}(#{@columns.join(",")})"
 			elsif	!@schema && !@table && @columns&.any?
-				@columns.join(',')
+				@columns.join(",")
 			elsif	!@schema && @table && !@columns&.any?
 				@table.to_s
 			end
 		end
 
-		def inspect = "#{self.class.name.split("::").last}[#{to_s}]"
+		def inspect = "#{self.class.name.split("::").last}[#{self}]"
 
 		def hash = @parts.hash
 

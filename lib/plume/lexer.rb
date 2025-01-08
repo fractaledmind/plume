@@ -189,7 +189,7 @@ module Plume
 			"WHERE"							=>	:WHERE,
 			"WINDOW"						=>	:WINDOW,
 			"WITH"							=>	:WITH,
-			"WITHOUT"						=>	:WITHOUT
+			"WITHOUT"						=>	:WITHOUT,
 		}.freeze
 
 		# Maps ASCII characters to their respective character types
@@ -337,7 +337,9 @@ module Plume
 			current_byte = scan
 
 			return nil if current_byte.nil?
-			return token if (token = SINGLE_CHAR_TOKENS[current_byte])
+			if (token = SINGLE_CHAR_TOKENS[current_byte])
+				return token
+			end
 
 			character_type = CHARACTER_TYPES[current_byte]
 			case character_type
@@ -410,7 +412,7 @@ module Plume
 				while (b = scan)
 					next unless b == current_byte
 					# you can use the same quote to escape itself
-					peek == current_byte ? step : break
+					(peek == current_byte) ? step : break
 				end
 
 				return :STRING if b == 39 # "'"

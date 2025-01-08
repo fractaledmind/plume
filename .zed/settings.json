@@ -1,0 +1,11 @@
+{
+	"hard_tabs": true,
+	"languages": {
+		"YAML": {
+			"hard_tabs": false
+		},
+		"Markdown": {
+			"hard_tabs": false
+		}
+	}
+}

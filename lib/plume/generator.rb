@@ -56,24 +56,27 @@ module Plume
 				"ORDER BY #{ordering(ordering)}"
 			in [:LIMIT, Range => range]
 				if range.begin
-					limit = if range.end
-						if range.exclude_end?
-							range.end - range.begin - 1
+					limit =
+						if range.end
+							if range.exclude_end?
+								range.end - range.begin - 1
+							else
+								range.end - range.begin
+							end
 						else
-							range.end - range.begin
+							-1
 						end
-					else
-						-1
-					end
+
 					offset = range.begin
 
 					"LIMIT #{limit} OFFSET #{offset}"
 				else
-					limit = if range.exclude_end?
-						range.end - 1
-					else
-						range.end
-					end
+					limit =
+						if range.exclude_end?
+							range.end - 1
+						else
+							range.end
+						end
 
 					"LIMIT #{limit}"
 				end
@@ -88,11 +91,11 @@ module Plume
 		def source(source)
 			case source
 			in { INNER_JOIN: Array[left, right], ON: expr, NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} INNER JOIN #{table_or_subquery(right)} ON #{e(expr)}"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} INNER JOIN #{table_or_subquery(right)} ON #{e(expr)}"
 			in { INNER_JOIN: Array[left, right], USING: Array => columns, NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} INNER JOIN #{table_or_subquery(right)} USING (#{_e(columns)})"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} INNER JOIN #{table_or_subquery(right)} USING (#{_e(columns)})"
 			in { INNER_JOIN: Array[left, right], USING: ColumnRef | String | Symbol => column, NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} INNER JOIN #{table_or_subquery(right)} USING (#{e(column)})"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} INNER JOIN #{table_or_subquery(right)} USING (#{e(column)})"
 			in { INNER_JOIN: Array[left, right], ON: expr }
 				"#{table_or_subquery(left)} INNER JOIN #{table_or_subquery(right)} ON #{e(expr)}"
 			in { INNER_JOIN: Array[left, right], USING: Array => columns }
@@ -100,15 +103,15 @@ module Plume
 			in { INNER_JOIN: Array[left, right], USING: ColumnRef | String | Symbol => column }
 				"#{table_or_subquery(left)} INNER JOIN #{table_or_subquery(right)} USING (#{e(column)})"
 			in { INNER_JOIN: Array[left, right], NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} INNER JOIN #{table_or_subquery(right)}"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} INNER JOIN #{table_or_subquery(right)}"
 			in { INNER_JOIN: Array[left, right] }
 				"#{table_or_subquery(left)} INNER JOIN #{table_or_subquery(right)}"
 			in { LEFT_JOIN: Array[left, right], ON: expr, NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} LEFT JOIN #{table_or_subquery(right)} ON #{e(expr)}"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} LEFT JOIN #{table_or_subquery(right)} ON #{e(expr)}"
 			in { LEFT_JOIN: Array[left, right], USING: Array => columns, NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} LEFT JOIN #{table_or_subquery(right)} USING (#{_e(columns)})"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} LEFT JOIN #{table_or_subquery(right)} USING (#{_e(columns)})"
 			in { LEFT_JOIN: Array[left, right], USING: ColumnRef | String | Symbol => column, NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} LEFT JOIN #{table_or_subquery(right)} USING (#{e(column)})"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} LEFT JOIN #{table_or_subquery(right)} USING (#{e(column)})"
 			in { LEFT_JOIN: Array[left, right], ON: expr }
 				"#{table_or_subquery(left)} LEFT JOIN #{table_or_subquery(right)} ON #{e(expr)}"
 			in { LEFT_JOIN: Array[left, right], USING: Array => columns }
@@ -116,15 +119,15 @@ module Plume
 			in { LEFT_JOIN: Array[left, right], USING: ColumnRef | String | Symbol => column }
 				"#{table_or_subquery(left)} LEFT JOIN #{table_or_subquery(right)} USING (#{e(column)})"
 			in { LEFT_JOIN: Array[left, right], NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} LEFT JOIN #{table_or_subquery(right)}"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} LEFT JOIN #{table_or_subquery(right)}"
 			in { LEFT_JOIN: Array[left, right] }
 				"#{table_or_subquery(left)} LEFT JOIN #{table_or_subquery(right)}"
 			in { RIGHT_JOIN: Array[left, right], ON: expr, NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} RIGHT JOIN #{table_or_subquery(right)} ON #{e(expr)}"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} RIGHT JOIN #{table_or_subquery(right)} ON #{e(expr)}"
 			in { RIGHT_JOIN: Array[left, right], USING: Array => columns, NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} RIGHT JOIN #{table_or_subquery(right)} USING (#{_e(columns)})"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} RIGHT JOIN #{table_or_subquery(right)} USING (#{_e(columns)})"
 			in { RIGHT_JOIN: Array[left, right], USING: ColumnRef | String | Symbol => column, NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} RIGHT JOIN #{table_or_subquery(right)} USING (#{e(column)})"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} RIGHT JOIN #{table_or_subquery(right)} USING (#{e(column)})"
 			in { RIGHT_JOIN: Array[left, right], ON: expr }
 				"#{table_or_subquery(left)} RIGHT JOIN #{table_or_subquery(right)} ON #{e(expr)}"
 			in { RIGHT_JOIN: Array[left, right], USING: Array => columns }
@@ -132,15 +135,15 @@ module Plume
 			in { RIGHT_JOIN: Array[left, right], USING: ColumnRef | String | Symbol => column }
 				"#{table_or_subquery(left)} RIGHT JOIN #{table_or_subquery(right)} USING (#{e(column)})"
 			in { RIGHT_JOIN: Array[left, right], NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} RIGHT JOIN #{table_or_subquery(right)}"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} RIGHT JOIN #{table_or_subquery(right)}"
 			in { RIGHT_JOIN: Array[left, right] }
 				"#{table_or_subquery(left)} RIGHT JOIN #{table_or_subquery(right)}"
 			in { FULL_JOIN: Array[left, right], ON: expr, NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} FULL JOIN #{table_or_subquery(right)} ON #{e(expr)}"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} FULL JOIN #{table_or_subquery(right)} ON #{e(expr)}"
 			in { FULL_JOIN: Array[left, right], USING: Array => columns, NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} FULL JOIN #{table_or_subquery(right)} USING (#{_e(columns)})"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} FULL JOIN #{table_or_subquery(right)} USING (#{_e(columns)})"
 			in { FULL_JOIN: Array[left, right], USING: ColumnRef | String | Symbol => column, NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} FULL JOIN #{table_or_subquery(right)} USING (#{e(column)})"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} FULL JOIN #{table_or_subquery(right)} USING (#{e(column)})"
 			in { FULL_JOIN: Array[left, right], ON: expr }
 				"#{table_or_subquery(left)} FULL JOIN #{table_or_subquery(right)} ON #{e(expr)}"
 			in { FULL_JOIN: Array[left, right], USING: Array => columns }
@@ -148,7 +151,7 @@ module Plume
 			in { FULL_JOIN: Array[left, right], USING: ColumnRef | String | Symbol => column }
 				"#{table_or_subquery(left)} FULL JOIN #{table_or_subquery(right)} USING (#{e(column)})"
 			in { FULL_JOIN: Array[left, right], NATURAL: natural }
-				"#{table_or_subquery(left)}#{' NATURAL' if natural} FULL JOIN #{table_or_subquery(right)}"
+				"#{table_or_subquery(left)}#{" NATURAL" if natural} FULL JOIN #{table_or_subquery(right)}"
 			in { FULL_JOIN: Array[left, right] }
 				"#{table_or_subquery(left)} FULL JOIN #{table_or_subquery(right)}"
 			in { CROSS_JOIN: Array[left, right], ON: expr }
@@ -167,14 +170,16 @@ module Plume
 		def ordering(ordering)
 			key, value = ordering.first
 
-			order_by = case key
+			order_by =
+				case key
 				in Array[expr, collation]
 					e({ expr => { COLLATE: collation } })
 				else
 					e(key)
 				end
 
-			order_in = case value
+			order_in =
+				case value
 				in Array[:ASC | :asc, nil]
 					"ASC NULLS LAST"
 				in Array[:DESC | :desc, nil]
@@ -263,11 +268,11 @@ module Plume
 		end
 
 		def _s(statements)
-			statements.map { |it| s(it) }.join(', ')
+			statements.map { |it| s(it) }.join(", ")
 		end
 
 		def _e(expressions)
-			expressions.map { |it| e(it) }.join(', ')
+			expressions.map { |it| e(it) }.join(", ")
 		end
 	end
 
@@ -362,9 +367,9 @@ module Plume
 				fn, args = struct.first
 				args.nil? ? "#{_ fn}()" : "#{_ fn}(#{__ args})"
 			in { ANY: Array => exprs }
-				"(#{exprs.map { |it| _(it) }.join(' OR ')})"
+				"(#{exprs.map { |it| _(it) }.join(" OR ")})"
 			in { ALL: Array => exprs }
-				"(#{exprs.map { |it| _(it) }.join(' AND ')})"
+				"(#{exprs.map { |it| _(it) }.join(" AND ")})"
 			in Hash => struct if struct.size == 1
 				entry = struct.first
 				case entry
@@ -427,9 +432,9 @@ module Plume
 				in [lexpr, { NOT_BETWEEN: [rexpr1, rexpr2] }]
 					"#{_ lexpr} NOT BETWEEN #{_(rexpr1)} AND #{_ rexpr2}"
 				in [lexpr, { IN: Array => rexpr }]
-					"#{_ lexpr} IN (#{rexpr.map { |e| _(e) }.join(', ')})"
+					"#{_ lexpr} IN (#{rexpr.map { |e| _(e) }.join(", ")})"
 				in [lexpr, { NOT_IN: Array => rexpr }]
-					"#{_ lexpr} NOT IN (#{rexpr.map { |e| _(e) }.join(', ')})"
+					"#{_ lexpr} NOT IN (#{rexpr.map { |e| _(e) }.join(", ")})"
 				in [lexpr, { LIKE: rexpr }]
 					"#{_ lexpr} LIKE #{_ rexpr}"
 				in [lexpr, { NOT_LIKE: rexpr }]
@@ -447,17 +452,17 @@ module Plume
 				in [lexpr, { NOT_MATCH: rexpr }]
 					"#{_ lexpr} NOT MATCH #{_ rexpr}"
 				in [:CASE, Hash => branches]
-					cases = branches.map { |w, t| w == :ELSE ? "ELSE (#{_ t})" : "WHEN (#{_ w}) THEN (#{_ t})" }
-					"CASE #{cases.join(' ')} END"
+					cases = branches.map { |w, t| (w == :ELSE) ? "ELSE (#{_ t})" : "WHEN (#{_ w}) THEN (#{_ t})" }
+					"CASE #{cases.join(" ")} END"
 				in [:CASE, Array[base, branches]]
-					cases = branches.map { |w, t| w == :ELSE ? "ELSE (#{_ t})" : "WHEN (#{_ w}) THEN (#{_ t})" }
-					"CASE #{_(base)} #{cases.join(' ')} END"
+					cases = branches.map { |w, t| (w == :ELSE) ? "ELSE (#{_ t})" : "WHEN (#{_ w}) THEN (#{_ t})" }
+					"CASE #{_(base)} #{cases.join(" ")} END"
 				in [:EXISTS, Hash => select_stmt]
 					"EXISTS (#{s(select_stmt)})"
 				in [:NOT_EXISTS, Hash => select_stmt]
 					"NOT EXISTS (#{s(select_stmt)})"
 				in [lexpr, Array => rexpr]
-					"#{_ lexpr} IN (#{rexpr.map { |e| _(e) }.join(', ')})"
+					"#{_ lexpr} IN (#{rexpr.map { |e| _(e) }.join(", ")})"
 				in [lexpr, Range => range]
 					if range.exclude_end? && range.begin && range.end
 						"#{_ lexpr} >= #{_(range.begin)} AND #{_ lexpr} < #{_(range.end)}"
@@ -485,7 +490,7 @@ module Plume
 		end
 
 		def __(expressions)
-			expressions.map { |it| _(it) }.join(', ')
+			expressions.map { |it| _(it) }.join(", ")
 		end
 
 		def s(statement)
@@ -495,8 +500,8 @@ module Plume
 		def hex(io, chunk_size = 1024)
 			hex_chunks = +"X'"
 
-			while chunk = io.read(chunk_size)
-				hex_chunks << chunk.unpack('H*').first
+			while (chunk = io.read(chunk_size))
+				hex_chunks << chunk.unpack1("H*")
 			end
 			hex_chunks << "'"
 

@@ -4,11 +4,13 @@ module Plume
 	class Parser
 		Type = Class.new do
 			attr_reader :name, :constraints
+
 			def initialize(name, *constraints)
 				@name = name
 				@constraints = constraints
 			end
-			def inspect = "#{self.class.name.split("::").last}[#{name}]#{constraints.any? ? '(' + constraints.join(", ") + ')' : ''}"
+
+			def inspect = "#{self.class.name.split("::").last}[#{name}]#{constraints.any? ? "(#{constraints.join(", ")})" : ""}"
 			def to_s = inspect
 		end
 		Type::Integer = Class.new(Type)
@@ -20,190 +22,190 @@ module Plume
 		SyntaxError = Class.new(StandardError)
 		# see: https://github.com/sqlite/sqlite/blob/master/src/parse.y#L255-L283
 		TOKEN_FALLBACKS = {
-		  SEMI:					nil,
-		  EXPLAIN:			:ID,
-		  QUERY:				:ID,
-		  PLAN:					:ID,
-		  BEGIN:				:ID,
-		  TRANSACTION:	nil,
-		  DEFERRED:			:ID,
-		  IMMEDIATE:		:ID,
-		  EXCLUSIVE:		:ID,
-		  COMMIT:				nil,
-		  END:					:ID,
-		  ROLLBACK:			:ID,
-		  SAVEPOINT:		:ID,
-		  RELEASE:			:ID,
-		  TO:						nil,
-		  TABLE:				nil,
-		  CREATE:				nil,
-		  IF:						:ID,
-		  NOT:					nil,
-		  EXISTS:				nil,
-		  TEMP:					:ID,
-		  LP:						nil,
-		  RP:						nil,
-		  AS:						nil,
-		  COMMA:				nil,
-		  WITHOUT:			:ID,
-		  ABORT:				:ID,
-		  ACTION:				:ID,
-		  AFTER:				:ID,
-		  ANALYZE:			:ID,
-		  ASC:					:ID,
-		  ATTACH:				:ID,
-		  BEFORE:				:ID,
-		  BY:						:ID,
-		  CASCADE:			:ID,
-		  CAST:					:ID,
-		  CONFLICT:			:ID,
-		  DATABASE:			:ID,
-		  DESC:					:ID,
-		  DETACH:				:ID,
-		  EACH:					:ID,
-		  FAIL:					:ID,
-		  OR:						nil,
-		  AND:					nil,
-		  IS:						nil,
-		  MATCH:				:ID,
-		  LIKE_KW:			:ID,
-		  BETWEEN:			nil,
-		  IN:						nil,
-		  ISNULL:				nil,
-		  NOTNULL:			nil,
-		  NE:						nil,
-		  EQ:						nil,
-		  GT:						nil,
-		  LE:						nil,
-		  LT:						nil,
-		  GE:						nil,
-		  ESCAPE:				nil,
-		  ID:						nil,
-		  COLUMNKW:			:ID,
-		  DO:						:ID,
-		  FOR:					:ID,
-		  IGNORE:				:ID,
-		  INITIALLY:		:ID,
-		  INSTEAD:			:ID,
-		  NO:						:ID,
-		  KEY:					:ID,
-		  OF:						:ID,
-		  OFFSET:				:ID,
-		  PRAGMA:				:ID,
-		  RAISE:				:ID,
-		  RECURSIVE:		:ID,
-		  REPLACE:			:ID,
-		  RESTRICT:			:ID,
-		  ROW:					:ID,
-		  ROWS:					:ID,
-		  TRIGGER:			:ID,
-		  VACUUM:				:ID,
-		  VIEW:					:ID,
-		  VIRTUAL:			:ID,
-		  WITH:					:ID,
-		  NULLS:				:ID,
-		  FIRST:				:ID,
-		  LAST:					:ID,
-		  CURRENT:			:ID,
-		  FOLLOWING:		:ID,
-		  PARTITION:		:ID,
-		  PRECEDING:		:ID,
-		  RANGE:				:ID,
-		  UNBOUNDED:		:ID,
-		  EXCLUDE:			:ID,
-		  GROUPS:				:ID,
-		  OTHERS:				:ID,
-		  TIES:					:ID,
-		  GENERATED:		:ID,
-		  ALWAYS:				:ID,
-		  MATERIALIZED:	:ID,
-		  REINDEX:			:ID,
-		  RENAME:				:ID,
-		  CTIME_KW:			:ID,
-		  ANY:					nil,
-		  BITAND:				nil,
-		  BITOR:				nil,
-		  LSHIFT:				nil,
-		  RSHIFT:				nil,
-		  PLUS:					nil,
-		  MINUS:				nil,
-		  STAR:					nil,
-		  SLASH:				nil,
-		  REM:					nil,
-		  CONCAT:				nil,
-		  PTR:					nil,
-		  COLLATE:			nil,
-		  BITNOT:				nil,
-		  ON:						nil,
-		  INDEXED:			nil,
-		  STRING:				nil,
-		  JOIN_KW:			nil,
-		  CONSTRAINT:		nil,
-		  DEFAULT:			nil,
-		  NULL:					nil,
-		  PRIMARY:			nil,
-		  UNIQUE:				nil,
-		  CHECK:				nil,
-		  REFERENCES:		nil,
-		  AUTOINCR:			nil,
-		  INSERT:				nil,
-		  DELETE:				nil,
-		  UPDATE:				nil,
-		  SET:					nil,
-		  DEFERRABLE:		nil,
-		  FOREIGN:			nil,
-		  DROP:					nil,
-		  UNION:				nil,
-		  ALL:					nil,
-		  EXCEPT:				nil,
-		  INTERSECT:		nil,
-		  SELECT:				nil,
-		  VALUES:				nil,
-		  DISTINCT:			nil,
-		  DOT:					nil,
-		  FROM:					nil,
-		  JOIN:					nil,
-		  USING:				nil,
-		  ORDER:				nil,
-		  GROUP:				nil,
-		  HAVING:				nil,
-		  LIMIT:				nil,
-		  WHERE:				nil,
-		  RETURNING:		nil,
-		  INTO:					nil,
-		  NOTHING:			nil,
-		  FLOAT:				nil,
-		  BLOB:					nil,
-		  INTEGER:			nil,
-		  VARIABLE:			nil,
-		  CASE:					nil,
-		  WHEN:					nil,
-		  THEN:					nil,
-		  ELSE:					nil,
-		  INDEX:				nil,
-		  ALTER:				nil,
-		  ADD:					nil,
-		  WINDOW:				nil,
-		  OVER:					nil,
-		  FILTER:				nil,
-		  COLUMN:				nil,
-		  AGG_FUNCTION:	nil,
-		  AGG_COLUMN:		nil,
-		  TRUEFALSE:		nil,
-		  ISNOT:				nil,
-		  FUNCTION:			nil,
-		  UMINUS:				nil,
-		  UPLUS:				nil,
-		  TRUTH:				nil,
-		  REGISTER:			nil,
-		  VECTOR:				nil,
-		  SELECT_COLUMN:nil,
-		  IF_NULL_ROW:	nil,
-		  ASTERISK:			nil,
-		  SPAN:					nil,
-		  ERROR:				nil,
-		  SPACE:				nil,
-		  ILLEGAL:			nil
+			SEMI:						nil,
+			EXPLAIN:				:ID,
+			QUERY:					:ID,
+			PLAN:						:ID,
+			BEGIN:					:ID,
+			TRANSACTION:		nil,
+			DEFERRED:				:ID,
+			IMMEDIATE:			:ID,
+			EXCLUSIVE:			:ID,
+			COMMIT:					nil,
+			END:						:ID,
+			ROLLBACK:				:ID,
+			SAVEPOINT:			:ID,
+			RELEASE:				:ID,
+			TO:							nil,
+			TABLE:					nil,
+			CREATE:					nil,
+			IF:							:ID,
+			NOT:						nil,
+			EXISTS:					nil,
+			TEMP:						:ID,
+			LP:							nil,
+			RP:							nil,
+			AS:							nil,
+			COMMA:					nil,
+			WITHOUT:				:ID,
+			ABORT:					:ID,
+			ACTION:					:ID,
+			AFTER:					:ID,
+			ANALYZE:				:ID,
+			ASC:						:ID,
+			ATTACH:					:ID,
+			BEFORE:					:ID,
+			BY:							:ID,
+			CASCADE:				:ID,
+			CAST:						:ID,
+			CONFLICT:				:ID,
+			DATABASE:				:ID,
+			DESC:						:ID,
+			DETACH:					:ID,
+			EACH:						:ID,
+			FAIL:						:ID,
+			OR:							nil,
+			AND:						nil,
+			IS:							nil,
+			MATCH:					:ID,
+			LIKE_KW:				:ID,
+			BETWEEN:				nil,
+			IN:							nil,
+			ISNULL:					nil,
+			NOTNULL:				nil,
+			NE:							nil,
+			EQ:							nil,
+			GT:							nil,
+			LE:							nil,
+			LT:							nil,
+			GE:							nil,
+			ESCAPE:					nil,
+			ID:							nil,
+			COLUMNKW:				:ID,
+			DO:							:ID,
+			FOR:						:ID,
+			IGNORE:					:ID,
+			INITIALLY:			:ID,
+			INSTEAD:				:ID,
+			NO:							:ID,
+			KEY:						:ID,
+			OF:							:ID,
+			OFFSET:					:ID,
+			PRAGMA:					:ID,
+			RAISE:					:ID,
+			RECURSIVE:			:ID,
+			REPLACE:				:ID,
+			RESTRICT:				:ID,
+			ROW:						:ID,
+			ROWS:						:ID,
+			TRIGGER:				:ID,
+			VACUUM:					:ID,
+			VIEW:						:ID,
+			VIRTUAL:				:ID,
+			WITH:						:ID,
+			NULLS:					:ID,
+			FIRST:					:ID,
+			LAST:						:ID,
+			CURRENT:				:ID,
+			FOLLOWING:			:ID,
+			PARTITION:			:ID,
+			PRECEDING:			:ID,
+			RANGE:					:ID,
+			UNBOUNDED:			:ID,
+			EXCLUDE:				:ID,
+			GROUPS:					:ID,
+			OTHERS:					:ID,
+			TIES:						:ID,
+			GENERATED:			:ID,
+			ALWAYS:					:ID,
+			MATERIALIZED:		:ID,
+			REINDEX:				:ID,
+			RENAME:					:ID,
+			CTIME_KW:				:ID,
+			ANY:						nil,
+			BITAND:					nil,
+			BITOR:					nil,
+			LSHIFT:					nil,
+			RSHIFT:					nil,
+			PLUS:						nil,
+			MINUS:					nil,
+			STAR:						nil,
+			SLASH:					nil,
+			REM:						nil,
+			CONCAT:					nil,
+			PTR:						nil,
+			COLLATE:				nil,
+			BITNOT:					nil,
+			ON:							nil,
+			INDEXED:				nil,
+			STRING:					nil,
+			JOIN_KW:				nil,
+			CONSTRAINT:			nil,
+			DEFAULT:				nil,
+			NULL:						nil,
+			PRIMARY:				nil,
+			UNIQUE:					nil,
+			CHECK:					nil,
+			REFERENCES:			nil,
+			AUTOINCR:				nil,
+			INSERT:					nil,
+			DELETE:					nil,
+			UPDATE:					nil,
+			SET:						nil,
+			DEFERRABLE:			nil,
+			FOREIGN:				nil,
+			DROP:						nil,
+			UNION:					nil,
+			ALL:						nil,
+			EXCEPT:					nil,
+			INTERSECT:			nil,
+			SELECT:					nil,
+			VALUES:					nil,
+			DISTINCT:				nil,
+			DOT:						nil,
+			FROM:						nil,
+			JOIN:						nil,
+			USING:					nil,
+			ORDER:					nil,
+			GROUP:					nil,
+			HAVING:					nil,
+			LIMIT:					nil,
+			WHERE:					nil,
+			RETURNING:			nil,
+			INTO:						nil,
+			NOTHING:				nil,
+			FLOAT:					nil,
+			BLOB:						nil,
+			INTEGER:				nil,
+			VARIABLE:				nil,
+			CASE:						nil,
+			WHEN:						nil,
+			THEN:						nil,
+			ELSE:						nil,
+			INDEX:					nil,
+			ALTER:					nil,
+			ADD:						nil,
+			WINDOW:					nil,
+			OVER:						nil,
+			FILTER:					nil,
+			COLUMN:					nil,
+			AGG_FUNCTION:		nil,
+			AGG_COLUMN:			nil,
+			TRUEFALSE:			nil,
+			ISNOT:					nil,
+			FUNCTION:				nil,
+			UMINUS:					nil,
+			UPLUS:					nil,
+			TRUTH:					nil,
+			REGISTER:				nil,
+			VECTOR:					nil,
+			SELECT_COLUMN:	nil,
+			IF_NULL_ROW:		nil,
+			ASTERISK:				nil,
+			SPAN:						nil,
+			ERROR:					nil,
+			SPACE:					nil,
+			ILLEGAL:				nil,
 		}
 
 		def initialize(sql)
@@ -296,7 +298,7 @@ module Plume
 				when :TRIGGER	then drop_trigger_stmt
 				when :VIEW		then drop_view_stmt
 				else
-					error!()
+					# TODO: error!()
 					# unexpected_token = peek
 					# *context, unexpected = values(2)
 					# raise SyntaxError, <<~TXT
@@ -447,7 +449,7 @@ module Plume
 				accept :RP
 				on_conflict = conflict_clause
 				if on_conflict or name
-					{ UNIQUE: [columns, on_conflict, ({NAME: name} if name)].compact! }
+					{ UNIQUE: [columns, on_conflict, ({ NAME: name } if name)].compact! }
 				else
 					{ UNIQUE: columns }
 				end
@@ -462,7 +464,7 @@ module Plume
 				accept :RP
 				on_conflict = conflict_clause
 				if on_conflict or name
-					{ PRIMARY_KEY: [columns, on_conflict, ({NAME: name} if name)].compact! }
+					{ PRIMARY_KEY: [columns, on_conflict, ({ NAME: name } if name)].compact! }
 				else
 					{ PRIMARY_KEY: columns }
 				end
@@ -484,6 +486,7 @@ module Plume
 			if :ID == current_token
 				name = identifier
 			elsif (e = optional { expr })
+				# no-op
 			else
 				error!(current_token, current_value, [:ID, "expr"])
 			end
@@ -573,7 +576,7 @@ module Plume
 				autoincrement = { AUTOINCREMENT: true } if maybe(:AUTOINCR)
 
 				if on_conflict or autoincrement or name
-					{ PRIMARY_KEY: [direction, on_conflict, autoincrement, ({NAME: name} if name)].compact! }
+					{ PRIMARY_KEY: [direction, on_conflict, autoincrement, ({ NAME: name } if name)].compact! }
 				else
 					{ PRIMARY_KEY: direction }
 				end
@@ -581,7 +584,7 @@ module Plume
 				on_conflict = conflict_clause
 
 				if on_conflict or name
-					{ NOT_NULL: [true, on_conflict, ({NAME: name} if name)].compact! }
+					{ NOT_NULL: [true, on_conflict, ({ NAME: name } if name)].compact! }
 				else
 					{ NOT_NULL: true }
 				end
@@ -589,7 +592,7 @@ module Plume
 				on_conflict = conflict_clause
 
 				if on_conflict or name
-					{ UNIQUE: [true, on_conflict, ({NAME: name} if name)].compact! }
+					{ UNIQUE: [true, on_conflict, ({ NAME: name } if name)].compact! }
 				else
 					{ UNIQUE: true }
 				end
@@ -598,7 +601,7 @@ module Plume
 				check = expr
 				accept :RP
 				if name
-					{ CHECK: [check, {NAME: name}] }
+					{ CHECK: [check, { NAME: name }] }
 				else
 					{ CHECK: check }
 				end
@@ -630,6 +633,7 @@ module Plume
 					{ GENERATED_AS: default }
 				end
 			else
+				# TODO: error here
 			end
 		end
 
@@ -674,18 +678,18 @@ module Plume
 				t = type_name
 				accept :RP
 
-				return { e => { CAST: t } }
+				{ e => { CAST: t } }
 			elsif maybe :NOT
 				if maybe :EXISTS
 					accept :LP
 					s = select_stmt
 					accept :RP
 
-					return { NOT_EXISTS: s }
+					{ NOT_EXISTS: s }
 				else
 					e = expr
 
-					return { NOT: e }
+					{ NOT: e }
 				end
 			elsif maybe :EXISTS
 				accept :LP
@@ -741,6 +745,7 @@ module Plume
 			elsif (v = optional { literal_value })
 				v
 			elsif :VARIABLE == current_token
+				# no-op
 			elsif :ID == current_token
 				case peek(2)
 				when [_, :LP]
@@ -768,6 +773,7 @@ module Plume
 			elsif maybe :BITNOT
 				{ INVERT: expr }
 			elsif (func = optional { aggregate_function_invocation })
+				# TODO
 			elsif (lexpr = optional { expr })
 				if maybe :COLLATE
 					{ lexpr => { COLLATE: identifier } }
@@ -938,8 +944,10 @@ module Plume
 						error!(current_token, current_value, [:LP, :ID])
 					end
 				else
+					# TODO: error?
 				end
 			else
+				# TODO: error here
 			end
 		end
 
@@ -1451,6 +1459,7 @@ module Plume
 					args = exprs
 				end
 			elsif :RP == current_token
+				# no-op
 			else
 				error!(current_token, current_value, [:DISTINCT, :STAR, :RP, "expr"])
 			end
@@ -1583,7 +1592,7 @@ module Plume
 
 			filter = optional { filter_clause }
 			accept :OVER
-			window = :LP == current_token ? window_defn : identifier
+			window = (:LP == current_token) ? window_defn : identifier
 
 			{ key => { OVER: window }.merge!(filter || {}) }
 		end
@@ -1591,10 +1600,10 @@ module Plume
 		def filter_clause
 			# ◯─▶{ FILTER }─▶{ ( }─▶{ WHERE }─▶[ expr ]─▶{ ) }─▶◯
 			accept_all :FILTER, :LP, :WHERE
-			expr = expr
+			condition = expr
 			accept :RP
 
-			{ FILTER: expr }
+			{ FILTER: condition }
 		end
 
 		def window_defn
@@ -1745,7 +1754,7 @@ module Plume
 			key = collation ? [e, collation] : e
 			return { key => direction } unless nulls
 
-			value = nulls == :FIRST ? [nil, direction] : [direction, nil]
+			value = (nulls == :FIRST) ? [nil, direction] : [direction, nil]
 			{ key => value }
 		end
 
@@ -1799,13 +1808,15 @@ module Plume
 			# ◯─┬───▶────┬─▶{ numeric-literal }─▶◯
 			#   ├─▶{ + }─┤
 			#   └─▶{ - }─┘
-			sign =	if maybe :PLUS
-								+1
-							elsif maybe :MINUS
-								-1
-							else
-								+1
-							end
+			sign =
+				if maybe :PLUS
+					+1
+				elsif maybe :MINUS
+					-1
+				else
+					+1
+				end
+
 			numeric_literal * sign
 		end
 
@@ -1814,16 +1825,16 @@ module Plume
 			when :INTEGER
 				value = current_value.to_i
 				accept :INTEGER
-				return value
+				value
 			when :FLOAT
 				value = current_value.to_f
 				accept :FLOAT
-				return value
+				value
 			when :QNUMBER
 				value = current_value.to_f
-				value = (value % 1 == 0) ? value.to_i : value
+				value = value.to_i if value % 1 == 0
 				accept :QNUMBER
-				return value
+				value
 			else
 				error!(current_token, current_value, [:INTEGER, :FLOAT, :QNUMBER])
 			end
@@ -1833,7 +1844,7 @@ module Plume
 			if one_of? :STRING, :ID
 				value = current_value
 				accept current_token
-				return value
+				value
 			elsif TOKEN_FALLBACKS[current_token]
 				value = @lexer.value
 				accept current_token
@@ -1847,7 +1858,7 @@ module Plume
 			if current_token == :BLOB
 				value = current_value
 				accept current_token
-				return value
+				value
 			else
 				error!(current_token, current_value, [:BLOB])
 			end
@@ -2191,8 +2202,6 @@ module Plume
 			recursive = maybe :RECURSIVE
 		end
 
-
-
 		# nm ::= ID|INDEXED|JOIN_KW
 		# nm ::= STRING
 		def identifier
@@ -2258,8 +2267,7 @@ module Plume
 		def optional
 			start_index = @current_index
 			start_buffer = @peek_buffer.dup
-			result = yield
-			result
+			yield
 		rescue SyntaxError
 			@current_index = start_index
 			@peek_buffer = start_buffer
@@ -2268,7 +2276,7 @@ module Plume
 
 		def one_or_more(sep: :COMMA, given: nil)
 			[].tap do |a|
-				a << given ? given : yield
+				a << (given || yield)
 				if sep
 					a << yield while maybe sep
 				else
@@ -2308,7 +2316,7 @@ module Plume
 
 		def peek(n = 1)
 			ensure_buffer(n + 1)
-			n == 1 ? @peek_buffer[1] : @peek_buffer[1, n]
+			(n == 1) ? @peek_buffer[1] : @peek_buffer[1, n]
 		end
 
 		def current_value
@@ -2336,8 +2344,8 @@ module Plume
 		end
 
 		def error!(token, value, expected)
-			highlight = ' ' * @lexer.token_pos + '^' * (@lexer.cursor - @lexer.token_pos)
-			msg = "Unexpected token #{token}[#{value.inspect}] at:\n\t#{@sql}\n\t#{highlight}\n\tExpected one of: #{expected.join(', ')}\n"
+			highlight = (" " * @lexer.token_pos) + ("^" * (@lexer.cursor - @lexer.token_pos))
+			msg = "Unexpected token #{token}[#{value.inspect}] at:\n\t#{@sql}\n\t#{highlight}\n\tExpected one of: #{expected.join(", ")}\n"
 
 			raise SyntaxError, msg
 		end

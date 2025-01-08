@@ -7,3 +7,5 @@
 /spec/reports/
 /tmp/
 .DS_Store
+.rubocop-https---www-goodcop-style-base-yml
+.rubocop-https---www-goodcop-style-tabs-yml
