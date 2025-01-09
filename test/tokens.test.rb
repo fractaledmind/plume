@@ -1,5 +1,4 @@
-# encoding: ASCII-8BIT
-# frozen_string_literal: false
+# frozen_string_literal: true
 
 def lex(str, with_values: false)
 	lex = Plume::Lexer.new(str)
@@ -1301,7 +1300,6 @@ test "tokenizes .a as DOT, ID" do
 	assert_equal [:DOT, :ID], tokens
 end
 
-
 test "tokenizes integers with underscores followed by / as QNUMBER, SLASH" do
 	tokens = lex "1_000/"
 	assert_equal [:QNUMBER, :SLASH], tokens
@@ -1320,6 +1318,11 @@ end
 test "tokenizes hex integer followed by / as QNUMBER, SLASH" do
 	tokens = lex "0X123_456/"
 	assert_equal [:QNUMBER, :SLASH], tokens
+end
+
+test "tokenizes VARIABLE, SLASH" do
+	tokens = lex "$abc/"
+	assert_equal [:VARIABLE, :SLASH], tokens
 end
 
 # illegal strings
@@ -1399,4 +1402,10 @@ end
 test "tokenizes 2 /*  as INTEGER, SPACE, SPACE" do
 	tokens = lex "2 /* ", with_values: true
 	assert_equal [[:INTEGER, "2"], [:SPACE, " "], [:SPACE, "/* "]], tokens
+end
+
+# UTF16 strings
+
+test "tokenizes UTF16 string as ID" do
+	assert_token "\u{3042}".encode(Encoding::UTF_16), :ID
 end
