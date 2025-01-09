@@ -20,17 +20,14 @@ test "parse a basic create table with one column" do
 		<<~SQL,
 			create table tb0 (c0)
 		SQL
-		{
-			CREATE_TABLE: {
-				Plume::TableRef["c0"] => [
-					{
-						Plume::ColumnRef["c0"] => [
-							nil, []
-						]
-					},
-				],
-			}
-		}
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+				),
+			]
+		)
 	)
 end
 
@@ -39,18 +36,15 @@ test "parse a basic create temp table with one column" do
 		<<~SQL,
 			create temp table tb0 (c0)
 		SQL
-		{
-			CREATE_TABLE: {
-				Plume::TableRef["c0"] => [
-					{
-						Plume::ColumnRef["c0"] => [
-							nil, []
-						]
-					},
-				],
-				TEMPORARY: true,
-			}
-		}
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+				),
+			],
+			temporary: true
+		)
 	)
 end
 
@@ -59,17 +53,74 @@ test "parse a basic temporary create table with one column" do
 		<<~SQL,
 			create temporary table tb0 (c0)
 		SQL
-		{
-			CREATE_TABLE: {
-				Plume::TableRef["c0"] => [
-					{
-						Plume::ColumnRef["c0"] => [
-							nil, []
-						]
-					},
-				],
-				TEMPORARY: true,
-			}
-		}
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+				),
+			],
+			temporary: true
+		)
+	)
+end
+
+test "parse a basic create table with one column with a type" do
+	assert_statement(
+		<<~SQL,
+			create temporary table tb0 (c0 int)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					type_name: Plume::IntegerType.new(name: "int"),
+				),
+			],
+			temporary: true
+		)
+	)
+end
+
+test "parse basic create table with one column and a primary key constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 primary key)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::PrimaryKeyColumnConstraint.new,
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a primary key constraint with options" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 primary key desc on conflict abort autoincrement)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::PrimaryKeyColumnConstraint.new(
+							direction: :DESC,
+							conflict_clause: :ABORT,
+							autoincrement: true,
+						),
+					]
+				),
+			],
+		)
 	)
 end

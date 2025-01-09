@@ -6,6 +6,7 @@ source "https://rubygems.org"
 gemspec
 
 gem "quickdraw", git: "https://github.com/joeldrapper/quickdraw.git"
+gem "literal", git: "https://github.com/joeldrapper/literal.git"
 
 group :development do
 	gem "solargraph", platform: :ruby

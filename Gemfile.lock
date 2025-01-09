@@ -1,4 +1,10 @@
 GIT
+  remote: https://github.com/joeldrapper/literal.git
+  revision: 3589dea4fcd8ac12a71ecfb0d2feb5e99f469745
+  specs:
+    literal (1.4.0)
+
+GIT
   remote: https://github.com/joeldrapper/quickdraw.git
   revision: 1231db7fbfa1f08504b1a92e696974ef9c163b26
   specs:
@@ -100,6 +106,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  literal!
   plume!
   quickdraw!
   rake
