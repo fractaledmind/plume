@@ -412,95 +412,6 @@ module Plume
 			CreateTableStatement()
 		end
 
-		def table_constraint
-			# ◯─▶┬▶{ CONSTRAINT }─▶{ name }─┐
-			#    ├─────────────◀────────────┘
-			#    ├─▶{ PRIMARY }─▶{ KEY }──┬▶{ ( }┬▶[ indexed-column ]┬▶{ ) }─▶[ conflict-clause ]───┬─▶◯
-			#    ├─▶{ UNIQUE }─────────▶──┘      └───────{ , }◀──────┘                              │
-			#    ├─▶{ CHECK }─▶{ ( }─▶[ expr ]─▶{ ) }─────────────────────────────────────────────▶─┤
-			#    ├─▶[ foreign-key-clause ]────────────────────────────────────────────────────────▶─┤
-			#    └─▶{ FOREIGN }─▶{ KEY }─▶{ ( }┬▶{ column-name }┬▶{ ) }─▶[ foreign-key-clause ]───▶─┘
-			#                                  └─────{ , }◀─────┘
-			name = identifier if maybe :CONSTRAINT
-			if maybe :UNIQUE
-				accept :LP
-				columns = one_or_more { indexed_column }
-				accept :RP
-				on_conflict = conflict_clause
-				if on_conflict or name
-					{ UNIQUE: [columns, on_conflict, ({ NAME: name } if name)].compact! }
-				else
-					{ UNIQUE: columns }
-				end
-			elsif maybe :CHECK
-				accept :LP
-				check = expr
-				accept :RP
-				{ CHECK: check }
-			elsif maybe_all :PRIMARY, :KEY
-				accept :LP
-				columns = one_or_more { indexed_column }
-				accept :RP
-				on_conflict = conflict_clause
-				if on_conflict or name
-					{ PRIMARY_KEY: [columns, on_conflict, ({ NAME: name } if name)].compact! }
-				else
-					{ PRIMARY_KEY: columns }
-				end
-			elsif maybe_all :FOREIGN, :KEY
-				accept :LP
-				columns = one_or_more { column_name }
-				accept :RP
-				clause = foreign_key_clause
-				{ FOREIGN_KEY: [columns, clause] }
-			else
-				error!(current_token, current_value, [:CONSTRAINT, :PRIMARY, :UNIQUE, :CHECK, :FOREIGN])
-			end
-		end
-
-		def indexed_column
-			# ◯─▶┬▶{ column-name }─┬┬─▶───────────────────────────────┬┬────────▶───┬────▶◯
-			#    └▶[ expr ]─────▶──┘└─▶{ COLLATE }─▶{ collation-name }┘├─▶{ ASC }─▶─┤
-			#                                                          └─▶{ DESC }──┘
-			if :ID == current_token
-				name = identifier
-			elsif (e = optional { expr })
-				# no-op
-			else
-				error!(current_token, current_value, [:ID, "expr"])
-			end
-			collation = nil
-			if maybe :COLLATE
-				collation = identifier
-			end
-			direction = nil
-			if maybe :ASC
-				direction = :ASC
-			elsif maybe :DESC
-				direction = :DESC
-			end
-
-			if name && collation && direction
-				{ ColumnRef[name] => [collation, direction] }
-			elsif name && collation
-				{ ColumnRef[name] => collation }
-			elsif name && direction
-				{ ColumnRef[name] => direction }
-			elsif name
-				ColumnRef[name]
-			elsif e && collation && direction
-				{ e => [collation, direction] }
-			elsif e && collation
-				{ e => collation }
-			elsif e && direction
-				{ e => direction }
-			elsif e
-				e
-			else
-				error!(current_token, current_value, [:ID, "expr"])
-			end
-		end
-
 		def expr
 			# ◯┬─▶[ literal-value ]───────────────────────────────────────────────────────────────────────────────────┬─▶◯
 			#  ├─▶{ bind-parameter }────────────────────────────────────────────────────────────────────────────────▶─┤
@@ -1648,23 +1559,6 @@ module Plume
 				{ RAISE: { FAIL: error_message } }
 			else
 				error!(current_token, current_value, [:IGNORE, :ROLLBACK, :ABORT, :FAIL])
-			end
-		end
-
-		def conflict_clause
-			# ◯─▶┬────────────────────────────────────────┬─────▶◯
-			#    └─▶{ ON }─▶{ CONFLICT }┬─▶{ ROLLBACK }─▶─┤
-			#                           ├─▶{ ABORT }────▶─┤
-			#                           ├─▶{ FAIL }─────▶─┤
-			#                           ├─▶{ IGNORE }───▶─┤
-			#                           └─▶{ REPLACE }──▶─┘
-			if maybe_all :ON, :CONFLICT
-				case current_token
-				when :ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE
-					accept current_token
-				else
-					error!(current_token, current_value, [:ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE])
-				end
 			end
 		end
 

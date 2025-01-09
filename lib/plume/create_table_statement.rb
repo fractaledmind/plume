@@ -1,20 +1,20 @@
 # frozen_string_literal: true
 
-# ◯─▶{ CREATE }┬───────▶──────┬▶{ TABLE }┬▶{ IF }─▶{ NOT }─▶{ EXISTS }─┐
-#              ├▶{ TEMP }─────┤          │                             │
-#              └▶{ TEMPORARY }┘          │                             │
-# ┌─────────────────────◀────────────────┴──────────────────◀──────────┘
-# ├─▶{ schema-name }─▶{ . }─┬▶{ table-name }┬───────▶{ AS }─▶[ select-stmt ]───▶─────┐
-# └────────▶────────────────┘               │                                        │
-# ┌────────────────────◀────────────────────┘                     ┌────────▶─────────┼─▶◯
-# └▶{ ( }─┬▶[ column-def ]─┬▶┬─────────────────────────────┬▶{ ) }┴▶[ table-options ]┘
-#         └─────{ , }◀─────┘ └[ table-constraint ]◀─{ , }◀─┘
-
 module Plume
 	class Parser
 		def CreateTableStatement
+			# ◯─▶{ CREATE }┬───────▶──────┬▶{ TABLE }┬▶{ IF }─▶{ NOT }─▶{ EXISTS }─┐
+			#              ├▶{ TEMP }─────┤          │                             │
+			#              └▶{ TEMPORARY }┘          │                             │
+			# ┌─────────────────────◀────────────────┴──────────────────◀──────────┘
+			# ├─▶{ schema-name }─▶{ . }─┬▶{ table-name }┬───────▶{ AS }─▶[ select-stmt ]───▶─────┐
+			# └────────▶────────────────┘               │                                        │
+			# ┌────────────────────◀────────────────────┘                     ┌────────▶─────────┼─▶◯
+			# └▶{ ( }─┬▶[ column-def ]─┬▶┬─────────────────────────────┬▶{ ) }┴▶[ table-options ]┘
+			#         └─────{ , }◀─────┘ └[ table-constraint ]◀─{ , }◀─┘
+
 			accept :CREATE
-			temporary = maybe(:TEMP) or maybe(:TEMPORARY)
+			temporary = maybe(:TEMP) || maybe(:TEMPORARY)
 			accept :TABLE
 			if_not_exists = maybe_all(:IF, :NOT, :EXISTS)
 			schema_name, table_name = table_ref
@@ -38,6 +38,8 @@ module Plume
 			)
 		end
 
+		# layer 1
+
 		def column_def
 			# ◯─▶{ column-name }─┬─▶[ type-name ]─┬▶┬─▶───────────────────▶──┬─▶◯
 			#                    └────────▶───────┘ └─[ column-constraint ]◀─┘
@@ -51,6 +53,74 @@ module Plume
 				type_name: type,
 				constraints: (constraints if constraints.any?)
 			)
+		end
+
+		def table_constraint
+			# ◯─▶┬▶{ CONSTRAINT }─▶{ name }─┐
+			#    ├─────────────◀────────────┘
+			#    ├─▶{ PRIMARY }─▶{ KEY }──┬▶{ ( }┬▶[ indexed-column ]┬▶{ ) }─▶[ conflict-clause ]───┬─▶◯
+			#    ├─▶{ UNIQUE }─────────▶──┘      └───────{ , }◀──────┘                              │
+			#    ├─▶{ CHECK }─▶{ ( }─▶[ expr ]─▶{ ) }─────────────────────────────────────────────▶─┤
+			#    ├─▶[ foreign-key-clause ]────────────────────────────────────────────────────────▶─┤
+			#    └─▶{ FOREIGN }─▶{ KEY }─▶{ ( }┬▶{ column-name }┬▶{ ) }─▶[ foreign-key-clause ]───▶─┘
+			#                                  └─────{ , }◀─────┘
+			name = identifier if maybe :CONSTRAINT
+			if maybe :UNIQUE
+				accept :LP
+				columns = one_or_more { indexed_column }
+				accept :RP
+				on_conflict = conflict_clause
+				if on_conflict or name
+					{ UNIQUE: [columns, on_conflict, ({ NAME: name } if name)].compact! }
+				else
+					{ UNIQUE: columns }
+				end
+			elsif maybe :CHECK
+				accept :LP
+				check = expr
+				accept :RP
+				{ CHECK: check }
+			elsif maybe_all :PRIMARY, :KEY
+				accept :LP
+				columns = one_or_more { indexed_column }
+				accept :RP
+				on_conflict = conflict_clause
+				if on_conflict or name
+					{ PRIMARY_KEY: [columns, on_conflict, ({ NAME: name } if name)].compact! }
+				else
+					{ PRIMARY_KEY: columns }
+				end
+			elsif maybe_all :FOREIGN, :KEY
+				accept :LP
+				columns = one_or_more { column_name }
+				accept :RP
+				clause = foreign_key_clause
+				{ FOREIGN_KEY: [columns, clause] }
+			else
+				error!(current_token, current_value, [:CONSTRAINT, :PRIMARY, :UNIQUE, :CHECK, :FOREIGN])
+			end
+		end
+
+		# layer 2
+
+		def type_name
+			# ◯─┬▶{ name }─┬┬──────────────────────────────▶─────────────────────────────┬─▶◯
+			#   └────◀─────┘├─▶{ ( }─▶[ signed-number ]─▶{ ) }─────────────────────────▶─┤
+			#               └─▶{ ( }─▶[ signed-number ]─▶{ , }─▶[ signed-number ]─▶{ ) }─┘
+
+			name = one_or_more(sep: nil) { identifier }.join(" ")
+			if maybe :LP
+				constraints = one_or_more { signed_number }
+				accept :RP
+			end
+
+			case name
+			when /INT/i							then	IntegerType.new(name:, constraints:)
+			when /CHAR|CLOB|TEXT/i	then	TextType.new(name:, constraints:)
+			when /BLOB/i						then	BlobType.new(name:, constraints:)
+			when /REAL|FLOA|DOUB/i	then	RealType.new(name:, constraints:)
+			else													AnyType.new(name:, constraints:)
+			end
 		end
 
 		def column_constraint
@@ -70,11 +140,13 @@ module Plume
 			#    ├─▶{ GENERATED }─▶{ ALWAYS }┬▶{ AS }─▶{ ( }─▶[ expr ]─▶{ ) }┬────────────────────▶─┤
 			#    └──────────────▶────────────┘                               ├─▶{ STORED }────────▶─┤
 			#                                                                └─▶{ VIRTUAL }───────▶─┘
+
 			name = identifier if maybe :CONSTRAINT
+
 			if maybe_all :PRIMARY, :KEY
 				direction = maybe(:ASC) || maybe(:DESC)
 				on_conflict = conflict_clause
-				autoincrement = maybe(:AUTOINCR)
+				autoincrement = maybe(:AUTOINCREMENT)
 
 				PrimaryKeyColumnConstraint.new(
 					name:,
@@ -85,28 +157,27 @@ module Plume
 			elsif maybe_all :NOT, :NULL
 				on_conflict = conflict_clause
 
-				if on_conflict or name
-					{ NOT_NULL: [true, on_conflict, ({ NAME: name } if name)].compact! }
-				else
-					{ NOT_NULL: true }
-				end
+				NotNullColumnConstraint.new(
+					name:,
+					conflict_clause: on_conflict
+				)
 			elsif maybe :UNIQUE
 				on_conflict = conflict_clause
 
-				if on_conflict or name
-					{ UNIQUE: [true, on_conflict, ({ NAME: name } if name)].compact! }
-				else
-					{ UNIQUE: true }
-				end
+				UniqueColumnConstraint.new(
+					name:,
+					conflict_clause: on_conflict
+				)
 			elsif maybe :CHECK
 				accept :LP
 				check = expr
 				accept :RP
-				if name
-					{ CHECK: [check, { NAME: name }] }
-				else
-					{ CHECK: check }
-				end
+
+
+				CheckColumnConstraint.new(
+					name:,
+					expression: check
+				)
 			elsif maybe :DEFAULT
 				if maybe :LP
 					default = expr
@@ -139,22 +210,63 @@ module Plume
 			end
 		end
 
-		def type_name
-			# ◯─┬▶{ name }─┬┬──────────────────────────────▶─────────────────────────────┬─▶◯
-			#   └────◀─────┘├─▶{ ( }─▶[ signed-number ]─▶{ ) }─────────────────────────▶─┤
-			#               └─▶{ ( }─▶[ signed-number ]─▶{ , }─▶[ signed-number ]─▶{ ) }─┘
-			name = one_or_more(sep: nil) { identifier }.join(" ")
-			if maybe :LP
-				constraints = one_or_more { signed_number }
-				accept :RP
+		def indexed_column
+			# ◯─▶┬▶{ column-name }─┬┬─▶───────────────────────────────┬┬────────▶───┬────▶◯
+			#    └▶[ expr ]─────▶──┘└─▶{ COLLATE }─▶{ collation-name }┘├─▶{ ASC }─▶─┤
+			#                                                          └─▶{ DESC }──┘
+			if :ID == current_token
+				name = identifier
+			elsif (e = optional { expr })
+				# no-op
+			else
+				error!(current_token, current_value, [:ID, "expr"])
+			end
+			collation = nil
+			if maybe :COLLATE
+				collation = identifier
+			end
+			direction = nil
+			if maybe :ASC
+				direction = :ASC
+			elsif maybe :DESC
+				direction = :DESC
 			end
 
-			case name
-			when /INT/i							then	IntegerType.new(name:, constraints:)
-			when /CHAR|CLOB|TEXT/i	then	TextType.new(name:, constraints:)
-			when /BLOB/i						then	BlobType.new(name:, constraints:)
-			when /REAL|FLOA|DOUB/i	then	RealType.new(name:, constraints:)
-			else													AnyType.new(name:, constraints:)
+			if name && collation && direction
+				{ ColumnRef[name] => [collation, direction] }
+			elsif name && collation
+				{ ColumnRef[name] => collation }
+			elsif name && direction
+				{ ColumnRef[name] => direction }
+			elsif name
+				ColumnRef[name]
+			elsif e && collation && direction
+				{ e => [collation, direction] }
+			elsif e && collation
+				{ e => collation }
+			elsif e && direction
+				{ e => direction }
+			elsif e
+				e
+			else
+				error!(current_token, current_value, [:ID, "expr"])
+			end
+		end
+
+		def conflict_clause
+			# ◯─▶┬────────────────────────────────────────┬─────▶◯
+			#    └─▶{ ON }─▶{ CONFLICT }┬─▶{ ROLLBACK }─▶─┤
+			#                           ├─▶{ ABORT }────▶─┤
+			#                           ├─▶{ FAIL }─────▶─┤
+			#                           ├─▶{ IGNORE }───▶─┤
+			#                           └─▶{ REPLACE }──▶─┘
+			if maybe_all :ON, :CONFLICT
+				case current_token
+				when :ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE
+					accept current_token
+				else
+					error!(current_token, current_value, [:ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE])
+				end
 			end
 		end
 	end
