@@ -276,7 +276,7 @@ module Plume
 		end
 	end
 
-	class Expression
+	class ExpressionGenerator
 		def self.sql(expression)
 			new(expression).sql
 		end
@@ -287,7 +287,7 @@ module Plume
 
 		def sql
 			case @expression
-			in Expression																then @expression.sql
+			in ExpressionGenerator											then @expression.sql
 			in ColumnRef 																then @expression.to_s
 			in nil	 																		then "NULL"
 			in true 																		then "TRUE"
