@@ -2,27 +2,6 @@
 
 module Plume
 	class Parser
-		Type = Class.new do
-			attr_reader :name, :constraints
-
-			def initialize(name, *constraints)
-				@name = name
-				@constraints = constraints
-			end
-
-			def inspect = "#{self.class.name.split("::").last}[#{name}]#{constraints.any? ? "(#{constraints.join(", ")})" : ""}"
-			def to_s = inspect
-
-			def ==(other)
-				@name == other.name && @constraints == other.constraints
-			end
-		end
-		Type::Integer = Class.new(Type)
-		Type::Real = Class.new(Type)
-		Type::Text = Class.new(Type)
-		Type::Blob = Class.new(Type)
-		Type::Any = Class.new(Type)
-
 		SyntaxError = Class.new(StandardError)
 		# see: https://github.com/sqlite/sqlite/blob/master/src/parse.y#L255-L283
 		TOKEN_FALLBACKS = {
@@ -290,16 +269,19 @@ module Plume
 				when :VIEW		then create_view_stmt
 				when :VIRTUAL	then create_virtual_table_stmt
 				when :UNIQUE	then create_index_stmt
-				when :TEMP
+				when :TEMP, :TEMPORARY
 					case peek(2)
-					when [:TEMP, :TABLE]		then create_table_stmt
-					when [:TEMP, :TRIGGER]	then create_trigger_stmt
-					when [:TEMP, :VIEW]			then create_view_stmt
+					when [:TEMP, :TABLE]				then create_table_stmt
+					when [:TEMP, :TRIGGER]			then create_trigger_stmt
+					when [:TEMP, :VIEW]					then create_view_stmt
+					when [:TEMPORARY, :TABLE]		then create_table_stmt
+					when [:TEMPORARY, :TRIGGER]	then create_trigger_stmt
+					when [:TEMPORARY, :VIEW]		then create_view_stmt
 					else
 						error!(peek(2).last, values(3).last, [:TABLE, :TRIGGER, :VIEW])
 					end
 				else
-					error!(peek, values(2).last, [:INDEX, :TABLE, :TRIGGER, :VIEW, :VIRTUAL, :UNIQUE, :TEMP])
+					error!(peek, values(2).last, [:INDEX, :TABLE, :TRIGGER, :VIEW, :VIRTUAL, :UNIQUE, :TEMP, :TEMPORARY])
 				end
 			when :DELETE						then delete_stmt
 			when :DETACH						then detach_stmt
@@ -331,6 +313,10 @@ module Plume
 			else
 				error!(current_token, current_value, [:ALTER, :ANALYZE, :ATTACH, :BEGIN, :COMMIT, :END, :CREATE, :DELETE, :DETACH, :DROP, :INSERT, :REPLACE, :PRAGMA, :REINDEX, :RELEASE, :ROLLBACK, :SAVEPOINT, :SELECT, :UPDATE, :VACUUM, :WITH])
 			end
+		end
+
+		def expr
+			Expression()
 		end
 
 		# TODO
@@ -410,320 +396,6 @@ module Plume
 
 		def create_table_stmt
 			CreateTableStatement()
-		end
-
-		def expr
-			# ◯┬─▶[ literal-value ]───────────────────────────────────────────────────────────────────────────────────┬─▶◯
-			#  ├─▶{ bind-parameter }────────────────────────────────────────────────────────────────────────────────▶─┤
-			#  ├────────────────────────┬──────────────────────┐                                                      │
-			#  ├─▶{ schema-name }─▶{ . }┴▶{ table-name }─▶{ . }┴▶{ column-name }────────────────────────────────────▶─┤
-			#  ├─▶{ unary-operator }─▶[ expr ]──────────────────────────────────────────────────────────────────────▶─┤
-			#  ├─▶[ expr ] { binary-operator }─▶[ expr ]────────────────────────────────────────────────────────────▶─┤
-			#  ├─▶{ function-name }─▶{ ( }─▶[ function-arguments ]─▶{ ) }┬───────────────────┬┬─────────────────────▶─┤
-			#  │       ┌──{ , }◀─┐                                       └▶[ filter-clause ]─┘└▶[ over-clause ]─────▶─┤
-			#  ├─▶{ ( }┴▶[ expr ]┴▶{ ) }────────────────────────────────────────────────────────────────────────────▶─┤
-			#  ├─▶{ CAST }─▶{ ( }─▶[ expr ]─▶{ AS }─▶[ type-name ]─▶{ ) }───────────────────────────────────────────▶─┤
-			#  ├─▶[ expr ]─▶{ COLLATE }─▶{ collation-name }─────────────────────────────────────────────────────────▶─┤
-			#  ├─▶[ expr ]┬▶{ NOT }┬┬▶{ LIKE }─────▶[ expr ]─┬────▶────────────────┬▶┬──────────────────────────────▶─┤
-			#  │          └────▶───┘├▶{ GLOB }───┐           └▶{ ESCAPE }─▶[ expr ]┘ │                                │
-			#  │                    ├▶{ REGEXP }─┼─▶[ expr ]────────────▶────────────┘                                │
-			#  │                    └▶{ MATCH }──┘                                                                    │
-			#  ├─▶[ expr ]┬▶{ ISNULL }───────┬──────────────────────────────────────────────────────────────────────▶─┤
-			#  │          ├▶{ NOTNULL }──────┤                                                                        │
-			#  │          └▶{ NOT }─▶{ NULL }┘                                                                        │
-			#  ├─▶[ expr ]─▶{ IS }┬▶{ NOT }┬┬▶{ DISTINCT }─▶{ FROM }┬▶{ expr }──────────────────────────────────────▶─┤
-			#  │                  └────▶───┘└────────────▶──────────┘                                                 │
-			#  ├─▶[ expr ]┬▶{ NOT }┬▶{ BETWEEN }─▶[ expr ]─▶{ AND }─▶[ expr ]───────────────────────────────────────▶─┤
-			#  │          └────▶───┘               ┌─────────────────┐                                                │
-			#  ├─▶[ expr ]┬▶{ NOT }┬▶{ IN }┬▶{ ( }─┼▶[ select-stmt ]─┼▶{ ) }────────────────────────────────────────▶─┤
-			#  │          └────▶───┘       │       └─┬──▶[ expr ]──┬─┘                                                │
-			#  │                           │         └────{ , }◀───┘ ┌▶{ table-name }───────────────────────────────▶─┤
-			#  │                           ├────────────────────────┐│                           ┌──{ , }──┐          │
-			#  │                           └─▶{ schema-name }─▶{ . }┴┴▶{ table-function }─▶{ ( }┬┴▶[ expr ]┴┬▶{ ) }─▶─┤
-			#  ├────▶────┬───────────┐                                                          └─────▶─────┘         │
-			#  ├─▶{ NOT }┴▶{ EXISTS }┴▶{ ( }─▶[ select-stmt ]─▶{ ) }────────────────────────────────────────────────▶─┤
-			#  ├─▶{ CASE }┬▶[ expr ]┬┬▶{ WHEN }─▶[ expr ]─▶{ THEN }─▶[ expr ]┬┬▶{ ELSE }─▶[ expr ]┬▶{ END }─────────▶─┤
-			#  │          └─────▶───┘└────────────────◀──────────────────────┘└─────────▶─────────┘                   │
-			#  └─▶[ raise-function ]────────────────────────────────────────────────────────────────────────────────▶─┘
-
-			if maybe :CAST
-				accept :LP
-				e = expr
-				accept :AS
-				t = type_name
-				accept :RP
-
-				{ e => { CAST: t } }
-			elsif maybe :NOT
-				if maybe :EXISTS
-					accept :LP
-					s = select_stmt
-					accept :RP
-
-					{ NOT_EXISTS: s }
-				else
-					e = expr
-
-					{ NOT: e }
-				end
-			elsif maybe :EXISTS
-				accept :LP
-				s = select_stmt
-				accept :RP
-
-				{ EXISTS: s }
-			elsif maybe :CASE
-				if :WHEN == current_token
-					branches = {}.tap do |h|
-						while maybe :WHEN
-							condition = expr
-							accept :THEN
-							result = expr
-
-							h[condition] = result
-						end
-					end
-					if maybe :ELSE
-						branches[:ELSE] = expr
-					end
-					accept :END
-
-					{ CASE: branches }
-				else
-					base = expr
-					branches = {}.tap do |h|
-						while maybe :WHEN
-							condition = expr
-							accept :THEN
-							result = expr
-
-							h[condition] = result
-						end
-					end
-					if maybe :ELSE
-						branches[:ELSE] = expr
-					end
-					accept :END
-
-					{ CASE: [base, branches] }
-				end
-			elsif maybe :RAISE
-				raise_function
-			elsif maybe :LP
-				exprs = [].tap do |a|
-					a << expr
-					a << expr while maybe :COMMA
-				end
-				accept :RP
-
-				exprs
-			elsif (v = optional { literal_value })
-				v
-			elsif :VARIABLE == current_token
-				# no-op
-			elsif :ID == current_token
-				case peek(2)
-				when [_, :LP]
-					optional { simple_function_invocation } ||
-						optional { aggregate_function_invocation } ||
-						optional { window_function_invocation }
-				when [_, :DOT]
-					schema_or_table_name = identifier
-					accept :DOT
-					table_or_column_name = identifier
-					if maybe :DOT
-						column_name = identifier
-						ColumnRef[schema_or_table_name, table_or_column_name, column_name]
-					else
-						ColumnRef[schema_or_table_name, table_or_column_name]
-					end
-				else
-					column_name = identifier
-					ColumnRef[column_name]
-				end
-			elsif maybe :PLUS
-				expr
-			elsif maybe :MINUS
-				{ NEGATE: expr }
-			elsif maybe :BITNOT
-				{ INVERT: expr }
-			elsif (func = optional { aggregate_function_invocation })
-				# TODO
-			elsif (lexpr = optional { expr })
-				if maybe :COLLATE
-					{ lexpr => { COLLATE: identifier } }
-				elsif maybe :LIKE
-					rexpr = expr
-					if maybe :ESCAPE
-						escape = expr
-						{ lexpr => { LIKE: [rexpr, { ESCAPE: escape }] } }
-					else
-						{ lexpr => { LIKE: rexpr } }
-					end
-				elsif maybe :GLOB
-					{ lexpr => { GLOB: expr } }
-				elsif maybe :REGEXP
-					{ lexpr => { REGEXP: expr } }
-				elsif maybe :MATCH
-					{ lexpr => { MATCH: expr } }
-				elsif maybe :ISNULL
-					{ lexpr => { IS: nil } }
-				elsif maybe :NOTNULL
-					{ lexpr => { IS_NOT: nil } }
-				elsif maybe :IS
-					if maybe :DISTINCT, :FROM
-						{ lexpr => { IS_NOT: expr } }
-					else
-						{ lexpr => { IS: expr } }
-					end
-				elsif maybe :BETWEEN
-					rexpr1 = expr
-					accept :AND
-					rexpr2 = expr
-					{ lexpr => { BETWEEN: [rexpr1, rexpr2] } }
-				elsif maybe :IN
-					if maybe :LP
-						if maybe :RP
-							{ lexpr => { IN: [] } }
-						elsif (s = optional { select_stmt })
-							accept :RP
-
-							{ lexpr => { IN: s } }
-						elsif (e = optional { expr })
-							expr = one_or_more(given: e) { expr }
-							accept :RP
-							{ lexpr => { IN: exprs } }
-						else
-							error!(current_token, current_value, [:RP, "select-stmt", "expr"])
-						end
-					elsif :ID == current_token
-						ref = table_ref
-
-						if maybe :LP
-							if maybe :RP
-								{ lexpr => { IN: { FN: { ref => [] } } } }
-							elsif (e = optional { expr })
-								expr = one_or_more(given: e) { expr }
-								accept :RP
-								{ lexpr => { IN: { FN: { ref => exprs } } } }
-							else
-								error!(current_token, current_value, [:RP, "expr"])
-							end
-						else
-							{ lexpr => { IN: ref } }
-						end
-					else
-						error!(current_token, current_value, [:LP, :ID])
-					end
-				elsif maybe :CONCAT
-					{ lexpr => { CONCAT: expr } }
-				elsif maybe :PTR1
-					{ lexpr => { EXTRACT: expr } }
-				elsif maybe :PTR2
-					{ lexpr => { RETRIEVE: expr } }
-				elsif maybe :STAR
-					{ lexpr => { MULTIPLY: expr } }
-				elsif maybe :SLASH
-					{ lexpr => { DIVIDE: expr } }
-				elsif maybe :REM
-					{ lexpr => { MODULO: expr } }
-				elsif maybe :PLUS
-					{ lexpr => { ADD: expr } }
-				elsif maybe :MINUS
-					{ lexpr => { SUB: expr } }
-				elsif maybe :BITAND
-					{ lexpr => { BIT_AND: expr } }
-				elsif maybe :BITOR
-					{ lexpr => { BIT_OR: expr } }
-				elsif maybe :LSHIFT
-					{ lexpr => { BIT_LSHIFT: expr } }
-				elsif maybe :RSHIFT
-					{ lexpr => { BIT_RSHIFT: expr } }
-				elsif maybe :GT
-					{ lexpr => { ABOVE: expr } }
-				elsif maybe :LT
-					{ lexpr => { BELOW: expr } }
-				elsif maybe :GE
-					{ lexpr => { ATLEAST: expr } }
-				elsif maybe :LE
-					{ lexpr => { ATMOST: expr } }
-				elsif maybe :EQ
-					{ lexpr => { EQUALS: expr } }
-				elsif maybe :NE
-					{ lexpr => { NOT_EQUALS: expr } }
-				elsif maybe :AND
-					{ ALL: [lexpr, expr] }
-				elsif maybe :OR
-					{ ANY: [lexpr, expr] }
-				elsif maybe_all :NOT, :LIKE
-					rexpr = expr
-					if maybe :ESCAPE
-						escape = expr
-						{ lexpr => { NOT_LIKE: [rexpr, { ESCAPE: escape }] } }
-					else
-						{ lexpr => { NOT_LIKE: rexpr } }
-					end
-				elsif maybe_all :NOT, :GLOB
-					{ lexpr => { NOT_GLOB: expr } }
-				elsif maybe_all :NOT, :REGEXP
-					{ lexpr => { NOT_REGEXP: expr } }
-				elsif maybe_all :NOT, :MATCH
-					{ lexpr => { NOT_MATCH: expr } }
-				elsif maybe_all :NOT, :NULL
-					{ lexpr => { IS_NOT: nil } }
-				elsif maybe_all :IS, :NOT
-					if maybe :DISTINCT, :FROM
-						{ lexpr => { IS: expr } }
-					else
-						{ lexpr => { IS_NOT: expr } }
-					end
-				elsif maybe_all :NOT, :BETWEEN
-					rexpr1 = expr
-					accept :AND
-					rexpr2 = expr
-					{ lexpr => { NOT_BETWEEN: [rexpr1, rexpr2] } }
-				elsif maybe_all :NOT, :IN
-					if maybe :LP
-						if maybe :RP
-							{ lexpr => { NOT_IN: [] } }
-						elsif (s = optional { select_stmt })
-							accept :RP
-
-							{ lexpr => { NOT_IN: s } }
-						elsif (e = optional { expr })
-							exprs = one_or_more(given: e) { expr }
-							accept :RP
-
-							{ lexpr => { NOT_IN: exprs } }
-						else
-							error!(current_token, current_value, [:RP, "select-stmt", "expr"])
-						end
-					elsif :ID == current_token
-						ref = table_ref
-
-						if maybe :LP
-							if maybe :RP
-								{ lexpr => { NOT_IN: { FN: { ref => [] } } } }
-							elsif (e = optional { expr })
-								expr = one_or_more(given: e) { expr }
-								accept :RP
-
-								{ lexpr => { NOT_IN: { FN: { ref => exprs } } } }
-							else
-								error!(current_token, current_value, [:RP, "expr"])
-							end
-						else
-							{ lexpr => { NOT_IN: ref } }
-						end
-					else
-						error!(current_token, current_value, [:LP, :ID])
-					end
-				else
-					# TODO: error?
-				end
-			else
-				# TODO: error here
-			end
 		end
 
 		def simple_function_invocation
@@ -1987,7 +1659,7 @@ module Plume
 			if token == current_token
 				advance && token
 			else
-				error!(current_token, current_value, token)
+				error!(current_token, current_value, [token])
 			end
 		end
 
