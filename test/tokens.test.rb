@@ -1,6 +1,11 @@
 # encoding: ASCII-8BIT
 # frozen_string_literal: false
 
+def lex(str, with_values: false)
+	lex = Plume::Lexer.new(str)
+	lex.tokens(with_values).to_a
+end
+
 def assert_token(str, tk)
 	lex = Plume::Lexer.new(str)
 
@@ -169,6 +174,10 @@ end
 
 test "tokenizes a \xEF\xFE\xFF BOM as SPACE" do
 	assert_token "\xEF\xFE\xFF", :SPACE
+end
+
+test "tokenizes a \\xEF\\x81 as ID" do
+	assert_token "\xEF\x81", :ID
 end
 
 # ASCII control codes
@@ -343,6 +352,10 @@ test "tokenizes square bracket wrapped string with missing closing bracket as IL
 	assert_token "[abc", :ILLEGAL
 end
 
+test "tokenizes square bracket wrapped string with $ as ILLEGAL" do
+	assert_token "[abc$", :ILLEGAL
+end
+
 test "tokenizes unassigned ASCII code points as ID" do
 	assert_token "\x80", :ID
 end
@@ -369,8 +382,44 @@ end
 
 # numerics
 
-test "tokenizes a single digit as INTEGER" do
+test "tokenizes a single 0 as INTEGER" do
 	assert_token "0", :INTEGER
+end
+
+test "tokenizes a single 1 as INTEGER" do
+	assert_token "1", :INTEGER
+end
+
+test "tokenizes a single 2 as INTEGER" do
+	assert_token "2", :INTEGER
+end
+
+test "tokenizes a single 3 as INTEGER" do
+	assert_token "3", :INTEGER
+end
+
+test "tokenizes a single 4 as INTEGER" do
+	assert_token "4", :INTEGER
+end
+
+test "tokenizes a single 5 as INTEGER" do
+	assert_token "5", :INTEGER
+end
+
+test "tokenizes a single 6 as INTEGER" do
+	assert_token "6", :INTEGER
+end
+
+test "tokenizes a single 7 as INTEGER" do
+	assert_token "7", :INTEGER
+end
+
+test "tokenizes a single 8 as INTEGER" do
+	assert_token "8", :INTEGER
+end
+
+test "tokenizes a single 9 as INTEGER" do
+	assert_token "9", :INTEGER
 end
 
 test "tokenizes multiple digits as INTEGER" do
@@ -457,6 +506,30 @@ test "tokenizes digit followed by $ as ILLEGAL" do
 	assert_token "1$", :ILLEGAL
 end
 
+test "tokenizes integers with underscores as QNUMBER" do
+	assert_token "1_000", :QNUMBER
+end
+
+test "tokenizes floats with underscores in whole number as QNUMBER" do
+	assert_token "1_000.123", :QNUMBER
+end
+
+test "tokenizes floats with underscores in decimal number as QNUMBER" do
+	assert_token "123.1_000", :QNUMBER
+end
+
+test "tokenizes exponentials with underscores in base as QNUMBER" do
+	assert_token "1_000E+2", :QNUMBER
+end
+
+test "tokenizes exponentials with underscores in exponent as QNUMBER" do
+	assert_token "1E+2_000", :QNUMBER
+end
+
+test "tokenizes hex integer as QNUMBER" do
+	assert_token "0X123_456", :QNUMBER
+end
+
 # variables
 
 test "tokenizes ? as VARIABLE" do
@@ -489,6 +562,18 @@ end
 
 test "tokenizes $ followed by letters as VARIABLE" do
 	assert_token "$abc", :VARIABLE
+end
+
+test "tokenizes $ followed by letters and :: as VARIABLE" do
+	assert_token "$foo::bar", :VARIABLE
+end
+
+test "tokenizes $ followed by letters and :: and (...) as VARIABLE" do
+	assert_token "$foo::bar(baz)", :VARIABLE
+end
+
+test "tokenizes $ followed by letters and :: and (... as ILLEGAL" do
+	assert_token "$foo::bar(baz", :ILLEGAL
 end
 
 test "tokenizes bare @ as ILLEGAL" do
@@ -549,6 +634,14 @@ end
 
 test "tokenizes # followed by letters as VARIABLE" do
 	assert_token "#abc", :VARIABLE
+end
+
+test "tokenizes x as ID" do
+	assert_token "x", :ID
+end
+
+test "tokenizes xyz as ID" do
+	assert_token "xyz", :ID
 end
 
 # blobs
@@ -1191,89 +1284,119 @@ test "tokenizes WITHOUT as WITHOUT" do
 	assert_token "WITHOUT", :WITHOUT
 end
 
+# token pairs
+
+test "tokenizes /1 as SLASH, INTEGER" do
+	tokens = lex "/1"
+	assert_equal [:SLASH, :INTEGER], tokens
+end
+
+test "tokenizes !- as ILLEGAL, MINUS" do
+	tokens = lex "!-"
+	assert_equal [:ILLEGAL, :MINUS], tokens
+end
+
+test "tokenizes .a as DOT, ID" do
+	tokens = lex ".a"
+	assert_equal [:DOT, :ID], tokens
+end
+
+
+test "tokenizes integers with underscores followed by / as QNUMBER, SLASH" do
+	tokens = lex "1_000/"
+	assert_equal [:QNUMBER, :SLASH], tokens
+end
+
+test "tokenizes floats with underscores followed by / as QNUMBER, SLASH" do
+	tokens = lex "1_000.123/"
+	assert_equal [:QNUMBER, :SLASH], tokens
+end
+
+test "tokenizes exponentials with underscores followed by / as QNUMBER, SLASH" do
+	tokens = lex "1_000E+2/"
+	assert_equal [:QNUMBER, :SLASH], tokens
+end
+
+test "tokenizes hex integer followed by / as QNUMBER, SLASH" do
+	tokens = lex "0X123_456/"
+	assert_equal [:QNUMBER, :SLASH], tokens
+end
+
 # illegal strings
 
-# test "tokenizes 1.0e+ as ILLEGAL" do
-# 	assert_equal(
-# 		[:ILLEGAL["1.0e"], :PLUS["+"]],
-# 		Plume.tokenize("1.0e+")
-# 	)
-# end
-# test "tokenizes 1.0E+ as ILLEGAL" do
-# 	assert_equal(
-# 		[:ILLEGAL["1.0E"], :PLUS["+"]],
-# 		Plume.tokenize("1.0E+")
-# 	)
-# end
-# test "tokenizes 1.0e- as ILLEGAL" do
-# 	assert_equal(
-# 		[:ILLEGAL["1.0e"], :MINUS["-"]],
-# 		Plume.tokenize("1.0e-")
-# 	)
-# end
-# test "tokenizes 1.0E- as ILLEGAL" do
-# 	assert_equal(
-# 		[:ILLEGAL["1.0E"], :MINUS["-"]],
-# 		Plume.tokenize("1.0E-")
-# 	)
-# end
-# test "tokenizes 1.0e+/ as ILLEGAL" do
-# 	assert_equal(
-# 		[:ILLEGAL["1.0e"], :PLUS["+"], :SLASH["/"]],
-# 		Plume.tokenize("1.0e+/")
-# 	)
-# end
-# test "tokenizes 1.0E+: as ILLEGAL" do
-# 	assert_equal(
-# 		[:ILLEGAL["1.0E"], :PLUS["+"], :ILLEGAL[":"]],
-# 		Plume.tokenize("1.0E+:")
-# 	)
-# end
-# test "tokenizes 1.0e-: as ILLEGAL" do
-# 	assert_equal(
-# 		[:ILLEGAL["1.0e"], :MINUS["-"], :ILLEGAL[":"]],
-# 		Plume.tokenize("1.0e-:")
-# 	)
-# end
-# test "tokenizes 1.0E-/ as ILLEGAL" do
-# 	assert_equal(
-# 		[:ILLEGAL["1.0E"], :MINUS["-"], :SLASH["/"]],
-# 		Plume.tokenize("1.0E-/")
-# 	)
-# end
-# test "tokenizes 1.0F+5 as ILLEGAL" do
-# 	assert_equal(
-# 		[:ILLEGAL["1.0F"], :PLUS["+"], :INTEGER["5"]],
-# 		Plume.tokenize("1.0F+5")
-# 	)
-# end
-# test "tokenizes 1.0d-10 as ILLEGAL" do
-# 	assert_equal(
-# 		[:ILLEGAL["1.0d"], :MINUS["-"], :INTEGER["10"]],
-# 		Plume.tokenize("1.0d-10")
-# 	)
-# end
-# test "tokenizes 1.0e,5 as ILLEGAL" do
-# 	assert_equal(
-# 		[:ILLEGAL["1.0e"], :COMMA[","], :INTEGER["5"]],
-# 		Plume.tokenize("1.0e,5")
-# 	)
-# end
-# test "tokenizes 1.0E.10 as ILLEGAL" do
-# 	assert_equal(
-# 		[:ILLEGAL["1.0E"], :FLOAT[".10"]],
-# 		Plume.tokenize("1.0E.10")
-# 	)
-# end
-# test "tokenizes 2 /* as ILLEGAL" do
-# 	assert_equal(
-# 		[:INTEGER["2"], :SPACE[" "], :SLASH["/"], :STAR["*"]],
-# 		Plume.tokenize("2 /*")
-# 	)
-# end
-# test "tokenizes 2 /*  as ILLEGAL" do
-# 	assert_equal(
-# 		[:INTEGER["2"], :SPACE[" "], :SPACE["/*"], :SPACE[" "]],
-# 		Plume.tokenize("2 /* ")
-# 	)
-# end
+test "tokenizes 1.0e+ as ILLEGAL, PLUS" do
+	tokens = lex "1.0e+"
+	assert_equal [:ILLEGAL, :PLUS], tokens
+end
+
+test "tokenizes 1.0E+ as ILLEGAL, PLUS" do
+	tokens = lex "1.0E+"
+	assert_equal [:ILLEGAL, :PLUS], tokens
+end
+
+test "tokenizes 1.0e- as ILLEGAL, MINUS" do
+	tokens = lex "1.0e-"
+	assert_equal [:ILLEGAL, :MINUS], tokens
+end
+
+test "tokenizes 1.0E- as ILLEGAL, MINUS" do
+	tokens = lex "1.0E-"
+	assert_equal [:ILLEGAL, :MINUS], tokens
+end
+
+test "tokenizes 1.0e+/ as ILLEGAL, PLUS, SLASH" do
+	tokens = lex "1.0e+/"
+	assert_equal [:ILLEGAL, :PLUS, :SLASH], tokens
+end
+
+test "tokenizes 1.0E+: as ILLEGAL, PLUS, ILLEGAL" do
+	tokens = lex "1.0E+:"
+	assert_equal [:ILLEGAL, :PLUS, :ILLEGAL], tokens
+end
+
+test "tokenizes 1.0e-: as ILLEGAL, MINUS, ILLEGAL" do
+	tokens = lex "1.0e-:"
+	assert_equal [:ILLEGAL, :MINUS, :ILLEGAL], tokens
+end
+
+test "tokenizes 1.0E-/ as ILLEGAL, MINUS, SLASH" do
+	tokens = lex "1.0E-/"
+	assert_equal [:ILLEGAL, :MINUS, :SLASH], tokens
+end
+
+test "tokenizes 1.0F+5 as ILLEGAL, PLUS, INTEGER" do
+	tokens = lex "1.0F+5"
+	assert_equal [:ILLEGAL, :PLUS, :INTEGER], tokens
+end
+
+test "tokenizes 1.0d-10 as ILLEGAL, MINUS, INTEGER" do
+	tokens = lex "1.0d-10"
+	assert_equal [:ILLEGAL, :MINUS, :INTEGER], tokens
+end
+
+test "tokenizes 1.0e,5 as ILLEGAL, COMMA, INTEGER" do
+	tokens = lex "1.0e,5"
+	assert_equal [:ILLEGAL, :COMMA, :INTEGER], tokens
+end
+
+test "tokenizes 1.0E.10 as ILLEGAL, FLOAT" do
+	tokens = lex "1.0E.10"
+	assert_equal [:ILLEGAL, :FLOAT], tokens
+end
+
+test "tokenizes 2 /* as INTEGER, SPACE, SPACE" do
+	tokens = lex "2 /*"
+	assert_equal [:INTEGER, :SPACE, :SPACE], tokens
+end
+
+test "tokenizes 2 /*  as INTEGER, SPACE, SPACE" do
+	tokens = lex "2 /* "
+	assert_equal [:INTEGER, :SPACE, :SPACE], tokens
+end
+
+# tokens with values
+
+test "tokenizes 2 /*  as INTEGER, SPACE, SPACE" do
+	tokens = lex "2 /* ", with_values: true
+	assert_equal [[:INTEGER, "2"], [:SPACE, " "], [:SPACE, "/* "]], tokens
+end

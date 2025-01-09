@@ -378,8 +378,8 @@ module Plume
 					:MINUS
 				end
 			when :SLASH
-				return step && :SLASH if peek(1).nil? # EOF
-				return step && :SLASH if peek != 42 # "*"
+				return :SLASH if peek.nil? # EOF
+				return :SLASH if peek != 42 # "*"
 
 				step # we know it's a `/*` comment so consume the "*"
 				step until (b = peek).nil? || (b == 42 && peek(1) == 47) # consume until EOF or "*/"
@@ -428,7 +428,7 @@ module Plume
 				# If the current character is a "." and the next character is either EOF or not a digit,
 				# then this token is simply the "." character.
 				if character_type == :DOT && ((b = peek).nil? || !digit?(b))
-					return step && :DOT
+					return :DOT
 				end
 
 				# useless branch conditions to drive brach test coverage results
@@ -519,7 +519,6 @@ module Plume
 
 				final = scan
 				return :ILLEGAL if final.nil?
-				return :ILLEGAL if final != 93 # "]"
 
 				:ID
 			when :VARNUM
