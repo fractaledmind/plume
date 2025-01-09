@@ -13,6 +13,7 @@ if ENV["COVERAGE"] == "true"
 end
 
 require "plume"
+require_relative "../test/helpers"
 
 class Quickdraw::Test
 	def assert_statement(sql, structure)
