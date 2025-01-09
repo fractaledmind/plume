@@ -47,6 +47,7 @@ module Plume
 			NOT:						nil,
 			EXISTS:					nil,
 			TEMP:						:ID,
+			TEMPORARY:			:ID,
 			LP:							nil,
 			RP:							nil,
 			AS:							nil,
@@ -72,7 +73,9 @@ module Plume
 			AND:						nil,
 			IS:							nil,
 			MATCH:					:ID,
-			LIKE_KW:				:ID,
+			REGEXP:					:ID,
+			GLOB:						:ID,
+			LIKE:						:ID,
 			BETWEEN:				nil,
 			IN:							nil,
 			ISNULL:					nil,
@@ -85,7 +88,7 @@ module Plume
 			GE:							nil,
 			ESCAPE:					nil,
 			ID:							nil,
-			COLUMNKW:				:ID,
+			COLUMN:					:ID,
 			DO:							:ID,
 			FOR:						:ID,
 			IGNORE:					:ID,
@@ -143,7 +146,13 @@ module Plume
 			ON:							nil,
 			INDEXED:				nil,
 			STRING:					nil,
-			JOIN_KW:				nil,
+			CROSS:					nil,
+			FULL:						nil,
+			INNER:					nil,
+			LEFT:						nil,
+			NATURAL:				nil,
+			OUTER:					nil,
+			RIGHT:					nil,
 			CONSTRAINT:			nil,
 			DEFAULT:				nil,
 			NULL:						nil,
@@ -151,7 +160,7 @@ module Plume
 			UNIQUE:					nil,
 			CHECK:					nil,
 			REFERENCES:			nil,
-			AUTOINCR:				nil,
+			AUTOINCREMENT:	nil,
 			INSERT:					nil,
 			DELETE:					nil,
 			UPDATE:					nil,
@@ -192,7 +201,6 @@ module Plume
 			WINDOW:					nil,
 			OVER:						nil,
 			FILTER:					nil,
-			COLUMN:					nil,
 			AGG_FUNCTION:		nil,
 			AGG_COLUMN:			nil,
 			TRUEFALSE:			nil,
@@ -2061,7 +2069,7 @@ module Plume
 		# nm ::= ID|INDEXED|JOIN_KW
 		# nm ::= STRING
 		def identifier
-			if one_of? :STRING, :ID, :INDEXED, :JOIN_KW
+			if one_of? :STRING, :ID, :INDEXED, :CROSS, :FULL, :INNER, :LEFT, :NATURAL, :OUTER, :RIGHT
 				value = current_value
 				accept current_token
 				value
@@ -2070,7 +2078,7 @@ module Plume
 				accept current_token
 				value
 			else
-				error!(current_token, current_value, [:STRING, :ID, :INDEXED, :JOIN_KW])
+				error!(current_token, current_value, [:STRING, :ID, :INDEXED, :CROSS, :FULL, :INNER, :LEFT, :NATURAL, :OUTER, :RIGHT])
 			end
 		end
 

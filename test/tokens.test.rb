@@ -743,8 +743,8 @@ test "tokenizes ATTACH as ATTACH" do
 	assert_token "ATTACH", :ATTACH
 end
 
-test "tokenizes AUTOINCREMENT as AUTOINCR" do
-	assert_token "AUTOINCREMENT", :AUTOINCR
+test "tokenizes AUTOINCREMENT as AUTOINCREMENT" do
+	assert_token "AUTOINCREMENT", :AUTOINCREMENT
 end
 
 test "tokenizes BEFORE as BEFORE" do
@@ -783,8 +783,8 @@ test "tokenizes COLLATE as COLLATE" do
 	assert_token "COLLATE", :COLLATE
 end
 
-test "tokenizes COLUMN as COLUMNKW" do
-	assert_token "COLUMN", :COLUMNKW
+test "tokenizes COLUMN as COLUMN" do
+	assert_token "COLUMN", :COLUMN
 end
 
 test "tokenizes COMMIT as COMMIT" do
@@ -803,8 +803,8 @@ test "tokenizes CREATE as CREATE" do
 	assert_token "CREATE", :CREATE
 end
 
-test "tokenizes CROSS as JOIN_KW" do
-	assert_token "CROSS", :JOIN_KW
+test "tokenizes CROSS as CROSS" do
+	assert_token "CROSS", :CROSS
 end
 
 test "tokenizes CURRENT as CURRENT" do
@@ -927,16 +927,16 @@ test "tokenizes FROM as FROM" do
 	assert_token "FROM", :FROM
 end
 
-test "tokenizes FULL as JOIN_KW" do
-	assert_token "FULL", :JOIN_KW
+test "tokenizes FULL as FULL" do
+	assert_token "FULL", :FULL
 end
 
 test "tokenizes GENERATED as GENERATED" do
 	assert_token "GENERATED", :GENERATED
 end
 
-test "tokenizes GLOB as LIKE_KW" do
-	assert_token "GLOB", :LIKE_KW
+test "tokenizes GLOB as GLOB" do
+	assert_token "GLOB", :GLOB
 end
 
 test "tokenizes GROUP as GROUP" do
@@ -979,8 +979,8 @@ test "tokenizes INITIALLY as INITIALLY" do
 	assert_token "INITIALLY", :INITIALLY
 end
 
-test "tokenizes INNER as JOIN_KW" do
-	assert_token "INNER", :JOIN_KW
+test "tokenizes INNER as INNER" do
+	assert_token "INNER", :INNER
 end
 
 test "tokenizes INSERT as INSERT" do
@@ -1019,12 +1019,12 @@ test "tokenizes LAST as LAST" do
 	assert_token "LAST", :LAST
 end
 
-test "tokenizes LEFT as JOIN_KW" do
-	assert_token "LEFT", :JOIN_KW
+test "tokenizes LEFT as LEFT" do
+	assert_token "LEFT", :LEFT
 end
 
-test "tokenizes LIKE as LIKE_KW" do
-	assert_token "LIKE", :LIKE_KW
+test "tokenizes LIKE as LIKE" do
+	assert_token "LIKE", :LIKE
 end
 
 test "tokenizes LIMIT as LIMIT" do
@@ -1039,8 +1039,8 @@ test "tokenizes MATERIALIZED as MATERIALIZED" do
 	assert_token "MATERIALIZED", :MATERIALIZED
 end
 
-test "tokenizes NATURAL as JOIN_KW" do
-	assert_token "NATURAL", :JOIN_KW
+test "tokenizes NATURAL as NATURAL" do
+	assert_token "NATURAL", :NATURAL
 end
 
 test "tokenizes NO as NO" do
@@ -1091,8 +1091,8 @@ test "tokenizes OTHERS as OTHERS" do
 	assert_token "OTHERS", :OTHERS
 end
 
-test "tokenizes OUTER as JOIN_KW" do
-	assert_token "OUTER", :JOIN_KW
+test "tokenizes OUTER as OUTER" do
+	assert_token "OUTER", :OUTER
 end
 
 test "tokenizes OVER as OVER" do
@@ -1139,8 +1139,8 @@ test "tokenizes REFERENCES as REFERENCES" do
 	assert_token "REFERENCES", :REFERENCES
 end
 
-test "tokenizes REGEXP as LIKE_KW" do
-	assert_token "REGEXP", :LIKE_KW
+test "tokenizes REGEXP as REGEXP" do
+	assert_token "REGEXP", :REGEXP
 end
 
 test "tokenizes REINDEX as REINDEX" do
@@ -1167,8 +1167,8 @@ test "tokenizes RETURNING as RETURNING" do
 	assert_token "RETURNING", :RETURNING
 end
 
-test "tokenizes RIGHT as JOIN_KW" do
-	assert_token "RIGHT", :JOIN_KW
+test "tokenizes RIGHT as RIGHT" do
+	assert_token "RIGHT", :RIGHT
 end
 
 test "tokenizes ROLLBACK as ROLLBACK" do
@@ -1203,8 +1203,8 @@ test "tokenizes TEMP as TEMP" do
 	assert_token "TEMP", :TEMP
 end
 
-test "tokenizes TEMPORARY as TEMP" do
-	assert_token "TEMPORARY", :TEMP
+test "tokenizes TEMPORARY as TEMPORARY" do
+	assert_token "TEMPORARY", :TEMPORARY
 end
 
 test "tokenizes THEN as THEN" do
