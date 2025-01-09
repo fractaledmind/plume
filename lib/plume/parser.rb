@@ -1638,9 +1638,14 @@ module Plume
 			return :CURRENT_TIME if maybe :CURRENT_TIME
 			return :CURRENT_DATE if maybe :CURRENT_DATE
 			return :CURRENT_TIMESTAMP if maybe :CURRENT_TIMESTAMP
-			return number if (number = optional { numeric_literal })
-			return string if (string = optional { string_literal })
-			return blob if (blob = optional { blob_literal })
+
+			if (number = optional { numeric_literal })
+				return number
+			elsif (string = optional { string_literal })
+				return string
+			elsif (blob = optional { blob_literal })
+				return blob
+			end
 
 			error!(current_token, current_value, [:INTEGER, :FLOAT, :QNUMBER, :STRING, :BLOB, :NULL, :TRUE, :FALSE, :CURRENT_TIME, :CURRENT_DATE, :CURRENT_TIMESTAMP])
 		end
