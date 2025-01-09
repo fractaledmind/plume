@@ -11,7 +11,7 @@ test "error when parsing a create table with no columns" do
 		'Unexpected token RP[")"] at:',
 		"  create table tb0 ()",
 		"                    ^",
-		"  Expected one of: STRING, ID, INDEXED, JOIN_KW",
+		"  Expected one of: STRING, ID, INDEXED, CROSS, FULL, INNER, LEFT, NATURAL, OUTER, RIGHT",
 	]
 end
 
@@ -118,6 +118,107 @@ test "parse basic create table with one column and a primary key constraint with
 							conflict_clause: :ABORT,
 							autoincrement: true,
 						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a not null constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 not null)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::NotNullColumnConstraint.new
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a not null constraint with options" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 not null on conflict abort)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::NotNullColumnConstraint.new(
+							conflict_clause: :ABORT,
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a unique constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 unique)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::UniqueColumnConstraint.new
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a unique constraint with options" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 unique on conflict abort)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::UniqueColumnConstraint.new(
+							conflict_clause: :ABORT,
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a check constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 check (c0 > 0))
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::CheckColumnConstraint.new(
+							expression: {:GT=>["c0", 0]}
+						)
 					]
 				),
 			],
