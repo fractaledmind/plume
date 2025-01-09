@@ -96,6 +96,17 @@ module Plume
 		prop :constraints, _Nilable(_Array(ColumnConstraint))
 	end
 
+	# - `schema_name` → `_Nilable(String)`
+	# - `table_name` → `String`
+	# - `select_statement` → `_Nilable(SelectStatement)`
+	# - `columns` → `_Array(ColumnDefinition)`
+	# - `strict` → `_Nilable(_Boolean)`
+	# - `temporary` → `_Nilable(_Boolean)`
+	# - `if_not_exists` → `_Nilable(_Boolean)`
+	# - `without_row_id` → `_Nilable(_Boolean)`
+	# - `constraints` → `_Array(TableConstraint)`
+	#
+	# ```
 	# ◯─▶{ CREATE }┬───────▶──────┬▶{ TABLE }┬▶{ IF }─▶{ NOT }─▶{ EXISTS }─┐
 	#              ├▶{ TEMP }─────┤          │                             │
 	#              └▶{ TEMPORARY }┘          │                             │
@@ -105,6 +116,13 @@ module Plume
 	# ┌────────────────────◀────────────────────┘                     ┌────────▶─────────┼─▶◯
 	# └▶{ ( }─┬▶[ column-def ]─┬▶┬─────────────────────────────┬▶{ ) }┴▶[ table-options ]┘
 	#         └─────{ , }◀─────┘ └[ table-constraint ]◀─{ , }◀─┘
+	# ```
+	#
+	# **[SQLite Docs](https://www.sqlite.org/lang_createtable.html)**
+	#
+	# ```sql
+	# create table tb0 (c0 primary key desc on conflict abort autoincrement)
+	# ```
 	class CreateTableStatement < Node
 		prop :schema_name, _Nilable(String)
 		prop :table_name, String
