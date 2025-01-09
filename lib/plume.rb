@@ -7,6 +7,8 @@ require "plume/parser"
 require "literal"
 require "plume/nodes"
 require "plume/create_table_statement"
+require "plume/expression"
+require "plume/generator"
 
 module Plume
 	def self.tokenize(str)
