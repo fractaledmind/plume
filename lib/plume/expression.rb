@@ -45,6 +45,28 @@ module Plume
 			OR: 5,
 		}.freeze
 
+		TOKEN_TO_OPERATOR = {
+			CONCAT: :CONCAT,
+			PTR1:   :EXTRACT,
+			PTR2:   :RETRIEVE,
+			STAR:   :MULTIPLY,
+			SLASH:  :DIVIDE,
+			REM:    :MODULO,
+			PLUS:   :ADD,
+			MINUS:  :SUB,
+			BITAND: :BIT_AND,
+			BITOR:  :BIT_OR,
+			LSHIFT: :BIT_LSHIFT,
+			RSHIFT: :BIT_RSHIFT,
+			LT:     :BELOW,
+			GT:     :ABOVE,
+			LE:     :ATMOST,
+			GE:     :ATLEAST,
+			EQ:     :EQUALS,
+			NE:     :NOT_EQUALS,
+			IS:     :IS
+		}.freeze
+
 		def Expression
 			# ◯┬─▶[ literal-value ]───────────────────────────────────────────────────────────────────────────────────┬─▶◯
 			#  ├─▶{ bind-parameter }────────────────────────────────────────────────────────────────────────────────▶─┤
@@ -137,7 +159,11 @@ module Plume
 					lhs = { op => [lhs, rhs] }
 				else
 					rhs = expression(op_precedence + 1)
-					lhs = { op => [lhs, rhs] }
+					lhs = BinaryExpression.new(
+						operator: TOKEN_TO_OPERATOR[op],
+						left: lhs,
+						right: rhs,
+					)
 				end
 			end
 
@@ -150,13 +176,16 @@ module Plume
 			elsif maybe :PLUS
 				expression(:UPLUS)
 			elsif maybe :MINUS
-				{ NEGATE: expression(OPERATOR_PRECEDENCE[:UMINUS]) }
+				UnaryExpression.new(
+					operator: :NEGATE,
+					operand: expression(OPERATOR_PRECEDENCE[:UMINUS])
+				)
 			elsif maybe :LP
 				e = expression(0)
 				accept :RP
 				e
 			elsif :ID == current_token
-				identifier
+				IdentifierExpression.new(value: identifier)
 			elsif (v = optional { literal_value })
 				v
 			elsif maybe :NOT

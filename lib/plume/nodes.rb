@@ -9,9 +9,25 @@ module Plume
 	ConflictClause = _Union(:ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE)
 	CollationName = _Union(:BINARY, :RTRIM, :NOCASE)
 
-	# TODO: Make this rich
-	Expression = _Any
-	LiteralValue = _Any
+	class Blob < Literal::Data
+		prop :blob, _Union(
+			IO,
+			proc { |it| StringIO === it if defined?(StringIO) }
+		)
+	end
+
+	LiteralValue = _Union(
+		nil,
+		true,
+		false,
+		:CURRENT_TIME,
+		:CURRENT_DATE,
+		:CURRENT_TIMESTAMP,
+		Numeric,
+		String,
+		Blob
+	)
+
 	SignedNumber = Numeric
 
 	class ColumnConstraint < Node
@@ -20,6 +36,7 @@ module Plume
 
 	class Type < Node
 		prop :name, String
+
 		prop :constraints, _Nilable(
 			_Constraint(
 				_Array(SignedNumber),
@@ -33,6 +50,18 @@ module Plume
 	class TextType < Type; end
 	class BlobType < Type; end
 	class AnyType < Type; end
+
+	Expression = _Union(
+		LiteralValue,
+		_Deferred {
+			_Union(
+				UnaryExpression,
+				BinaryExpression,
+				IdentifierExpression,
+				CastExpression
+			)
+		},
+	)
 
 	class PrimaryKeyColumnConstraint < ColumnConstraint
 		prop :name, _Nilable(String)
@@ -94,6 +123,58 @@ module Plume
 		prop :name, String
 		prop :type_name, _Nilable(Type)
 		prop :constraints, _Nilable(_Array(ColumnConstraint))
+	end
+
+	class Variable < Node
+		prop :name, String
+	end
+
+	class ColumnReference < Node
+		prop :schema_name, _Nilable(String)
+		prop :table_name, _Nilable(String)
+		prop :column_name, String
+	end
+
+	class UnaryExpression < Node
+		prop :operator, _Union(:INVERT, :NEGATE, :IDENTITY)
+		prop :operand, Expression
+	end
+
+	class BinaryExpression < Node
+		prop :operator, _Union(
+			:CONCAT,
+			:EXTRACT,
+			:RETRIEVE,
+			:MULTIPLY,
+			:DIVIDE,
+			:MODULO,
+			:ADD,
+			:SUB,
+			:BIT_AND,
+			:BIT_OR,
+			:BIT_LSHIFT,
+			:BIT_RSHIFT,
+			:BELOW,
+			:ABOVE,
+			:ATMOST,
+			:ATLEAST,
+			:EQUALS,
+			:NOT_EQUALS,
+			:IS,
+			:IS_NOT,
+		)
+
+		prop :left, Expression
+		prop :right, Expression
+	end
+
+	class IdentifierExpression < Node
+		prop :value, String
+	end
+
+	class CastExpression < Node
+		prop :expression, Expression
+		prop :as, Type
 	end
 
 	# - `schema_name` → `_Nilable(String)`

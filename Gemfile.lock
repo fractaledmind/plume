@@ -6,7 +6,7 @@ GIT
 
 GIT
   remote: https://github.com/joeldrapper/quickdraw.git
-  revision: 1231db7fbfa1f08504b1a92e696974ef9c163b26
+  revision: e5c5c55afbcbf4b99aa1355e0e19ad3067272f3c
   specs:
     quickdraw (0.1.0)
       io-watch (~> 0.6)

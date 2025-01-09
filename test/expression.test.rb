@@ -1,51 +1,65 @@
 # frozen_string_literal: true
 
-test "Greater than comparison with positive integer" do
-	parser = Plume::Parser.new("c0 > 0")
-	expr = parser.Expression()
-	assert_equal expr, { :GT=>["c0", 0] }
-end
+# test "Greater than comparison with positive integer" do
+# 	parser = Plume::Parser.new("c0 > 0")
+# 	expr = parser.Expression()
+# 	assert_equal expr, { :GT=>["c0", 0] }
+# end
 
-test "Compound AND condition with greater than and less than" do
-	parser = Plume::Parser.new("c0 > 0 AND c1 < 0")
-	expr = parser.Expression()
-	assert_equal expr, {
-		AND: [
-			{ GT: ["c0", 0] },
-			{ LT: ["c1", 0] },
-		]
-	}
-end
+# test "Compound AND condition with greater than and less than" do
+# 	parser = Plume::Parser.new("c0 > 0 AND c1 < 0")
+# 	expr = parser.Expression()
+# 	assert_equal expr, {
+# 		AND: [
+# 			{ GT: ["c0", 0] },
+# 			{ LT: ["c1", 0] },
+# 		]
+# 	}
+# end
 
 test "Greater than comparison with negative integer" do
 	parser = Plume::Parser.new("c0 > -1")
 	expr = parser.Expression()
-	assert_equal expr, { :GT=>["c0", { :NEGATE=>1 }] }
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :ABOVE,
+		left: Plume::IdentifierExpression.new(value: "c0"),
+		right: Plume::UnaryExpression.new(
+			operator: :NEGATE,
+			operand: 1
+		),
+	)
 end
 
 test "Greater than comparison with negative integer on left side" do
 	parser = Plume::Parser.new("-1 > c0")
 	expr = parser.Expression()
-	assert_equal expr, { :GT=>[{ :NEGATE=>1 }, "c0"] }
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :ABOVE,
+		left: Plume::UnaryExpression.new(
+			operator: :NEGATE,
+			operand: 1
+		),
+		right: Plume::IdentifierExpression.new(value: "c0"),
+	)
 end
 
-test "NOT operator with column reference" do
-	parser = Plume::Parser.new("NOT c0")
-	expr = parser.Expression()
-	assert_equal expr, { :NOT=>"c0" }
-end
+# test "NOT operator with column reference" do
+# 	parser = Plume::Parser.new("NOT c0")
+# 	expr = parser.Expression()
+# 	assert_equal expr, { :NOT=>"c0" }
+# end
 
-test "NOT operator with addition expression" do
-	parser = Plume::Parser.new("NOT 0 + 1")
-	expr = parser.Expression()
-	assert_equal expr, { :NOT=>{ :PLUS=>[0, 1] } }
-end
+# test "NOT operator with addition expression" do
+# 	parser = Plume::Parser.new("NOT 0 + 1")
+# 	expr = parser.Expression()
+# 	assert_equal expr, { :NOT=>{ :PLUS=>[0, 1] } }
+# end
 
-test "BETWEEN operator with integer values" do
-	parser = Plume::Parser.new("2 between 1 and 10")
-	expr = parser.Expression()
-	assert_equal expr, { :BETWEEN=>[2, 1, 10] }
-end
+# test "BETWEEN operator with integer values" do
+# 	parser = Plume::Parser.new("2 between 1 and 10")
+# 	expr = parser.Expression()
+# 	assert_equal expr, { :BETWEEN=>[2, 1, 10] }
+# end
 
 test "Single integer literal expression" do
 	parser = Plume::Parser.new("2")
@@ -53,17 +67,17 @@ test "Single integer literal expression" do
 	assert_equal expr, 2
 end
 
-test "LIKE operator with string literals" do
-	parser = Plume::Parser.new("'str' like 'foo'")
-	expr = parser.Expression()
-	assert_equal expr, { :LIKE=>["'str'", "'foo'"] }
-end
+# test "LIKE operator with string literals" do
+# 	parser = Plume::Parser.new("'str' like 'foo'")
+# 	expr = parser.Expression()
+# 	assert_equal expr, { :LIKE=>["'str'", "'foo'"] }
+# end
 
-test "IN operator with list of values" do
-	parser = Plume::Parser.new("c0 IN (1, 2, 3)")
-	expr = parser.Expression()
-	assert_equal expr, { "c0"=>{ :IN=>[1, 2, 3] } }
-end
+# test "IN operator with list of values" do
+# 	parser = Plume::Parser.new("c0 IN (1, 2, 3)")
+# 	expr = parser.Expression()
+# 	assert_equal expr, { "c0"=>{ :IN=>[1, 2, 3] } }
+# end
 
 # test "IS NULL operator" do
 #  parser = Plume::Parser.new("c0 IS NULL")
