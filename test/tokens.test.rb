@@ -233,7 +233,7 @@ BASIC_TOKENS.each do |str, tk|
 end
 
 KEYWORDS.each do |kw|
-	test "tokenizes #{kw.to_s} as #{kw.inspect}" do
+	test "tokenizes #{kw} as #{kw.inspect}" do
 		assert_token(kw.to_s, kw)
 	end
 end

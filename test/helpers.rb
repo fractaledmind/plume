@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 def lex(str, with_values: false)
 	lex = Plume::Lexer.new(str)
 	lex.tokens(with_values).to_a

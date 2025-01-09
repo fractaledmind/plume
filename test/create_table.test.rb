@@ -136,7 +136,7 @@ test "parse basic create table with one column and a not null constraint" do
 				Plume::ColumnDefinition.new(
 					name: "c0",
 					constraints: [
-						Plume::NotNullColumnConstraint.new
+						Plume::NotNullColumnConstraint.new,
 					]
 				),
 			],
@@ -176,7 +176,7 @@ test "parse basic create table with one column and a unique constraint" do
 				Plume::ColumnDefinition.new(
 					name: "c0",
 					constraints: [
-						Plume::UniqueColumnConstraint.new
+						Plume::UniqueColumnConstraint.new,
 					]
 				),
 			],
@@ -217,8 +217,8 @@ test "parse basic create table with one column and a check constraint" do
 					name: "c0",
 					constraints: [
 						Plume::CheckColumnConstraint.new(
-							expression: {:GT=>["c0", 0]}
-						)
+							expression: { :GT=>["c0", 0] }
+						),
 					]
 				),
 			],

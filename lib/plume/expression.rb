@@ -163,11 +163,11 @@ module Plume
 				{ NOT: expression(OPERATOR_PRECEDENCE[:NOT]) } # Precedence of NOT
 			elsif maybe :CAST
 				accept :LP
-				e = expression()
+				e = expression
 				accept :AS
 				t = type_name
 				accept :RP
-			{ CAST: [e, t] }
+				{ CAST: [e, t] }
 				# ... other primary expressions ...
 			else
 				raise "Expected primary expression: #{current_token}[#{current_value}]"

@@ -173,7 +173,6 @@ module Plume
 				check = expr
 				accept :RP
 
-
 				CheckColumnConstraint.new(
 					name:,
 					expression: check
