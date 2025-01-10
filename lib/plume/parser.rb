@@ -316,7 +316,7 @@ module Plume
 		end
 
 		def expr
-			Expression()
+			expression
 		end
 
 		# TODO

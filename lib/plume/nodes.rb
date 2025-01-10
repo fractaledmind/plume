@@ -59,6 +59,7 @@ module Plume
 				UnaryExpression,
 				BinaryExpression,
 				CastExpression,
+				BetweenExpression,
 			)
 		},
 	)
@@ -136,7 +137,7 @@ module Plume
 	end
 
 	class UnaryExpression < Node
-		prop :operator, _Union(:INVERT, :NEGATE, :IDENTITY)
+		prop :operator, _Union(:INVERT, :NEGATE, :IDENTITY, :NOT)
 		prop :operand, Expression
 	end
 
@@ -175,6 +176,12 @@ module Plume
 	class CastExpression < Node
 		prop :expression, Expression
 		prop :as, Type
+	end
+
+	class BetweenExpression < Node
+		prop :left, Expression
+		prop :middle, Expression
+		prop :right, Expression
 	end
 
 	# - `schema_name` → `_Nilable(String)`

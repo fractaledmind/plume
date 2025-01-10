@@ -67,7 +67,7 @@ module Plume
 			IS:     :IS
 		}.freeze
 
-		def Expression
+		def expression(min_precedence = 0)
 			# ◯┬─▶[ literal-value ]───────────────────────────────────────────────────────────────────────────────────┬─▶◯
 			#  ├─▶{ bind-parameter }────────────────────────────────────────────────────────────────────────────────▶─┤
 			#  ├────────────────────────┬──────────────────────┐                                                      │
@@ -101,11 +101,8 @@ module Plume
 			#  │          └─────▶───┘└────────────────◀──────────────────────┘└─────────▶─────────┘                   │
 			#  └─▶[ raise-function ]────────────────────────────────────────────────────────────────────────────────▶─┘
 
-			expression
-		end
+			left = basic_expression
 
-		def expression(min_precedence = 0)
-			lhs = basic_expression
 			while (op = current_token)
 				op_precedence = OPERATOR_PRECEDENCE[op] || -1
 				break if op_precedence < min_precedence
@@ -117,10 +114,14 @@ module Plume
 					middle = expression(op_precedence + 1)
 					accept :AND
 					right = expression(op_precedence + 1)
-					lhs = { BETWEEN: [lhs, middle, right] }
+					left = BetweenExpression.new(
+						left: left,
+						middle: middle,
+						right: right
+					)
 				when :IN
-					# rhs = expression(op_precedence + 1)
-					# lhs = { op => [lhs, rhs] }
+					# right = expression(op_precedence + 1)
+					# left = { op => [left, right] }
 					if maybe :LP
 						if maybe :RP
 							{ lexpr => { IN: [] } }
@@ -131,7 +132,7 @@ module Plume
 						elsif (e = optional { expr })
 							exprs = one_or_more(given: e) { expr }
 							accept :RP
-							lhs = { lhs => { op => exprs } }
+							left = { left => { op => exprs } }
 						else
 							error!(current_token, current_value, [:RP, "select-stmt", "expr"])
 						end
@@ -155,19 +156,20 @@ module Plume
 						error!(current_token, current_value, [:LP, :ID])
 					end
 				when :LIKE, :GLOB, :REGEXP, :MATCH
-					rhs = expression(op_precedence + 1)
-					lhs = { op => [lhs, rhs] }
+					right = expression(op_precedence + 1)
+					left = { op => [left, right] }
 				else
-					rhs = expression(op_precedence + 1)
-					lhs = BinaryExpression.new(
+					right = expression(op_precedence + 1)
+
+					left = BinaryExpression.new(
 						operator: TOKEN_TO_OPERATOR[op],
-						left: lhs,
-						right: rhs,
+						left:,
+						right:,
 					)
 				end
 			end
 
-			lhs
+			left
 		end
 
 		def basic_expression
@@ -189,7 +191,10 @@ module Plume
 			elsif (v = optional { literal_value })
 				v
 			elsif maybe :NOT
-				{ NOT: expression(OPERATOR_PRECEDENCE[:NOT]) } # Precedence of NOT
+				UnaryExpression.new(
+					operator: :NOT,
+					operand: expression(OPERATOR_PRECEDENCE[:NOT])
+				)
 			elsif maybe :CAST
 				accept :LP
 				e = expression
