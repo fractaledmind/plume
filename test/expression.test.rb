@@ -22,7 +22,7 @@ test "Greater than comparison with negative integer" do
 	expr = parser.Expression()
 	assert_equal expr, Plume::BinaryExpression.new(
 		operator: :ABOVE,
-		left: Plume::IdentifierExpression.new(value: "c0"),
+		left: Plume::Identifier.new(value: "c0"),
 		right: Plume::UnaryExpression.new(
 			operator: :NEGATE,
 			operand: 1
@@ -39,7 +39,7 @@ test "Greater than comparison with negative integer on left side" do
 			operator: :NEGATE,
 			operand: 1
 		),
-		right: Plume::IdentifierExpression.new(value: "c0"),
+		right: Plume::Identifier.new(value: "c0"),
 	)
 end
 

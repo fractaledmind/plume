@@ -55,10 +55,10 @@ module Plume
 		LiteralValue,
 		_Deferred {
 			_Union(
+				Identifier,
 				UnaryExpression,
 				BinaryExpression,
-				IdentifierExpression,
-				CastExpression
+				CastExpression,
 			)
 		},
 	)
@@ -168,7 +168,7 @@ module Plume
 		prop :right, Expression
 	end
 
-	class IdentifierExpression < Node
+	class Identifier < Node
 		prop :value, String
 	end
 

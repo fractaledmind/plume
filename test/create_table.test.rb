@@ -219,7 +219,7 @@ test "parse basic create table with one column and a check constraint" do
 						Plume::CheckColumnConstraint.new(
 							expression: Plume::BinaryExpression.new(
 								operator: :ABOVE,
-								left: Plume::IdentifierExpression.new(value: "c0"),
+								left: Plume::Identifier.new(value: "c0"),
 								right: 0
 							)
 						),

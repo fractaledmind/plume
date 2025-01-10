@@ -185,7 +185,7 @@ module Plume
 				accept :RP
 				e
 			elsif :ID == current_token
-				IdentifierExpression.new(value: identifier)
+				Identifier.new(value: identifier)
 			elsif (v = optional { literal_value })
 				v
 			elsif maybe :NOT
