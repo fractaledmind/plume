@@ -1286,7 +1286,9 @@ module Plume
 			if current_token == :BLOB
 				value = current_value
 				require current_token
-				value
+				bytesize = value.bytesize
+				# trim the leading /x'/i and trailing /'/ then decode the hexadecimal string
+				[value.byteslice(2, bytesize - 3)].pack('H*')
 			else
 				expected!(:BLOB)
 			end

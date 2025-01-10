@@ -18,6 +18,12 @@ test "Single string literal expression" do
 	assert_equal expr, "foo"
 end
 
+test "Single blob literal expression" do
+	parser = Plume::Parser.new("X'53514C697465'")
+	expr = parser.expression
+	assert_equal expr, "SQLite"
+end
+
 test "Single NULL literal expression" do
 	parser = Plume::Parser.new("null")
 	expr = parser.expression
