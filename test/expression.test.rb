@@ -42,6 +42,24 @@ test "Single FALSE literal expression" do
 	assert_equal expr, false
 end
 
+test "Single CURRENT_TIME literal expression" do
+	parser = Plume::Parser.new("current_time")
+	expr = parser.expression
+	assert_equal expr, :CURRENT_TIME
+end
+
+test "Single CURRENT_DATE literal expression" do
+	parser = Plume::Parser.new("current_date")
+	expr = parser.expression
+	assert_equal expr, :CURRENT_DATE
+end
+
+test "Single CURRENT_TIMESTAMP literal expression" do
+	parser = Plume::Parser.new("current_timestamp")
+	expr = parser.expression
+	assert_equal expr, :CURRENT_TIMESTAMP
+end
+
 test "Greater than comparison with positive integer" do
 	parser = Plume::Parser.new("c0 > 0")
 	expr = parser.expression
