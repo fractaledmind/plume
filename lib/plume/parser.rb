@@ -1795,7 +1795,7 @@ module Plume
 		end
 
 		def expected!(*expected)
-			expected!(expected)
+			error!(current_token, current_value, expected)
 		end
 
 		def error!(token, value, expected)
