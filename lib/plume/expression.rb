@@ -257,6 +257,12 @@ module Plume
 				e = expression(0)
 				require :RP
 				e
+			elsif (v = optional { literal_value })
+				case v
+				when NIL then nil
+				when FALSE then false
+				else v
+				end
 			elsif :ID == current_token
 				Identifier.new(value: identifier)
 			elsif (v = optional { literal_value })

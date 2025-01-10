@@ -3,6 +3,9 @@
 module Plume
 	extend Literal::Types
 
+	NIL = Object.new
+	FALSE = Object.new
+
 	class Node < Literal::Data; end
 
 	Direction = _Union(:ASC, :DESC)
