@@ -1271,16 +1271,14 @@ module Plume
 		end
 
 		def string_literal
-			if one_of? :STRING, :ID
+			case current_token
+			when :STRING
 				value = current_value
-				require current_token
-				value
-			elsif TOKEN_FALLBACKS[current_token]
-				value = @lexer.value
-				require current_token
-				value
+				require :STRING
+				bytesize = value.bytesize
+				value.byteslice(1, bytesize - 2)
 			else
-				expected!(:STRING, :ID, *TOKEN_FALLBACKS.reject { |_, v| v.nil? }.keys)
+				expected!(:STRING)
 			end
 		end
 
@@ -1664,7 +1662,10 @@ module Plume
 		end
 
 		def maybe(token)
-			advance && token if token == current_token
+			if token == current_token
+				advance
+				token
+			end
 		end
 
 		def require_all(*tokens)
@@ -1729,6 +1730,7 @@ module Plume
 		def one_or_more(sep: :COMMA, given: nil)
 			[].tap do |a|
 				a << (given || yield)
+
 				if sep
 					a << yield while maybe sep
 				else
@@ -1741,11 +1743,19 @@ module Plume
 
 		def zero_or_more(sep: :COMMA)
 			[].tap do |a|
-				if sep
-					a << yield while maybe sep
-				else
-					while (x = optional { yield })
-						a << x
+				first_val = optional { yield }
+
+				if first_val
+					a << first_val
+
+					if sep
+						while maybe sep
+							a << yield
+						end
+					else
+						while (x = optional { yield })
+							a << x
+						end
 					end
 				end
 			end

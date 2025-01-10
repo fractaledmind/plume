@@ -60,6 +60,9 @@ module Plume
 				BinaryExpression,
 				CastExpression,
 				TernaryExpression,
+				LikeExpression,
+				InExpression,
+				NotInExpression,
 			)
 		},
 	)
@@ -136,6 +139,11 @@ module Plume
 		prop :column_name, String
 	end
 
+	class TableReference < Node
+		prop :schema_name, _Nilable(String)
+		prop :table_name, String
+	end
+
 	class UnaryExpression < Node
 		prop :operator, _Union(:INVERT, :NEGATE, :IDENTITY, :NOT)
 		prop :operand, Expression
@@ -143,30 +151,42 @@ module Plume
 
 	class BinaryExpression < Node
 		prop :operator, _Union(
-			:CONCAT,
-			:EXTRACT,
-			:RETRIEVE,
-			:MULTIPLY,
-			:DIVIDE,
-			:MODULO,
-			:ADD,
-			:SUB,
-			:BIT_AND,
-			:BIT_OR,
-			:BIT_LSHIFT,
-			:BIT_RSHIFT,
-			:BELOW,
 			:ABOVE,
-			:ATMOST,
+			:ADD,
 			:ATLEAST,
+			:ATMOST,
+			:BELOW,
+			:BIT_AND,
+			:BIT_LSHIFT,
+			:BIT_OR,
+			:BIT_RSHIFT,
+			:CONCAT,
+			:DIVIDE,
 			:EQUALS,
-			:NOT_EQUALS,
+			:EXTRACT,
+			:GLOB,
 			:IS,
 			:IS_NOT,
+			:MATCH,
+			:MODULO,
+			:MULTIPLY,
+			:NOT_EQUALS,
+			:NOT_GLOB,
+			:NOT_MATCH,
+			:NOT_REGEXP,
+			:REGEXP,
+			:RETRIEVE,
+			:SUB,
 		)
 
 		prop :left, Expression
 		prop :right, Expression
+	end
+
+	class LikeExpression < Node
+		prop :left, Expression
+		prop :right, Expression
+		prop :escape, _Nilable(Expression)
 	end
 
 	class Identifier < Node
@@ -179,10 +199,32 @@ module Plume
 	end
 
 	class TernaryExpression < Node
-		prop :operator, _Union(:BETWEEN)
+		prop :operator, _Union(:BETWEEN, :NOT_BETWEEN)
 		prop :left, Expression
 		prop :middle, Expression
 		prop :right, Expression
+	end
+
+	class SelectStatement < Node
+	end
+
+	class FunctionReference < Node
+		prop :schema_name, _Nilable(String)
+		prop :function_name, String
+		prop :arguments, _Array(Expression)
+	end
+
+	class InExpression < Node
+		prop :member, Expression
+		prop :collection, _Union(
+			SelectStatement,
+			TableReference,
+			FunctionReference,
+			_Array(Expression),
+		)
+	end
+
+	class NotInExpression < InExpression
 	end
 
 	# - `schema_name` → `_Nilable(String)`

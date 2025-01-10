@@ -107,67 +107,137 @@ module Plume
 				op_precedence = OPERATOR_PRECEDENCE[op] || -1
 				break if op_precedence < min_precedence
 
-				require op
+				negated = maybe :NOT
 
-				case op
-				when :BETWEEN
+				if maybe :IN
+					expression_node = negated ? NotInExpression : InExpression
+
+					if maybe :LP
+						if maybe :RP
+							left = expression_node.new(
+								member: left,
+								collection: []
+							)
+							# elsif (s = optional { select_stmt })
+							# 	require :RP
+
+							# 	{ lexpr => { IN: s } }
+						elsif (e = optional { expression(op_precedence + 1) })
+							exprs = one_or_more(given: e) { expression(op_precedence + 1) }
+							require :RP
+
+							left = expression_node.new(
+								member: left,
+								collection: exprs
+							)
+						else
+							expected!(:RP, "select-stmt", "expr")
+						end
+					elsif (ref = optional { identifier })
+						if maybe :DOT
+							schema_name = ref
+							name = identifier
+
+							if maybe :LP
+								function_name = name
+								arguments = zero_or_more { expression(op_precedence + 1) }
+								require :RP
+
+								collection = FunctionReference.new(
+									schema_name:,
+									function_name:,
+									arguments:,
+								)
+							else
+								table_name = name
+
+								collection = TableReference.new(
+									schema_name:,
+									table_name:,
+								)
+							end
+						elsif maybe :LP
+							function_name = ref
+							arguments = zero_or_more { expression(op_precedence + 1) }
+							require :RP
+
+							collection = FunctionReference.new(
+								function_name:,
+								arguments:,
+							)
+						else
+							table_name = ref
+
+							collection = TableReference.new(
+								table_name:,
+							)
+						end
+
+						left = expression_node.new(
+							member: left,
+							collection:
+						)
+					else
+						expected!(:LP, :ID)
+					end
+				elsif maybe :BETWEEN
 					middle = expression(op_precedence + 1)
 					require :AND
 					right = expression(op_precedence + 1)
 					left = TernaryExpression.new(
-						operator: :BETWEEN,
+						operator: (negated ? :NOT_BETWEEN : :BETWEEN),
 						left: left,
 						middle: middle,
 						right: right
 					)
-				when :IN
-					# right = expression(op_precedence + 1)
-					# left = { op => [left, right] }
-					if maybe :LP
-						if maybe :RP
-							{ lexpr => { IN: [] } }
-						# elsif (s = optional { select_stmt })
-						# 	require :RP
-
-						# 	{ lexpr => { IN: s } }
-						elsif (e = optional { expr })
-							exprs = one_or_more(given: e) { expr }
-							require :RP
-							left = { left => { op => exprs } }
-						else
-							expected!(:RP, "select-stmt", "expr")
-						end
-					elsif :ID == current_token
-						ref = table_ref
-
-						if maybe :LP
-							if maybe :RP
-								{ lexpr => { IN: { FN: { ref => [] } } } }
-							elsif (e = optional { expr })
-								expr = one_or_more(given: e) { expr }
-								require :RP
-								{ lexpr => { IN: { FN: { ref => exprs } } } }
-							else
-								expected!(:RP, "expr")
-							end
-						else
-							{ lexpr => { IN: ref } }
-						end
-					else
-						expected!(:LP, :ID)
-					end
-				when :LIKE, :GLOB, :REGEXP, :MATCH
-					right = expression(op_precedence + 1)
-					left = { op => [left, right] }
-				else
-					right = expression(op_precedence + 1)
-
-					left = BinaryExpression.new(
-						operator: TOKEN_TO_OPERATOR[op],
-						left:,
-						right:,
-					)
+				elsif maybe :LIKE
+					# like_expression(negated:, op_precedence:)
+				elsif either :GLOB, :REGEXP, :MATCH
+					# matching_expression(negated:, op_precedence:)
 				end
+
+				# error if not
+
+				# require op
+
+				# case op
+				# when :BETWEEN
+				# 	middle = expression(op_precedence + 1)
+				# 	require :AND
+				# 	right = expression(op_precedence + 1)
+				# 	left = TernaryExpression.new(
+				# 		operator: :BETWEEN,
+				# 		left: left,
+				# 		middle: middle,
+				# 		right: right
+				# 	)
+				# when :IN
+				# 	in_expression(not: false)
+				# when :NOT
+				# 	require :NOT
+				# 	case (op = current_token)
+				# 		when :IN then in_expression(not: true)
+				# 	end
+				# when :LIKE
+				# 	right = expression(op_precedence + 1)
+				# 	escape = maybe(:ESCAPE) ? expression : nil
+				# 	left = LikeExpression.new(
+				# 		left:,
+				# 		right:,
+				# 		escape:,
+				# 	)
+				# when :LIKE, :GLOB, :REGEXP, :MATCH
+				# 	right = expression(op_precedence + 1)
+				# 	left = { op => [left, right] }
+				# else
+				# 	right = expression(op_precedence + 1)
+
+				# 	left = BinaryExpression.new(
+				# 		operator: TOKEN_TO_OPERATOR[op],
+				# 		left:,
+				# 		right:,
+				# 	)
+				# end
 			end
 
 			left
@@ -205,7 +275,7 @@ module Plume
 				{ CAST: [e, t] }
 				# ... other primary expressions ...
 			else
-				raise "Expected primary expression: #{current_token}[#{current_value}]"
+				expected!
 			end
 		end
 	end
