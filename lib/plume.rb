@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "set"
 require "plume/version"
 require "plume/lexer"
 require "plume/ref"
