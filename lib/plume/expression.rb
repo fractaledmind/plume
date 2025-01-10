@@ -134,7 +134,7 @@ module Plume
 							require :RP
 							left = { left => { op => exprs } }
 						else
-							error!(current_token, current_value, [:RP, "select-stmt", "expr"])
+							expected!(:RP, "select-stmt", "expr")
 						end
 					elsif :ID == current_token
 						ref = table_ref
@@ -147,13 +147,13 @@ module Plume
 								require :RP
 								{ lexpr => { IN: { FN: { ref => exprs } } } }
 							else
-								error!(current_token, current_value, [:RP, "expr"])
+								expected!(:RP, "expr")
 							end
 						else
 							{ lexpr => { IN: ref } }
 						end
 					else
-						error!(current_token, current_value, [:LP, :ID])
+						expected!(:LP, :ID)
 					end
 				when :LIKE, :GLOB, :REGEXP, :MATCH
 					right = expression(op_precedence + 1)

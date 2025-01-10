@@ -311,7 +311,7 @@ module Plume
 			when :VACUUM						then vacuum_stmt
 			when :WITH							then with_stmt
 			else
-				error!(current_token, current_value, [:ALTER, :ANALYZE, :ATTACH, :BEGIN, :COMMIT, :END, :CREATE, :DELETE, :DETACH, :DROP, :INSERT, :REPLACE, :PRAGMA, :REINDEX, :RELEASE, :ROLLBACK, :SAVEPOINT, :SELECT, :UPDATE, :VACUUM, :WITH])
+				expected!(:ALTER, :ANALYZE, :ATTACH, :BEGIN, :COMMIT, :END, :CREATE, :DELETE, :DETACH, :DROP, :INSERT, :REPLACE, :PRAGMA, :REINDEX, :RELEASE, :ROLLBACK, :SAVEPOINT, :SELECT, :UPDATE, :VACUUM, :WITH)
 			end
 		end
 
@@ -908,7 +908,7 @@ module Plume
 			elsif :RP == current_token
 				# no-op
 			else
-				error!(current_token, current_value, [:DISTINCT, :STAR, :RP, "expr"])
+				expected!(:DISTINCT, :STAR, :RP, "expr")
 			end
 
 			key = nil
@@ -1120,29 +1120,29 @@ module Plume
 							precedence = 4
 							starting = { FOLLOWING: e }
 						else
-							error!(current_token, current_value, [:PRECEDING, :FOLLOWING])
+							expected!(:PRECEDING, :FOLLOWING)
 						end
 					else
-						error!(current_token, current_value, ["UNBOUNDED PRECEDING", "CURRENT ROW", "expr"])
+						expected!("UNBOUNDED PRECEDING", "CURRENT ROW", "expr")
 					end
 					require :AND
 					if maybe_all :CURRENT, :ROW
-						error!(current_token, current_value, ["UNBOUNDED FOLLOWING", "expr"]) if 3 < precedence
+						expected!("UNBOUNDED FOLLOWING", "expr") if 3 < precedence
 						ending = :CURRENT_ROW
 					elsif maybe_all :UNBOUNDED, :FOLLOWING
 						ending = :UNBOUNDED_FOLLOWING
 					elsif (e = optional { expr })
 						if maybe :PRECEDING
-							error!(current_token, current_value, ["CURRENT ROW", "UNBOUNDED FOLLOWING", "expr"]) if 2 < precedence
+							expected!("CURRENT ROW", "UNBOUNDED FOLLOWING", "expr") if 2 < precedence
 							ending = { PRECEDING: e }
 						elsif maybe :FOLLOWING
-							error!(current_token, current_value, ["UNBOUNDED FOLLOWING"]) if 4 < precedence
+							expected!("UNBOUNDED FOLLOWING") if 4 < precedence
 							ending = { FOLLOWING: e }
 						else
-							error!(current_token, current_value, [:PRECEDING, :FOLLOWING])
+							expected!(:PRECEDING, :FOLLOWING)
 						end
 					else
-						error!(current_token, current_value, ["CURRENT ROW", "UNBOUNDED FOLLOWING", "expr"])
+						expected!("CURRENT ROW", "UNBOUNDED FOLLOWING", "expr")
 					end
 					boundary = { BETWEEN: [starting, ending] }
 				elsif maybe_all :UNBOUNDED, :PRECEDING
@@ -1153,7 +1153,7 @@ module Plume
 					require :PRECEDING
 					boundary = { PRECEDING: e }
 				else
-					error!(current_token, current_value, [:BETWEEN, :UNBOUNDED, :CURRENT, "expr"])
+					expected!(:BETWEEN, :UNBOUNDED, :CURRENT, "expr")
 				end
 				exclude = nil
 				if maybe :EXCLUDE
@@ -1166,7 +1166,7 @@ module Plume
 					elsif maybe_all :CURRENT, :ROW
 						exclude = :CURRENT_ROW
 					else
-						error!(current_token, current_value, [:GROUP, :TIES, "NO OTHERS", "CURRENT ROW"])
+						expected!(:GROUP, :TIES, "NO OTHERS", "CURRENT ROW")
 					end
 				end
 
@@ -1178,7 +1178,7 @@ module Plume
 					{ type => boundary }
 				end
 			else
-				error!(current_token, current_value, [:RANGE, :ROWS, :GROUPS])
+				expected!(:RANGE, :ROWS, :GROUPS)
 			end
 		end
 
@@ -1230,7 +1230,7 @@ module Plume
 				require :RF
 				{ RAISE: { FAIL: error_message } }
 			else
-				error!(current_token, current_value, [:IGNORE, :ROLLBACK, :ABORT, :FAIL])
+				expected!(:IGNORE, :ROLLBACK, :ABORT, :FAIL)
 			end
 		end
 
@@ -1266,7 +1266,7 @@ module Plume
 				require :QNUMBER
 				value
 			else
-				error!(current_token, current_value, [:INTEGER, :FLOAT, :QNUMBER])
+				expected!(:INTEGER, :FLOAT, :QNUMBER)
 			end
 		end
 
@@ -1280,7 +1280,7 @@ module Plume
 				require current_token
 				value
 			else
-				error!(current_token, current_value, [:STRING, :ID, *TOKEN_FALLBACKS.reject { |_, v| v.nil? }.keys])
+				expected!(:STRING, :ID, *TOKEN_FALLBACKS.reject { |_, v| v.nil? }.keys)
 			end
 		end
 
@@ -1290,7 +1290,7 @@ module Plume
 				require current_token
 				value
 			else
-				error!(current_token, current_value, [:BLOB])
+				expected!(:BLOB)
 			end
 		end
 
@@ -1319,7 +1319,7 @@ module Plume
 				return blob
 			end
 
-			error!(current_token, current_value, [:INTEGER, :FLOAT, :QNUMBER, :STRING, :BLOB, :NULL, :TRUE, :FALSE, :CURRENT_TIME, :CURRENT_DATE, :CURRENT_TIMESTAMP])
+			expected!(:INTEGER, :FLOAT, :QNUMBER, :STRING, :BLOB, :NULL, :TRUE, :FALSE, :CURRENT_TIME, :CURRENT_DATE, :CURRENT_TIMESTAMP)
 		end
 
 		def foreign_key_clause
@@ -1350,7 +1350,7 @@ module Plume
 				elsif maybe :UPDATE
 					key = :ON_UPDATE
 				else
-					error!(current_token, current_value, [:DELETE, :UPDATE])
+					expected!(:DELETE, :UPDATE)
 				end
 
 				meta[key] = nil
@@ -1365,7 +1365,7 @@ module Plume
 				elsif maybe_all :NO, :ACTION
 					meta[key] = :NO_ACTION
 				else
-					error!(current_token, current_value, [:SET, :CASCADE, :RESTRICT, :NO])
+					expected!(:SET, :CASCADE, :RESTRICT, :NO)
 				end
 			end
 			while maybe :MATCH
@@ -1649,7 +1649,7 @@ module Plume
 				require current_token
 				value
 			else
-				error!(current_token, current_value, [:STRING, :ID, :INDEXED, :CROSS, :FULL, :INNER, :LEFT, :NATURAL, :OUTER, :RIGHT])
+				expected!(:STRING, :ID, :INDEXED, :CROSS, :FULL, :INNER, :LEFT, :NATURAL, :OUTER, :RIGHT)
 			end
 		end
 
@@ -1659,7 +1659,7 @@ module Plume
 			if token == current_token
 				advance && token
 			else
-				error!(current_token, current_value, [token])
+				expected!(token)
 			end
 		end
 
@@ -1676,7 +1676,7 @@ module Plume
 					advance
 					i += 1
 				else
-					error!(current_token, current_value, tokens)
+					expected!(tokens)
 				end
 			end
 
@@ -1696,6 +1696,19 @@ module Plume
 			end
 
 			require_all(*tokens) if advance
+		end
+
+		def either(*options)
+			i, len = 0, options.length
+			while i < len
+				option = options[i]
+				if false
+				else
+					i += 1
+				end
+			end
+
+			option.nil? ? option : (raise StandardError)
 		end
 
 		def one_of?(*tokens)
@@ -1779,6 +1792,10 @@ module Plume
 				peek_buffer << @lexer.next_token
 			end
 			peek_buffer
+		end
+
+		def expected!(*expected)
+			expected!(expected)
 		end
 
 		def error!(token, value, expected)

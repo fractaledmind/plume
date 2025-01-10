@@ -26,7 +26,7 @@ module Plume
 				constraints = zero_or_more { table_constraint }
 				require :RP
 			else
-				error!(current_token, current_value, [:AS, :LP])
+				expected!(:AS, :LP)
 			end
 
 			CreateTableStatement.new(
@@ -97,7 +97,7 @@ module Plume
 				clause = foreign_key_clause
 				{ FOREIGN_KEY: [columns, clause] }
 			else
-				error!(current_token, current_value, [:CONSTRAINT, :PRIMARY, :UNIQUE, :CHECK, :FOREIGN])
+				expected!(:CONSTRAINT, :PRIMARY, :UNIQUE, :CHECK, :FOREIGN)
 			end
 		end
 
@@ -187,7 +187,7 @@ module Plume
 				elsif (value = optional { literal_value })
 					{ DEFAULT: value }
 				else
-					error!(current_token, current_value, [:LP, "literal-value", "signed-number"])
+					expected!(:LP, "literal-value", "signed-number")
 				end
 			elsif maybe :COLLATE
 				{ COLLATE: identifier }
@@ -218,7 +218,7 @@ module Plume
 			elsif (e = optional { expr })
 				# no-op
 			else
-				error!(current_token, current_value, [:ID, "expr"])
+				expected!(:ID, "expr")
 			end
 			collation = nil
 			if maybe :COLLATE
@@ -248,7 +248,7 @@ module Plume
 			elsif e
 				e
 			else
-				error!(current_token, current_value, [:ID, "expr"])
+				expected!(:ID, "expr")
 			end
 		end
 
@@ -264,7 +264,7 @@ module Plume
 				when :ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE
 					require current_token
 				else
-					error!(current_token, current_value, [:ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE])
+					expected!(:ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE)
 				end
 			end
 		end
