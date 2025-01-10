@@ -114,7 +114,8 @@ module Plume
 					middle = expression(op_precedence + 1)
 					require :AND
 					right = expression(op_precedence + 1)
-					left = BetweenExpression.new(
+					left = TernaryExpression.new(
+						operator: :BETWEEN,
 						left: left,
 						middle: middle,
 						right: right

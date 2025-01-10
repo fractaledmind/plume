@@ -70,7 +70,8 @@ end
 test "BETWEEN operator with integer values" do
 	parser = Plume::Parser.new("2 between 1 and 10")
 	expr = parser.expression
-	assert_equal expr, Plume::BetweenExpression.new(
+	assert_equal expr, Plume::TernaryExpression.new(
+		operator: :BETWEEN,
 		left: 2,
 		middle: 1,
 		right: 10

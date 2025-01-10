@@ -59,7 +59,7 @@ module Plume
 				UnaryExpression,
 				BinaryExpression,
 				CastExpression,
-				BetweenExpression,
+				TernaryExpression,
 			)
 		},
 	)
@@ -178,7 +178,8 @@ module Plume
 		prop :as, Type
 	end
 
-	class BetweenExpression < Node
+	class TernaryExpression < Node
+		prop :operator, _Union(:BETWEEN)
 		prop :left, Expression
 		prop :middle, Expression
 		prop :right, Expression
