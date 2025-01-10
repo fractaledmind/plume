@@ -10,12 +10,12 @@ module Plume
 		# sqlite> select (not 0) + 1;
 		# 2
 		OPERATOR_PRECEDENCE = {
-			TILDE:   100,
+			BITNOT:  100,
 			UPLUS:   100,
 			UMINUS:  100,
 			COLLATE:  90,
 			CONCAT:   80,
-			PTR:      80,
+			PTR1:     80,
 			PTR2:     80,
 			STAR:     70,
 			SLASH:    70,
@@ -260,10 +260,16 @@ module Plume
 		def basic_expression
 			if maybe :NULL
 				nil
-			elsif maybe :TILDE
-				{ BITWISE_NOT: expression(OPERATOR_PRECEDENCE[:TILDE]) }
+			elsif maybe :BITNOT
+				UnaryExpression.new(
+					operator: :INVERT,
+					operand: expression(OPERATOR_PRECEDENCE[:BITNOT])
+				)
 			elsif maybe :PLUS
-				expression(:UPLUS)
+				UnaryExpression.new(
+					operator: :IDENTITY,
+					operand: expression(OPERATOR_PRECEDENCE[:UPLUS])
+				)
 			elsif maybe :MINUS
 				UnaryExpression.new(
 					operator: :NEGATE,
