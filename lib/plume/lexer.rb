@@ -333,6 +333,7 @@ module Plume
 
 		def value_at(index)
 			start, end_pos = @token_positions[index]
+			return if start.nil? || end_pos.nil?
 			@sql.byteslice(start...end_pos)
 		end
 
