@@ -14,7 +14,7 @@ module Plume
 			#         └─────{ , }◀─────┘ └[ table-constraint ]◀─{ , }◀─┘
 
 			require :CREATE
-			temporary = maybe(:TEMP) || maybe(:TEMPORARY)
+			temporary = either(:TEMP, :TEMPORARY, nil)
 			require :TABLE
 			if_not_exists = maybe_all(:IF, :NOT, :EXISTS)
 			schema_name, table_name = table_ref
@@ -144,7 +144,7 @@ module Plume
 			name = identifier if maybe :CONSTRAINT
 
 			if maybe_all :PRIMARY, :KEY
-				direction = maybe(:ASC) || maybe(:DESC)
+				direction = either(:ASC, :DESC, nil)
 				on_conflict = conflict_clause
 				autoincrement = maybe(:AUTOINCREMENT)
 
@@ -197,10 +197,10 @@ module Plume
 				require :LP
 				default = expr
 				require :RP
-				if maybe :STORED
-					{ GENERATED_AS: [default, :STORED] }
-				elsif maybe :VIRTUAL
-					{ GENERATED_AS: [default, :VIRTUAL] }
+				type = either(:STORED, :VIRTUAL, nil)
+
+				if type
+					{ GENERATED_AS: [default, type] }
 				else
 					{ GENERATED_AS: default }
 				end
@@ -224,12 +224,7 @@ module Plume
 			if maybe :COLLATE
 				collation = identifier
 			end
-			direction = nil
-			if maybe :ASC
-				direction = :ASC
-			elsif maybe :DESC
-				direction = :DESC
-			end
+			direction = either(:ASC, :DESC, nil)
 
 			if name && collation && direction
 				{ ColumnRef[name] => [collation, direction] }

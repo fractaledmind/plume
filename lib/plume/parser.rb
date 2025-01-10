@@ -1702,13 +1702,14 @@ module Plume
 			i, len = 0, options.length
 			while i < len
 				option = options[i]
-				if false
+				if (result = maybe option)
+					return result
 				else
 					i += 1
 				end
 			end
 
-			option.nil? ? option : (raise StandardError)
+			option.nil? ? option : expected!(*options)
 		end
 
 		def one_of?(*tokens)
