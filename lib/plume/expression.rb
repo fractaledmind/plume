@@ -48,6 +48,8 @@ module Plume
 		}.freeze
 
 		TOKEN_TO_OPERATOR = {
+			AND:       :ALL,
+			OR:        :ANY,
 			CONCAT:    :CONCAT,
 			PTR1:      :EXTRACT,
 			PTR2:      :RETRIEVE,
@@ -258,9 +260,7 @@ module Plume
 		end
 
 		def basic_expression
-			if maybe :NULL
-				nil
-			elsif maybe :BITNOT
+			if maybe :BITNOT
 				UnaryExpression.new(
 					operator: :INVERT,
 					operand: expression(OPERATOR_PRECEDENCE[:BITNOT])
@@ -299,7 +299,48 @@ module Plume
 				t = type_name
 				require :RP
 				{ CAST: [e, t] }
-				# ... other primary expressions ...
+			elsif maybe :CASE
+				if maybe :WHEN
+					conditions = one_or_more(sep: :WHEN) do
+						case_predicate = expression
+						require :THEN
+						case_consequence = expression
+
+						CaseCondition.new(
+							predicate: case_predicate,
+							consequence: case_consequence,
+						)
+					end
+					else_clause = maybe(:ELSE) ? expression : nil
+					require :END
+
+					CaseExpression.new(
+						predicate: nil,
+						conditions:,
+						else_clause:,
+					)
+				else
+					predicate = expression
+					require :WHEN
+					conditions = one_or_more(sep: :WHEN) do
+						case_predicate = expression
+						require :THEN
+						case_consequence = expression
+
+						CaseCondition.new(
+							predicate: case_predicate,
+							consequence: case_consequence,
+						)
+					end
+					else_clause = maybe(:ELSE) ? expression : nil
+					require :END
+
+					CaseExpression.new(
+						predicate:,
+						conditions:,
+						else_clause:,
+					)
+				end
 			else
 				expected!(".............")
 			end

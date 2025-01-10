@@ -434,17 +434,40 @@ test "NOT MATCH operator" do
 	)
 end
 
+test "Compound AND condition with greater than and less than" do
+	parser = Plume::Parser.new("c0 > 0 AND c1 < 0")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :ALL,
+		left: Plume::BinaryExpression.new(
+			operator: :ABOVE,
+			left: Plume::Identifier.new(value: "c0"),
+			right: 0
+		),
+		right: Plume::BinaryExpression.new(
+			operator: :BELOW,
+			left: Plume::Identifier.new(value: "c1"),
+			right: 0
+		)
+	)
+end
 
-# # test "Compound AND condition with greater than and less than" do
-# # 	parser = Plume::Parser.new("c0 > 0 AND c1 < 0")
-# # 	expr = parser.expression
-# # 	assert_equal expr, {
-# # 		AND: [
-# # 			{ GT: ["c0", 0] },
-# # 			{ LT: ["c1", 0] },
-# # 		]
-# # 	}
-# # end
+test "Compound OR condition with greater than and less than" do
+	parser = Plume::Parser.new("c0 > 0 OR c1 LIKE 'foo%'")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :ANY,
+		left: Plume::BinaryExpression.new(
+			operator: :ABOVE,
+			left: Plume::Identifier.new(value: "c0"),
+			right: 0
+		),
+		right: Plume::LikeExpression.new(
+			left: Plume::Identifier.new(value: "c1"),
+			right: "foo%"
+		)
+	)
+end
 
 test "NOT operator with column reference" do
 	parser = Plume::Parser.new("NOT c0")
@@ -663,28 +686,112 @@ test "NOT IN operator with a qualified function reference with arguments" do
 	)
 end
 
-# test "CASE expression" do
-#  parser = Plume::Parser.new("CASE WHEN c0 > 0 THEN 'Positive' WHEN c0 < 0 THEN 'Negative' ELSE 'Zero' END")
-#  expr = parser.expression
-#  assert_equal expr, {:CASE=>{:WHEN=>[{:GT=>["c0", 0]}, "'Positive'"], :WHEN=>[{:LT=>["c0", 0]}, "'Negative'"], :ELSE=>"'Zero'"}}
-# end
+test "CASE expression without base expression but with ELSE" do
+	parser = Plume::Parser.new("CASE WHEN c0 > 0 THEN 'Positive' WHEN c0 < 0 THEN 'Negative' ELSE 'Zero' END")
+	expr = parser.expression
+	assert_equal expr, Plume::CaseExpression.new(
+		predicate: nil,
+		conditions: [
+			Plume::CaseCondition.new(
+				predicate: Plume::BinaryExpression.new(
+					operator: :ABOVE,
+					left: Plume::Identifier.new(value: "c0"),
+					right: 0
+				),
+				consequence: "Positive"
+			),
+			Plume::CaseCondition.new(
+				predicate: Plume::BinaryExpression.new(
+					operator: :BELOW,
+					left: Plume::Identifier.new(value: "c0"),
+					right: 0
+				),
+				consequence: "Negative"
+			)
+		],
+		else_clause: "Zero"
+	)
+end
+
+test "CASE expression without base expression and without ELSE" do
+	parser = Plume::Parser.new("CASE WHEN c0 > 0 THEN 'Positive' WHEN c0 < 0 THEN 'Negative' END")
+	expr = parser.expression
+	assert_equal expr, Plume::CaseExpression.new(
+		predicate: nil,
+		conditions: [
+			Plume::CaseCondition.new(
+				predicate: Plume::BinaryExpression.new(
+					operator: :ABOVE,
+					left: Plume::Identifier.new(value: "c0"),
+					right: 0
+				),
+				consequence: "Positive"
+			),
+			Plume::CaseCondition.new(
+				predicate: Plume::BinaryExpression.new(
+					operator: :BELOW,
+					left: Plume::Identifier.new(value: "c0"),
+					right: 0
+				),
+				consequence: "Negative"
+			)
+		],
+	)
+end
+
+test "CASE expression with base expression and with ELSE" do
+	parser = Plume::Parser.new("CASE x WHEN w1 THEN r1 WHEN w2 THEN r2 ELSE r3 END")
+	expr = parser.expression
+	assert_equal expr, Plume::CaseExpression.new(
+		predicate: Plume::Identifier.new(value: "x"),
+		conditions: [
+			Plume::CaseCondition.new(
+				predicate: Plume::Identifier.new(value: "w1"),
+				consequence: Plume::Identifier.new(value: "r1")
+			),
+			Plume::CaseCondition.new(
+				predicate: Plume::Identifier.new(value: "w2"),
+				consequence: Plume::Identifier.new(value: "r2")
+			)
+		],
+		else_clause: Plume::Identifier.new(value: "r3")
+	)
+end
+
+test "CASE expression with base expression and without ELSE" do
+	parser = Plume::Parser.new("CASE x WHEN w1 THEN r1 WHEN w2 THEN r2 END")
+	expr = parser.expression
+	assert_equal expr, Plume::CaseExpression.new(
+		predicate: Plume::Identifier.new(value: "x"),
+		conditions: [
+			Plume::CaseCondition.new(
+				predicate: Plume::Identifier.new(value: "w1"),
+				consequence: Plume::Identifier.new(value: "r1")
+			),
+			Plume::CaseCondition.new(
+				predicate: Plume::Identifier.new(value: "w2"),
+				consequence: Plume::Identifier.new(value: "r2")
+			)
+		],
+	)
+end
 
 # test "Function call" do
-#  parser = Plume::Parser.new("COUNT(*)")
-#  expr = parser.expression
-#  assert_equal expr, {:COUNT=>["*"]}
+# 	parser = Plume::Parser.new("COUNT(*)")
+# 	expr = parser.expression
+# 	assert_equal expr, {:COUNT=>["*"]}
 # end
 
-# # test "Subquery in expression" do
-# #  parser = Plume::Parser.new("c0 = (SELECT MAX(c1) FROM t1)")
-# #  expr = parser.expression
-# #  assert_equal expr, {:EQ=>["c0", {:SELECT=>{:columns=>[{:MAX=>["c1"]}], :from=>"t1"}}]}
-# # end
+# test "Subquery in expression" do
+# 	parser = Plume::Parser.new("c0 = (SELECT MAX(c1) FROM t1)")
+# 	expr = parser.expression
+# 	assert_equal expr, {:EQ=>["c0", {:SELECT=>{:columns=>[{:MAX=>["c1"]}], :from=>"t1"}}]}
+# end
 
 # test "Complex nested expression" do
-#  parser = Plume::Parser.new("(c0 + 5) * 2 > (SELECT AVG(c1) FROM t1) OR c2 IS NOT NULL")
-#  expr = parser.expression
-#  assert_equal expr, {:OR=>[{:GT=>[{:MULTIPLY=>[{:PLUS=>["c0", 5]}, 2]}, {:SELECT=>{:columns=>[{:AVG=>["c1"]}], :from=>"t1"}}]}, {:IS_NOT=>["c2", nil]}]}
+# 	parser = Plume::Parser.new("(c0 + 5) * 2 > (SELECT AVG(c1) FROM t1) OR c2 IS NOT NULL")
+# 	expr = parser.expression
+# 	assert_equal expr, {:OR=>[{:GT=>[{:MULTIPLY=>[{:PLUS=>["c0", 5]}, 2]}, {:SELECT=>{:columns=>[{:AVG=>["c1"]}], :from=>"t1"}}]}, {:IS_NOT=>["c2", nil]}]}
 # end
 
 test "Bitwise operations" do

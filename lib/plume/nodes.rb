@@ -156,6 +156,8 @@ module Plume
 		prop :operator, _Union(
 			:ABOVE,
 			:ADD,
+			:ALL,
+			:ANY,
 			:ATLEAST,
 			:ATMOST,
 			:BELOW,
@@ -193,6 +195,17 @@ module Plume
 	end
 
 	class NotLikeExpression < LikeExpression
+	end
+
+	class CaseCondition < Node
+		prop :predicate, Expression
+		prop :consequence, Expression
+	end
+
+	class CaseExpression < Node
+		prop :predicate, _Nilable(Expression)
+		prop :conditions, _Array(CaseCondition)
+		prop :else_clause, _Nilable(Expression)
 	end
 
 	class Identifier < Node
