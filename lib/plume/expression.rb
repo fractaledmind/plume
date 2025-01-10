@@ -35,6 +35,8 @@ module Plume
 			EQ:       30,
 			NE:       30,
 			IS:       30,
+			ISNULL:   30,
+			NOTNULL:  30,
 			BETWEEN:  20,
 			IN:       20,
 			MATCH:    20,
@@ -46,25 +48,32 @@ module Plume
 		}.freeze
 
 		TOKEN_TO_OPERATOR = {
-			CONCAT: :CONCAT,
-			PTR1:   :EXTRACT,
-			PTR2:   :RETRIEVE,
-			STAR:   :MULTIPLY,
-			SLASH:  :DIVIDE,
-			REM:    :MODULO,
-			PLUS:   :ADD,
-			MINUS:  :SUB,
-			BITAND: :BIT_AND,
-			BITOR:  :BIT_OR,
-			LSHIFT: :BIT_LSHIFT,
-			RSHIFT: :BIT_RSHIFT,
-			LT:     :BELOW,
-			GT:     :ABOVE,
-			LE:     :ATMOST,
-			GE:     :ATLEAST,
-			EQ:     :EQUALS,
-			NE:     :NOT_EQUALS,
-			IS:     :IS
+			CONCAT:    :CONCAT,
+			PTR1:      :EXTRACT,
+			PTR2:      :RETRIEVE,
+			STAR:      :MULTIPLY,
+			SLASH:     :DIVIDE,
+			REM:       :MODULO,
+			PLUS:      :ADD,
+			MINUS:     :SUB,
+			BITAND:    :BIT_AND,
+			BITOR:     :BIT_OR,
+			LSHIFT:    :BIT_LSHIFT,
+			RSHIFT:    :BIT_RSHIFT,
+			LT:        :BELOW,
+			GT:        :ABOVE,
+			LE:        :ATMOST,
+			GE:        :ATLEAST,
+			EQ:        :EQUALS,
+			NE:        :NOT_EQUALS,
+			IS:        :IS,
+			ISNOT:     :IS_NOT,
+			GLOB:      :GLOB,
+			REGEXP:    :REGEXP,
+			MATCH:     :MATCH,
+			NOTGLOB:   :NOT_GLOB,
+			NOTREGEXP: :NOT_REGEXP,
+			NOTMATCH:  :NOT_MATCH,
 		}.freeze
 
 		def expression(min_precedence = 0)
@@ -114,19 +123,22 @@ module Plume
 
 					if maybe :LP
 						if maybe :RP
-							left = expression_node.new(
+							return expression_node.new(
 								member: left,
 								collection: []
 							)
-							# elsif (s = optional { select_stmt })
-							# 	require :RP
+						elsif (s = optional { select_stmt })
+							require :RP
 
-							# 	{ lexpr => { IN: s } }
+							return expression_node.new(
+								member: left,
+								collection: s
+							)
 						elsif (e = optional { expression(op_precedence + 1) })
 							exprs = one_or_more(given: e) { expression(op_precedence + 1) }
 							require :RP
 
-							left = expression_node.new(
+							return expression_node.new(
 								member: left,
 								collection: exprs
 							)
@@ -173,7 +185,7 @@ module Plume
 							)
 						end
 
-						left = expression_node.new(
+						return expression_node.new(
 							member: left,
 							collection:
 						)
@@ -184,67 +196,71 @@ module Plume
 					middle = expression(op_precedence + 1)
 					require :AND
 					right = expression(op_precedence + 1)
-					left = TernaryExpression.new(
+					return TernaryExpression.new(
 						operator: (negated ? :NOT_BETWEEN : :BETWEEN),
 						left: left,
 						middle: middle,
 						right: right
 					)
 				elsif maybe :LIKE
-					# like_expression(negated:, op_precedence:)
-				elsif either :GLOB, :REGEXP, :MATCH
-					# matching_expression(negated:, op_precedence:)
+					expression_node = negated ? NotLikeExpression : LikeExpression
+					right = expression(op_precedence + 1)
+					escape = maybe(:ESCAPE) ? expression : nil
+					return expression_node.new(
+						left:,
+						right:,
+						escape:,
+					)
+				elsif (mop = either :GLOB, :REGEXP, :MATCH, nil)
+					op = negated ? "NOT#{mop}".to_sym : mop
+					right = expression(op_precedence + 1)
+					return BinaryExpression.new(
+						operator: TOKEN_TO_OPERATOR[op],
+						left:,
+						right:,
+					)
 				end
 
-				# error if not
+				expected!(:IN, :BETWEEN, :LIKE, :GLOB, :REGEXP, :MATCH) if negated
 
-				# require op
-
-				# case op
-				# when :BETWEEN
-				# 	middle = expression(op_precedence + 1)
-				# 	require :AND
-				# 	right = expression(op_precedence + 1)
-				# 	left = TernaryExpression.new(
-				# 		operator: :BETWEEN,
-				# 		left: left,
-				# 		middle: middle,
-				# 		right: right
-				# 	)
-				# when :IN
-				# 	in_expression(not: false)
-				# when :NOT
-				# 	require :NOT
-				# 	case (op = current_token)
-				# 		when :IN then in_expression(not: true)
-				# 	end
-				# when :LIKE
-				# 	right = expression(op_precedence + 1)
-				# 	escape = maybe(:ESCAPE) ? expression : nil
-				# 	left = LikeExpression.new(
-				# 		left:,
-				# 		right:,
-				# 		escape:,
-				# 	)
-				# when :LIKE, :GLOB, :REGEXP, :MATCH
-				# 	right = expression(op_precedence + 1)
-				# 	left = { op => [left, right] }
-				# else
-				# 	right = expression(op_precedence + 1)
-
-				# 	left = BinaryExpression.new(
-				# 		operator: TOKEN_TO_OPERATOR[op],
-				# 		left:,
-				# 		right:,
-				# 	)
-				# end
+				if maybe :ISNULL
+					left = UnaryExpression.new(
+						operator: :IS_NULL,
+						operand: left
+					)
+				elsif maybe :NOTNULL
+					left = UnaryExpression.new(
+						operator: :NOT_NULL,
+						operand: left
+					)
+				elsif maybe :IS
+					negated = maybe :NOT
+					op = negated ? "#{op}NOT".to_sym : op
+					maybe_all :DISTINCT, :FROM
+					right = expression(op_precedence + 1)
+					left = BinaryExpression.new(
+						operator: TOKEN_TO_OPERATOR[op],
+						left:,
+						right:,
+					)
+				else
+					require op
+					right = expression(op_precedence + 1)
+					left = BinaryExpression.new(
+						operator: TOKEN_TO_OPERATOR[op],
+						left:,
+						right:,
+					)
+				end
 			end
 
 			left
 		end
 
 		def basic_expression
-			if maybe :TILDE
+			if maybe :NULL
+				nil
+			elsif maybe :TILDE
 				{ BITWISE_NOT: expression(OPERATOR_PRECEDENCE[:TILDE]) }
 			elsif maybe :PLUS
 				expression(:UPLUS)
@@ -265,8 +281,6 @@ module Plume
 				end
 			elsif :ID == current_token
 				Identifier.new(value: identifier)
-			elsif (v = optional { literal_value })
-				v
 			elsif maybe :NOT
 				UnaryExpression.new(
 					operator: :NOT,
@@ -281,7 +295,7 @@ module Plume
 				{ CAST: [e, t] }
 				# ... other primary expressions ...
 			else
-				expected!
+				expected!(".............")
 			end
 		end
 	end

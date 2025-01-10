@@ -148,7 +148,7 @@ module Plume
 	end
 
 	class UnaryExpression < Node
-		prop :operator, _Union(:INVERT, :NEGATE, :IDENTITY, :NOT)
+		prop :operator, _Union(:INVERT, :NEGATE, :IDENTITY, :NOT, :IS_NULL, :NOT_NULL)
 		prop :operand, Expression
 	end
 
@@ -190,6 +190,9 @@ module Plume
 		prop :left, Expression
 		prop :right, Expression
 		prop :escape, _Nilable(Expression)
+	end
+
+	class NotLikeExpression < LikeExpression
 	end
 
 	class Identifier < Node
