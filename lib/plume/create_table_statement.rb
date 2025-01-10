@@ -13,9 +13,9 @@ module Plume
 			# └▶{ ( }─┬▶[ column-def ]─┬▶┬─────────────────────────────┬▶{ ) }┴▶[ table-options ]┘
 			#         └─────{ , }◀─────┘ └[ table-constraint ]◀─{ , }◀─┘
 
-			accept :CREATE
+			require :CREATE
 			temporary = maybe(:TEMP) || maybe(:TEMPORARY)
-			accept :TABLE
+			require :TABLE
 			if_not_exists = maybe_all(:IF, :NOT, :EXISTS)
 			schema_name, table_name = table_ref
 
@@ -24,7 +24,7 @@ module Plume
 			elsif maybe :LP
 				columns = one_or_more { column_def }
 				constraints = zero_or_more { table_constraint }
-				accept :RP
+				require :RP
 			else
 				error!(current_token, current_value, [:AS, :LP])
 			end
@@ -66,9 +66,9 @@ module Plume
 			#                                  └─────{ , }◀─────┘
 			name = identifier if maybe :CONSTRAINT
 			if maybe :UNIQUE
-				accept :LP
+				require :LP
 				columns = one_or_more { indexed_column }
-				accept :RP
+				require :RP
 				on_conflict = conflict_clause
 				if on_conflict or name
 					{ UNIQUE: [columns, on_conflict, ({ NAME: name } if name)].compact! }
@@ -76,14 +76,14 @@ module Plume
 					{ UNIQUE: columns }
 				end
 			elsif maybe :CHECK
-				accept :LP
+				require :LP
 				check = expr
-				accept :RP
+				require :RP
 				{ CHECK: check }
 			elsif maybe_all :PRIMARY, :KEY
-				accept :LP
+				require :LP
 				columns = one_or_more { indexed_column }
-				accept :RP
+				require :RP
 				on_conflict = conflict_clause
 				if on_conflict or name
 					{ PRIMARY_KEY: [columns, on_conflict, ({ NAME: name } if name)].compact! }
@@ -91,9 +91,9 @@ module Plume
 					{ PRIMARY_KEY: columns }
 				end
 			elsif maybe_all :FOREIGN, :KEY
-				accept :LP
+				require :LP
 				columns = one_or_more { column_name }
-				accept :RP
+				require :RP
 				clause = foreign_key_clause
 				{ FOREIGN_KEY: [columns, clause] }
 			else
@@ -111,7 +111,7 @@ module Plume
 			name = one_or_more(sep: nil) { identifier }.join(" ")
 			if maybe :LP
 				constraints = one_or_more { signed_number }
-				accept :RP
+				require :RP
 			end
 
 			case name
@@ -169,9 +169,9 @@ module Plume
 					conflict_clause: on_conflict
 				)
 			elsif maybe :CHECK
-				accept :LP
+				require :LP
 				check = expr
-				accept :RP
+				require :RP
 
 				CheckColumnConstraint.new(
 					name:,
@@ -180,7 +180,7 @@ module Plume
 			elsif maybe :DEFAULT
 				if maybe :LP
 					default = expr
-					accept :RP
+					require :RP
 					{ DEFAULT: default }
 				elsif (number = optional { signed_number })
 					{ DEFAULT: number }
@@ -194,9 +194,9 @@ module Plume
 			elsif :REFERENCES == current_token
 				foreign_key_clause
 			elsif maybe_all(:GENERATED, :ALWAYS, :AS) or maybe(:AS)
-				accept :LP
+				require :LP
 				default = expr
-				accept :RP
+				require :RP
 				if maybe :STORED
 					{ GENERATED_AS: [default, :STORED] }
 				elsif maybe :VIRTUAL
@@ -262,7 +262,7 @@ module Plume
 			if maybe_all :ON, :CONFLICT
 				case current_token
 				when :ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE
-					accept current_token
+					require current_token
 				else
 					error!(current_token, current_value, [:ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE])
 				end

@@ -107,12 +107,12 @@ module Plume
 				op_precedence = OPERATOR_PRECEDENCE[op] || -1
 				break if op_precedence < min_precedence
 
-				accept op
+				require op
 
 				case op
 				when :BETWEEN
 					middle = expression(op_precedence + 1)
-					accept :AND
+					require :AND
 					right = expression(op_precedence + 1)
 					left = BetweenExpression.new(
 						left: left,
@@ -126,12 +126,12 @@ module Plume
 						if maybe :RP
 							{ lexpr => { IN: [] } }
 						# elsif (s = optional { select_stmt })
-						# 	accept :RP
+						# 	require :RP
 
 						# 	{ lexpr => { IN: s } }
 						elsif (e = optional { expr })
 							exprs = one_or_more(given: e) { expr }
-							accept :RP
+							require :RP
 							left = { left => { op => exprs } }
 						else
 							error!(current_token, current_value, [:RP, "select-stmt", "expr"])
@@ -144,7 +144,7 @@ module Plume
 								{ lexpr => { IN: { FN: { ref => [] } } } }
 							elsif (e = optional { expr })
 								expr = one_or_more(given: e) { expr }
-								accept :RP
+								require :RP
 								{ lexpr => { IN: { FN: { ref => exprs } } } }
 							else
 								error!(current_token, current_value, [:RP, "expr"])
@@ -184,7 +184,7 @@ module Plume
 				)
 			elsif maybe :LP
 				e = expression(0)
-				accept :RP
+				require :RP
 				e
 			elsif :ID == current_token
 				Identifier.new(value: identifier)
@@ -196,11 +196,11 @@ module Plume
 					operand: expression(OPERATOR_PRECEDENCE[:NOT])
 				)
 			elsif maybe :CAST
-				accept :LP
+				require :LP
 				e = expression
-				accept :AS
+				require :AS
 				t = type_name
-				accept :RP
+				require :RP
 				{ CAST: [e, t] }
 				# ... other primary expressions ...
 			else

@@ -253,7 +253,7 @@ module Plume
 			#                                          ├─▶[ update-stmt ]───────────────▶─┤
 			#                                          └─▶[ vacuum-stmt ]───────────────▶─┘
 
-			accept :PLAN if (explain = maybe :EXPLAIN) && (query_plan = maybe :QUERY)
+			require :PLAN if (explain = maybe :EXPLAIN) && (query_plan = maybe :QUERY)
 
 			case current_token
 			when :ALTER							then alter_table_stmt
@@ -331,7 +331,7 @@ module Plume
 			# │           └──────▶──────┘                                                 │
 			# └─▶{ DROP }─▶┬─▶{ COLUMN }─┬▶{ column-name }──────────────────────────────▶─┘
 			#              └──────▶──────┘
-			accept :ALTER, :TABLE
+			require :ALTER, :TABLE
 
 			:alter_table_stmt
 		end
@@ -342,7 +342,7 @@ module Plume
 			#                 ├▶{ schema-name }──────────────────────────────────▶─┤
 			#                 ├▶{ index-or-table-name }──────────────────────────▶─┤
 			#                 └▶{ schema-name }─▶{ . }─▶{ table-or-index-name }──▶─┘
-			accept :ANALYZE
+			require :ANALYZE
 
 			:analyze_stmt
 		end
@@ -351,7 +351,7 @@ module Plume
 		def attach_stmt
 			# ◯─▶{ ATTACH }─▶┬─▶{ DATABASE }┬▶[ expr ]─▶{ AS }─▶{ schema-name }─▶◯
 			#                └───────▶──────┘
-			accept :ATTACH
+			require :ATTACH
 
 			:attach_stmt
 		end
@@ -362,7 +362,7 @@ module Plume
 			#               ├▶{ DEFERRED }──▶─┤ └────────▶───────┘
 			#               ├▶{ IMMEDIATE }─▶─┤
 			#               └▶{ EXCLUSIVE }─▶─┘
-			accept :BEGIN
+			require :BEGIN
 
 			:begin_stmt
 		end
@@ -389,7 +389,7 @@ module Plume
 			#          └───────{ , }◀───────┘       │
 			#               ┌─────◀─────────────────┤
 			#               └─▶{ WHERE }─▶{ expr }──┴─▶─◯
-			accept :CREATE
+			require :CREATE
 
 			:create_index_stmt
 		end
@@ -431,443 +431,443 @@ module Plume
 			#		json_replace(json,path,value,...), jsonb_replace(json,path,value,...), json_set(json,path,value,...),
 			#		jsonb_set(json,path,value,...), json_type(json|json,path), json_valid(json|json,flags), json_quote(value)
 			func = identifier
-			accept :LP
+			require :LP
 			case (func = func.to_sym.upcase)
 			when :ABS
 				arg = expr
-				accept :RP
+				require :RP
 				{ ABS: arg }
 			when :ACOS
 				arg = expr
-				accept :RP
+				require :RP
 				{ ACOS: arg }
 			when :ACOSH
 				arg = expr
-				accept :RP
+				require :RP
 				{ ACOSH: arg }
 			when :ASIN
 				arg = expr
-				accept :RP
+				require :RP
 				{ ASIN: arg }
 			when :ASINH
 				arg = expr
-				accept :RP
+				require :RP
 				{ ASINH: arg }
 			when :ATAN
 				arg = expr
-				accept :RP
+				require :RP
 				{ ATAN: arg }
 			when :ATAN2
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ ATAN2: args }
 			when :ATANH
 				arg = expr
-				accept :RP
+				require :RP
 				{ ATANH: arg }
 			when :CEIL
 				arg = expr
-				accept :RP
+				require :RP
 				{ CEIL: arg }
 			when :CEILING
 				arg = expr
-				accept :RP
+				require :RP
 				{ CEILING: arg }
 			when :CHANGES
 				maybe(:STAR)
-				accept :RP
+				require :RP
 				:CHANGES
 			when :CHAR
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ CHAR: args }
 			when :COALESCE
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ COALESCE: args }
 			when :CONCAT
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ CONCAT: args }
 			when :CONCAT_WS
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ CONCAT_WS: args }
 			when :COS
 				arg = expr
-				accept :RP
+				require :RP
 				{ COS: arg }
 			when :COSH
 				arg = expr
-				accept :RP
+				require :RP
 				{ COSH: arg }
 			when :DATE
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ DATE: args }
 			when :DATETIME
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ DATETIME: args }
 			when :DEGREES
 				arg = expr
-				accept :RP
+				require :RP
 				{ ACOSH: arg }
 			when :EXP
 				arg = expr
-				accept :RP
+				require :RP
 				{ ACOSH: arg }
 			when :FLOOR
 				arg = expr
-				accept :RP
+				require :RP
 				{ ACOSH: arg }
 			when :FORMAT
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ FORMAT: args }
 			when :GLOB
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ GLOB: args }
 			when :HEX
 				arg = expr
-				accept :RP
+				require :RP
 				{ HEX: args }
 			when :IFNULL
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ IFNULL: args }
 			when :IIF
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ IIF: args }
 			when :INSTR
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ INSTR: args }
 			when :JULIANDAY
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JULIANDAY: args }
 			when :JSON
 				arg = expr
-				accept :RP
+				require :RP
 				{ JSON: arg }
 			when :JSONB
 				arg = expr
-				accept :RP
+				require :RP
 				{ JSONB: arg }
 			when :JSON_ARRAY
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSON_ARRAY: args }
 			when :JSONB_ARRAY
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSONB_ARRAY: args }
 			when :JSON_ARRAY_LENGTH
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSON_ARRAY_LENGTH: args }
 			when :JSON_ERROR_POSITION
 				arg = expr
-				accept :RP
+				require :RP
 				{ JSON_ERROR_POSITION: arg }
 			when :JSON_EXTRACT
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSON_EXTRACT: args }
 			when :JSONB_EXTRACT
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSONB_EXTRACT: args }
 			when :JSON_INSERT
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSON_INSERT: args }
 			when :JSONB_INSERT
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSONB_INSERT: args }
 			when :JSON_OBJECT
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSON_OBJECT: args }
 			when :JSONB_OBJECT
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSONB_OBJECT: args }
 			when :JSON_PATCH
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSON_PATCH: args }
 			when :JSONB_PATCH
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSONB_PATCH: args }
 			when :JSON_PRETTY
 				arg = expr
-				accept :RP
+				require :RP
 				{ JSON_PRETTY: arg }
 			when :JSON_REMOVE
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSON_REMOVE: args }
 			when :JSONB_REMOVE
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSONB_REMOVE: args }
 			when :JSON_REPLACE
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSON_REPLACE: args }
 			when :JSONB_REPLACE
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSONB_REPLACE: args }
 			when :JSON_SET
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSON_SET: args }
 			when :JSONB_SET
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSONB_SET: args }
 			when :JSON_TYPE
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSON_TYPE: args }
 			when :JSON_VALID
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ JSON_VALID: args }
 			when :JSON_QUOTE
 				arg = expr
-				accept :RP
+				require :RP
 				{ JSON_QUOTE: arg }
 			when :LAST_INSERT_ROWID
 				maybe(:STAR)
-				accept :RP
+				require :RP
 				:LAST_INSERT_ROWID
 			when :LENGTH
 				arg = expr
-				accept :RP
+				require :RP
 				{ LENGTH: arg }
 			when :LIKE
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ LIKE: args }
 			when :LIKELIHOOD
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ LIKELIHOOD: args }
 			when :LIKELY
 				arg = expr
-				accept :RP
+				require :RP
 				{ LIKELY: arg }
 			when :LN
 				arg = expr
-				accept :RP
+				require :RP
 				{ ACOSH: arg }
 			when :LOAD_EXTENSION
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ LOAD_EXTENSION: args }
 			when :LOG
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ LOG: args }
 			when :LOG10
 				arg = expr
-				accept :RP
+				require :RP
 				{ LOG10: arg }
 			when :LOG2
 				arg = expr
-				accept :RP
+				require :RP
 				{ LOG2: arg }
 			when :LOWER
 				arg = expr
-				accept :RP
+				require :RP
 				{ LOWER: arg }
 			when :LTRIM
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ LTRIM: args }
 			when :MAX
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ MAX: args }
 			when :MIN
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ MIN: args }
 			when :MOD
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ MOD: arg }
 			when :NULLIF
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ NULLIF: args }
 			when :OCTET_LENGTH
 				arg = expr
-				accept :RP
+				require :RP
 				{ OCTET_LENGTH: arg }
 			when :PI
 				maybe(:STAR)
-				accept :RP
+				require :RP
 				:PI
 			when :POW
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ POW: args }
 			when :POWER
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ POWER: args }
 			when :PRINTF
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ PRINTF: args }
 			when :QUOTE
 				arg = expr
-				accept :RP
+				require :RP
 				{ QUOTE: arg }
 			when :RADIANS
 				arg = expr
-				accept :RP
+				require :RP
 				{ RADIANS: arg }
 			when :RANDOM
 				maybe(:STAR)
-				accept :RP
+				require :RP
 				:RANDOM
 			when :RANDOMBLOB
 				arg = expr
-				accept :RP
+				require :RP
 				{ RANDOMBLOB: arg }
 			when :REPLACE
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ REPLACE: args }
 			when :ROUND
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ ROUND: args }
 			when :RTRIM
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ RTRIM: args }
 			when :SIGN
 				arg = expr
-				accept :RP
+				require :RP
 				{ SIGN: arg }
 			when :SIN
 				arg = expr
-				accept :RP
+				require :RP
 				{ SIN: arg }
 			when :SINH
 				arg = expr
-				accept :RP
+				require :RP
 				{ SINH: arg }
 			when :SOUNDEX
 				arg = expr
-				accept :RP
+				require :RP
 				{ SOUNDEX: arg }
 			when :SQLITE_COMPILEOPTION_GET
 				arg = expr
-				accept :RP
+				require :RP
 				{ SQLITE_COMPILEOPTION_GET: arg }
 			when :SQLITE_COMPILEOPTION_USED
 				arg = expr
-				accept :RP
+				require :RP
 				{ SQLITE_COMPILEOPTION_USED: arg }
 			when :SQLITE_OFFSET
 				arg = expr
-				accept :RP
+				require :RP
 				{ SQLITE_OFFSET: arg }
 			when :SQLITE_SOURCE_ID
 				maybe(:STAR)
-				accept :RP
+				require :RP
 				:SQLITE_SOURCE_ID
 			when :SQLITE_VERSION
 				maybe(:STAR)
-				accept :RP
+				require :RP
 				:SQLITE_VERSION
 			when :SQRT
 				arg = expr
-				accept :RP
+				require :RP
 				{ SQRT: arg }
 			when :STRFTIME
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ STRFTIME: args }
 			when :SUBSTR
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ SUBSTR: args }
 			when :SUBSTRING
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ SUBSTRING: args }
 			when :TAN
 				arg = expr
-				accept :RP
+				require :RP
 				{ TAN: arg }
 			when :TANH
 				arg = expr
-				accept :RP
+				require :RP
 				{ TANH: arg }
 			when :TIME
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ TIME: args }
 			when :TIMEDIFF
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ TIMEDIFF: args }
 			when :TOTAL_CHANGES
 				maybe(:STAR)
-				accept :RP
+				require :RP
 				:TOTAL_CHANGES
 			when :TRIM
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ TRIM: args }
 			when :TRUNC
 				arg = expr
-				accept :RP
+				require :RP
 				{ TRUNC: arg }
 			when :TYPEOF
 				arg = expr
-				accept :RP
+				require :RP
 				{ TYPEOF: arg }
 			when :UNHEX
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ UNHEX: args }
 			when :UNICODE
 				arg = expr
-				accept :RP
+				require :RP
 				{ UNICODE: arg }
 			when :UNIXEPOCH
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ UNIXEPOCH: args }
 			when :UNLIKELY
 				arg = expr
-				accept :RP
+				require :RP
 				{ UNLIKELY: arg }
 			when :UPPER
 				arg = expr
-				accept :RP
+				require :RP
 				{ UPPER: arg }
 			when :ZEROBLOB
 				arg = expr
-				accept :RP
+				require :RP
 				{ ZEROBLOB: arg }
 			else
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				{ FN: { func => args } }
 			end
 		end
@@ -884,7 +884,7 @@ module Plume
 			# Built-in aggregate functions: (https://www.sqlite.org/lang_aggfunc.html)
 			#		avg(X), count(*), count(X), group_concat(X|X,Y), max(X), min(X), string_agg(X,Y), sum(X), total(X)
 			func = identifier
-			accept :LP
+			require :LP
 
 			args = nil
 			if maybe :DISTINCT
@@ -932,7 +932,7 @@ module Plume
 			else
 				key = { FN: { func => args } }
 			end
-			accept :RP
+			require :RP
 
 			if (filter = optional { filter_clause })
 				{ key => filter }
@@ -952,93 +952,93 @@ module Plume
 			# Built-in aggregate functions: (https://www.sqlite.org/lang_aggfunc.html)
 			#		avg(X), count(*|X), group_concat(X|X,Y), max(X), min(X), string_agg(X,Y), sum(X), total(X)
 			func = identifier
-			accept :LP
+			require :LP
 			key = nil
 			case (func = func.to_sym.upcase)
 			when :ROW_NUMBER
 				maybe(:STAR)
-				accept :RP
+				require :RP
 				key = :ROW_NUMBER
 			when :RANK
 				maybe(:STAR)
-				accept :RP
+				require :RP
 				key = :RANK
 			when :DENSE_RANK
 				maybe(:STAR)
-				accept :RP
+				require :RP
 				key = :DENSE_RANK
 			when :PERCENT_RANK
 				maybe(:STAR)
-				accept :RP
+				require :RP
 				key = :PERCENT_RANK
 			when :CUME_DIST
 				maybe(:STAR)
-				accept :RP
+				require :RP
 				key = :CUME_DIST
 			when :NTILE
 				arg = expr
-				accept :RP
+				require :RP
 				key = { NTILE: arg }
 			when :LAG
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				key = { LAG: args }
 			when :LEAD
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				key = { LEAD: args }
 			when :FIRST_VALUE
 				arg = expr
-				accept :RP
+				require :RP
 				key = { FIRST_VALUE: arg }
 			when :LAST_VALUE
 				arg = expr
-				accept :RP
+				require :RP
 				key = { LAST_VALUE: arg }
 			when :NTH_VALUE
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				key = { NTH_VALUE: args }
 			when :AVG
 				arg = expr
-				accept :RP
+				require :RP
 				key = { AVG: arg }
 			when :COUNT
 				arg = maybe(:STAR) ? :* : expr
-				accept :RP
+				require :RP
 				key = { COUNT: arg }
 			when :GROUP_CONCAT
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				key = { GROUP_CONCAT: args }
 			when :MAX
 				arg = expr
-				accept :RP
+				require :RP
 				key = { MAX: arg }
 			when :MIN
 				arg = expr
-				accept :RP
+				require :RP
 				key = { MIN: arg }
 			when :STRING_AGG
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				key = { STRING_AGG: args }
 			when :SUM
 				arg = expr
-				accept :RP
+				require :RP
 				key = { SUM: arg }
 			when :TOTAL
 				arg = expr
-				accept :RP
+				require :RP
 				key = { TOTAL: arg }
 			else
 				args = one_or_more { expr }
-				accept :RP
+				require :RP
 				key = { FN: { func => args } }
 			end
 
 			filter = optional { filter_clause }
-			accept :OVER
+			require :OVER
 			window = (:LP == current_token) ? window_defn : identifier
 
 			{ key => { OVER: window }.merge!(filter || {}) }
@@ -1046,9 +1046,9 @@ module Plume
 
 		def filter_clause
 			# ◯─▶{ FILTER }─▶{ ( }─▶{ WHERE }─▶[ expr ]─▶{ ) }─▶◯
-			accept_all :FILTER, :LP, :WHERE
+			require_all :FILTER, :LP, :WHERE
 			condition = expr
-			accept :RP
+			require :RP
 
 			{ FILTER: condition }
 		end
@@ -1065,7 +1065,7 @@ module Plume
 			#      ├─────────────────────────────────────┘
 			#      ├─▶[ frame-spec ]┬─▶──────────────────{ ) }─▶◯
 			#      └─────────▶──────┘
-			accept :LP
+			require :LP
 			name = optional { identifier }
 			partition_by = {}
 			if maybe_all :PARTITION, :BY
@@ -1076,7 +1076,7 @@ module Plume
 				order_by = { ORDER_BY: one_or_more { ordering_term } }
 			end
 			frame = optional { frame_spec }
-			accept :RP
+			require :RP
 
 			if name.nil? && partitions.nil? && orders.nil? && frame.nil?
 				{ OVER: [] }
@@ -1104,7 +1104,7 @@ module Plume
 			#                                         ├─▶{ EXCLUDE }─▶{ TIES }─────────────▶─┤
 			#                                         └──────────────────────────────────────┴─────────▶◯
 			if one_of? :RANGE, :ROWS, :GROUPS
-				type = accept current_token
+				type = require current_token
 				if maybe :BETWEEN
 					if maybe_all :UNBOUNDED, :PRECEDING
 						precedence = 1
@@ -1125,7 +1125,7 @@ module Plume
 					else
 						error!(current_token, current_value, ["UNBOUNDED PRECEDING", "CURRENT ROW", "expr"])
 					end
-					accept :AND
+					require :AND
 					if maybe_all :CURRENT, :ROW
 						error!(current_token, current_value, ["UNBOUNDED FOLLOWING", "expr"]) if 3 < precedence
 						ending = :CURRENT_ROW
@@ -1150,7 +1150,7 @@ module Plume
 				elsif maybe_all :CURRENT, :ROW
 					boundary = :CURRENT_ROW
 				elsif (e = optional { expr })
-					accept :PRECEDING
+					require :PRECEDING
 					boundary = { PRECEDING: e }
 				else
 					error!(current_token, current_value, [:BETWEEN, :UNBOUNDED, :CURRENT, "expr"])
@@ -1192,7 +1192,7 @@ module Plume
 			end
 			direction = :ASC
 			if one_of? :ASC, :DESC
-				direction = accept current_token
+				direction = require current_token
 			end
 			if maybe :NULLS
 				nulls = maybe(:FIRST) || maybe(:LAST)
@@ -1210,24 +1210,24 @@ module Plume
 			#                    ├─▶{ ROLLBACK }─┬▶{ , }─▶{ error-message }─┘
 			#                    ├─▶{ ABORT }──▶─┤
 			#                    └─▶{ FAIL }───▶─┘
-			accept_all :RAISE, :LP
+			require_all :RAISE, :LP
 			if maybe :IGNORE
-				accept :RP
+				require :RP
 				{ RAISE: :IGNORE }
 			elsif maybe :ROLLBACK
-				accept :COMMA
+				require :COMMA
 				error_message = identifier
-				accept :RF
+				require :RF
 				{ RAISE: { ROLLBACK: error_message } }
 			elsif maybe :ABORT
-				accept :COMMA
+				require :COMMA
 				error_message = identifier
-				accept :RF
+				require :RF
 				{ RAISE: { ABORT: error_message } }
 			elsif maybe :FAIL
-				accept :COMMA
+				require :COMMA
 				error_message = identifier
-				accept :RF
+				require :RF
 				{ RAISE: { FAIL: error_message } }
 			else
 				error!(current_token, current_value, [:IGNORE, :ROLLBACK, :ABORT, :FAIL])
@@ -1254,16 +1254,16 @@ module Plume
 			case current_token
 			when :INTEGER
 				value = current_value.to_i
-				accept :INTEGER
+				require :INTEGER
 				value
 			when :FLOAT
 				value = current_value.to_f
-				accept :FLOAT
+				require :FLOAT
 				value
 			when :QNUMBER
 				value = current_value.to_f
 				value = value.to_i if value % 1 == 0
-				accept :QNUMBER
+				require :QNUMBER
 				value
 			else
 				error!(current_token, current_value, [:INTEGER, :FLOAT, :QNUMBER])
@@ -1273,11 +1273,11 @@ module Plume
 		def string_literal
 			if one_of? :STRING, :ID
 				value = current_value
-				accept current_token
+				require current_token
 				value
 			elsif TOKEN_FALLBACKS[current_token]
 				value = @lexer.value
-				accept current_token
+				require current_token
 				value
 			else
 				error!(current_token, current_value, [:STRING, :ID, *TOKEN_FALLBACKS.reject { |_, v| v.nil? }.keys])
@@ -1287,7 +1287,7 @@ module Plume
 		def blob_literal
 			if current_token == :BLOB
 				value = current_value
-				accept current_token
+				require current_token
 				value
 			else
 				error!(current_token, current_value, [:BLOB])
@@ -1305,8 +1305,8 @@ module Plume
 			#   ├─▶{ CURRENT_DATE }───────▶─┤
 			#   └─▶{ CURRENT_TIMESTAMP }──▶─┘
 			return nil if maybe :NULL
-			return true if current_token == :ID && current_value.upcase == "TRUE" && accept(:ID)
-			return false if current_token == :ID && current_value.upcase == "FALSE" && accept(:ID)
+			return true if current_token == :ID && current_value.upcase == "TRUE" && require(:ID)
+			return false if current_token == :ID && current_value.upcase == "FALSE" && require(:ID)
 			return :CURRENT_TIME if maybe :CURRENT_TIME
 			return :CURRENT_DATE if maybe :CURRENT_DATE
 			return :CURRENT_TIMESTAMP if maybe :CURRENT_TIMESTAMP
@@ -1336,12 +1336,12 @@ module Plume
 			#  ├─{ NOT }──▶─┘                ├─▶{ INITIALLY }─▶{ DEFERRED }──▶─┤
 			#  │                             └─▶{ INITIALLY }─▶{ IMMEDIATE }─▶─┤
 			#  └───────────────────────────────────────────────────────────────┴──────▶◯
-			accept :REFERENCES
+			require :REFERENCES
 			foreign_table = identifier
 			columns = nil
 			if maybe :LP
 				columns = one_or_more { identifier }
-				accept :RP
+				require :RP
 			end
 			meta = {}
 			while maybe :ON
@@ -1581,7 +1581,7 @@ module Plume
 			#             │                       ├─▶{ OFFSET }─▶[ expr ]─▶─┤
 			#             │                       └─▶{ , }─▶[ expr ]──────▶─┤
 			#             └───────────────────────────────────────────────▶─┴───────▶◯
-			accept :SELECT
+			require :SELECT
 
 			:select_stmt
 		end
@@ -1633,7 +1633,7 @@ module Plume
 			#  ├─▶[ insert-stmt ]───────────────▶─┤
 			#  ├─▶[ select-stmt ]───────────────▶─┤
 			#  └─▶[ update-stmt ]───────────────▶─┴──────────────────────▶─◯
-			accept :WITH
+			require :WITH
 			recursive = maybe :RECURSIVE
 		end
 
@@ -1642,11 +1642,11 @@ module Plume
 		def identifier
 			if one_of? :STRING, :ID, :INDEXED, :CROSS, :FULL, :INNER, :LEFT, :NATURAL, :OUTER, :RIGHT
 				value = current_value
-				accept current_token
+				require current_token
 				value
 			elsif TOKEN_FALLBACKS[current_token]
 				value = current_token
-				accept current_token
+				require current_token
 				value
 			else
 				error!(current_token, current_value, [:STRING, :ID, :INDEXED, :CROSS, :FULL, :INNER, :LEFT, :NATURAL, :OUTER, :RIGHT])
@@ -1655,7 +1655,7 @@ module Plume
 
 		# ---
 
-		def accept(token)
+		def require(token)
 			if token == current_token
 				advance && token
 			else
@@ -1667,7 +1667,7 @@ module Plume
 			advance && token if token == current_token
 		end
 
-		def accept_all(*tokens)
+		def require_all(*tokens)
 			# save one allocation as `Array#each` (at least up to Ruby 3.3) actually allocates one object
 			i, len = 0, tokens.length
 			while i < len
@@ -1695,7 +1695,7 @@ module Plume
 				i += 1
 			end
 
-			accept_all(*tokens) if advance
+			require_all(*tokens) if advance
 		end
 
 		def one_of?(*tokens)
