@@ -59,6 +59,7 @@ module Plume
 		_Deferred {
 			_Union(
 				Identifier,
+				ColumnReference,
 				UnaryExpression,
 				BinaryExpression,
 				CastExpression,
