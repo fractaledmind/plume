@@ -1655,7 +1655,8 @@ module Plume
 
 		def require(token)
 			if token == current_token
-				advance && token
+				advance
+				token
 			else
 				expected!(token)
 			end
