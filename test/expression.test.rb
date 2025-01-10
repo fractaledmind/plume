@@ -62,6 +62,13 @@ test "Single CURRENT_TIMESTAMP literal expression" do
 	assert_equal expr, :CURRENT_TIMESTAMP
 end
 
+test "Single unqualified column reference expression" do
+	parser = Plume::Parser.new("c0")
+	expr = parser.expression
+	assert_equal expr, Plume::ColumnReference.new(column_name: "c0")
+
+end
+
 # -- unary operations
 
 test "Bitwise NOT operation" do
