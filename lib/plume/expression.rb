@@ -286,7 +286,37 @@ module Plume
 				else v
 				end
 			elsif :ID == current_token
-				Identifier.new(value: identifier)
+				case peek(2)
+				in [:IN, :LP]
+					ColumnReference.new(
+						column_name: identifier,
+					)
+				in [_, :LP]
+					optional { simple_function_invocation } ||
+						optional { aggregate_function_invocation } ||
+						optional { window_function_invocation }
+				in [_, :DOT]
+					schema_or_table_name = identifier
+					accept :DOT
+					table_or_column_name = identifier
+					if maybe :DOT
+						column_name = identifier
+						ColumnReference.new(
+							schema_name: schema_or_table_name,
+							table_name: table_or_column_name,
+							column_name:,
+						)
+					else
+						ColumnReference.new(
+							table_name: schema_or_table_name,
+							column_name: table_or_column_name,
+						)
+					end
+				else
+					ColumnReference.new(
+						column_name: identifier,
+					)
+				end
 			elsif maybe :NOT
 				UnaryExpression.new(
 					operator: :NOT,
