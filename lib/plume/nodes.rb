@@ -26,6 +26,7 @@ module Plume
 		:CURRENT_TIME,
 		:CURRENT_DATE,
 		:CURRENT_TIMESTAMP,
+		:*,
 		Numeric,
 		String,
 		Blob
@@ -232,6 +233,8 @@ module Plume
 		prop :schema_name, _Nilable(String)
 		prop :function_name, String
 		prop :arguments, _Array(Expression)
+		prop :filter_clause, _Nilable(Expression)
+		prop :over_clause, _Nilable(Expression)
 	end
 
 	class InExpression < Node

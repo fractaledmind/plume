@@ -781,11 +781,23 @@ test "CASE expression with base expression and without ELSE" do
 	)
 end
 
-# test "Function call" do
-# 	parser = Plume::Parser.new("COUNT(*)")
-# 	expr = parser.expression
-# 	assert_equal expr, {:COUNT=>["*"]}
-# end
+test "Simple function call" do
+	parser = Plume::Parser.new("ABS(-1)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: "COUNT",
+		arguments: [:*]
+	)
+end
+
+test "Aggregate function call" do
+	parser = Plume::Parser.new("COUNT(*)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: "COUNT",
+		arguments: [:*]
+	)
+end
 
 # test "Subquery in expression" do
 # 	parser = Plume::Parser.new("c0 = (SELECT MAX(c1) FROM t1)")
