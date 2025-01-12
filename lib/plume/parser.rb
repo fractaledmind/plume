@@ -414,11 +414,12 @@ module Plume
 				nulls = maybe(:FIRST) || maybe(:LAST)
 			end
 
-			key = collation ? [e, collation] : e
-			return { key => direction } unless nulls
-
-			value = (nulls == :FIRST) ? [nil, direction] : [direction, nil]
-			{ key => value }
+			OrderingTerm.new(
+				expression: e,
+				collation: collation,
+				direction: direction,
+				nulls: nulls
+			)
 		end
 
 		def raise_function
