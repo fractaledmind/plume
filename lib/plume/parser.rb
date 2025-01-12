@@ -403,16 +403,9 @@ module Plume
 			#            └▶{ COLLATE }─▶{ collation-name }┘ ├▶{ ASC }──▶─┤ ├▶{ NULLS }─▶{ FIRST }─▶─┤
 			#                                               └▶{ DESC }─▶─┘ └▶{ NULLS }─▶{ LAST }──▶─┘
 			e = expr
-			if maybe :COLLATE
-				collation = identifier
-			end
-			direction = :ASC
-			if one_of? :ASC, :DESC
-				direction = require current_token
-			end
-			if maybe :NULLS
-				nulls = maybe(:FIRST) || maybe(:LAST)
-			end
+			collation = maybe(:COLLATE) ? identifier : nil
+			direction = one_of?(:ASC, :DESC) ? require(current_token) : nil
+			nulls = maybe(:NULLS) ? require(current_token) : nil
 
 			OrderingTerm.new(
 				expression: e,
