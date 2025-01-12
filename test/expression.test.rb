@@ -68,6 +68,110 @@ test "Single unqualified column reference expression" do
 	assert_equal expr, Plume::ColumnReference.new(column_name: "c0")
 end
 
+test "Single table-qualified column reference expression" do
+	parser = Plume::Parser.new("tb1.c0")
+	expr = parser.expression
+	assert_equal expr, Plume::ColumnReference.new(
+		table_name: "tb1",
+		column_name: "c0",
+	)
+end
+
+test "Single fully qualified column reference expression" do
+	parser = Plume::Parser.new("sc1.tb1.c0")
+	expr = parser.expression
+	assert_equal expr, Plume::ColumnReference.new(
+		schema_name: "sc1",
+		table_name: "tb1",
+		column_name: "c0",
+	)
+end
+
+test "Parenthetical integer literal expression" do
+	parser = Plume::Parser.new("(2)")
+	expr = parser.expression
+	assert_equal expr, 2
+end
+
+test "Parenthetical float literal expression" do
+	parser = Plume::Parser.new("(1.2)")
+	expr = parser.expression
+	assert_equal expr, 1.2
+end
+
+test "Parenthetical string literal expression" do
+	parser = Plume::Parser.new("('foo')")
+	expr = parser.expression
+	assert_equal expr, "foo"
+end
+
+test "Parenthetical blob literal expression" do
+	parser = Plume::Parser.new("(X'53514C697465')")
+	expr = parser.expression
+	assert_equal expr, "SQLite"
+end
+
+test "Parenthetical NULL literal expression" do
+	parser = Plume::Parser.new("(null)")
+	expr = parser.expression
+	assert_equal expr, nil
+end
+
+test "Parenthetical TRUE literal expression" do
+	parser = Plume::Parser.new("(true)")
+	expr = parser.expression
+	assert_equal expr, true
+end
+
+test "Parenthetical FALSE literal expression" do
+	parser = Plume::Parser.new("(false)")
+	expr = parser.expression
+	assert_equal expr, false
+end
+
+test "Parenthetical CURRENT_TIME literal expression" do
+	parser = Plume::Parser.new("(current_time)")
+	expr = parser.expression
+	assert_equal expr, :CURRENT_TIME
+end
+
+test "Parenthetical CURRENT_DATE literal expression" do
+	parser = Plume::Parser.new("(current_date)")
+	expr = parser.expression
+	assert_equal expr, :CURRENT_DATE
+end
+
+test "Parenthetical CURRENT_TIMESTAMP literal expression" do
+	parser = Plume::Parser.new("(current_timestamp)")
+	expr = parser.expression
+	assert_equal expr, :CURRENT_TIMESTAMP
+end
+
+test "Parenthetical unqualified column reference expression" do
+	parser = Plume::Parser.new("(c0)")
+	expr = parser.expression
+	assert_equal expr, Plume::ColumnReference.new(column_name: "c0")
+end
+
+test "Parenthetical table-qualified column reference expression" do
+	parser = Plume::Parser.new("(tb1.c0)")
+	expr = parser.expression
+	assert_equal expr, Plume::ColumnReference.new(
+		table_name: "tb1",
+		column_name: "c0",
+	)
+end
+
+test "Parenthetical fully qualified column reference expression" do
+	parser = Plume::Parser.new("(sc1.tb1.c0)")
+	expr = parser.expression
+	assert_equal expr, Plume::ColumnReference.new(
+		schema_name: "sc1",
+		table_name: "tb1",
+		column_name: "c0",
+	)
+end
+
 # -- unary operations
 
 test "Bitwise NOT operation" do
@@ -706,6 +810,8 @@ test "NOT IN operator with a qualified function reference with arguments" do
 	)
 end
 
+# -- CASE expressions
+
 test "CASE expression without base expression but with ELSE" do
 	parser = Plume::Parser.new("CASE WHEN c0 > 0 THEN 'Positive' WHEN c0 < 0 THEN 'Negative' ELSE 'Zero' END")
 	expr = parser.expression
@@ -796,7 +902,18 @@ test "CASE expression with base expression and without ELSE" do
 	)
 end
 
-test "Simple function call" do
+# -- function calls
+
+test "Simple function call with no argument" do
+	parser = Plume::Parser.new("CHANGES()")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :CHANGES,
+		arguments: Plume::EmptyFunctionArgument.new
+	)
+end
+
+test "Simple function call with single numeric expression argument" do
 	parser = Plume::Parser.new("ABS(-1)")
 	expr = parser.expression
 	assert_equal expr, Plume::FunctionReference.new(
@@ -812,12 +929,655 @@ test "Simple function call" do
 	)
 end
 
-test "Aggregate function call" do
+test "Aggregate function call with STAR argument" do
 	parser = Plume::Parser.new("COUNT(*)")
 	expr = parser.expression
 	assert_equal expr, Plume::FunctionReference.new(
 		function_name: :COUNT,
 		arguments: Plume::StarFunctionArgument.new
+	)
+end
+
+test "Aggregate function call with DISTINCT column reference argument" do
+	parser = Plume::Parser.new("COUNT(DISTINCT c0)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :COUNT,
+		arguments: Plume::FunctionArguments.new(
+			distinct: true,
+			expressions: [
+				Plume::ColumnReference.new(column_name: "c0"),
+			]
+		)
+	)
+end
+
+test "Aggregate function call with DISTINCT column reference arguments" do
+	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :COUNT,
+		arguments: Plume::FunctionArguments.new(
+			distinct: true,
+			expressions: [
+				Plume::ColumnReference.new(column_name: "c0"),
+				Plume::ColumnReference.new(column_name: "c1"),
+			]
+		)
+	)
+end
+
+test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column" do
+	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :COUNT,
+		arguments: Plume::FunctionArguments.new(
+			distinct: true,
+			expressions: [
+				Plume::ColumnReference.new(column_name: "c0"),
+				Plume::ColumnReference.new(column_name: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnReference.new(column_name: "c0")
+				),
+			]
+		)
+	)
+end
+
+test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column with direction" do
+	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0 DESC)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :COUNT,
+		arguments: Plume::FunctionArguments.new(
+			distinct: true,
+			expressions: [
+				Plume::ColumnReference.new(column_name: "c0"),
+				Plume::ColumnReference.new(column_name: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnReference.new(column_name: "c0"),
+					direction: :DESC,
+				),
+			]
+		)
+	)
+end
+
+test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column with direction and nulls last" do
+	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0 DESC NULLS LAST)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :COUNT,
+		arguments: Plume::FunctionArguments.new(
+			distinct: true,
+			expressions: [
+				Plume::ColumnReference.new(column_name: "c0"),
+				Plume::ColumnReference.new(column_name: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnReference.new(column_name: "c0"),
+					direction: :DESC,
+					nulls: :LAST,
+				),
+			]
+		)
+	)
+end
+
+test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column with direction and nulls first" do
+	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0 DESC NULLS FIRST)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :COUNT,
+		arguments: Plume::FunctionArguments.new(
+			distinct: true,
+			expressions: [
+				Plume::ColumnReference.new(column_name: "c0"),
+				Plume::ColumnReference.new(column_name: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnReference.new(column_name: "c0"),
+					direction: :DESC,
+					nulls: :FIRST,
+				),
+			]
+		)
+	)
+end
+
+test "Aggregate function call with column reference argument" do
+	parser = Plume::Parser.new("COUNT(c0)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :COUNT,
+		arguments: Plume::FunctionArguments.new(
+			expressions: [
+				Plume::ColumnReference.new(column_name: "c0"),
+			]
+		)
+	)
+end
+
+test "Aggregate function call with column reference arguments" do
+	parser = Plume::Parser.new("COUNT(c0, c1)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :COUNT,
+		arguments: Plume::FunctionArguments.new(
+			expressions: [
+				Plume::ColumnReference.new(column_name: "c0"),
+				Plume::ColumnReference.new(column_name: "c1"),
+			]
+		)
+	)
+end
+
+test "Aggregate function call with column reference arguments and ORDER BY one column" do
+	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :COUNT,
+		arguments: Plume::FunctionArguments.new(
+			expressions: [
+				Plume::ColumnReference.new(column_name: "c0"),
+				Plume::ColumnReference.new(column_name: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnReference.new(column_name: "c0")
+				),
+			]
+		)
+	)
+end
+
+test "Aggregate function call with column reference arguments and ORDER BY one column with direction" do
+	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0 DESC)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :COUNT,
+		arguments: Plume::FunctionArguments.new(
+			expressions: [
+				Plume::ColumnReference.new(column_name: "c0"),
+				Plume::ColumnReference.new(column_name: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnReference.new(column_name: "c0"),
+					direction: :DESC,
+				),
+			]
+		)
+	)
+end
+
+test "Aggregate function call with column reference arguments and ORDER BY one column with direction and nulls last" do
+	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0 DESC NULLS LAST)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :COUNT,
+		arguments: Plume::FunctionArguments.new(
+			expressions: [
+				Plume::ColumnReference.new(column_name: "c0"),
+				Plume::ColumnReference.new(column_name: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnReference.new(column_name: "c0"),
+					direction: :DESC,
+					nulls: :LAST,
+				),
+			]
+		)
+	)
+end
+
+test "Aggregate function call with column reference arguments and ORDER BY one column with direction and nulls first" do
+	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0 DESC NULLS FIRST)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :COUNT,
+		arguments: Plume::FunctionArguments.new(
+			expressions: [
+				Plume::ColumnReference.new(column_name: "c0"),
+				Plume::ColumnReference.new(column_name: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnReference.new(column_name: "c0"),
+					direction: :DESC,
+					nulls: :FIRST,
+				),
+			]
+		)
+	)
+end
+
+test "Window function call with no arguments and empty window" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER ()")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new
+	)
+end
+
+test "Window function call with no arguments and window name" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER win1")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			window_name: "win1"
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with only PARTITION BY" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (PARTITION BY y)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			partition_by: [
+				Plume::ColumnReference.new(column_name: "y"),
+			]
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with only ORDER BY" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ORDER BY y)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnReference.new(column_name: "y")
+				),
+			]
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with RANGE UNBOUNDED PRECEDING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :RANGE,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS UNBOUNDED PRECEDING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS UNBOUNDED PRECEDING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with GROUPS UNBOUNDED PRECEDING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (GROUPS UNBOUNDED PRECEDING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :GROUPS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS CURRENT ROW frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS CURRENT ROW)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :CURRENT_ROW,
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS <expr> PRECEDING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS 123 PRECEDING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: 123
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND <expr> PRECEDING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 123 PRECEDING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: 123
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :CURRENT_ROW,
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND <expr> FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 123 FOLLOWING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: 123
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND <expr> PRECEDING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND 123 PRECEDING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: 123
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: 123
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND CURRENT ROW frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND CURRENT ROW)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: 123
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :CURRENT_ROW,
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND 123 FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND 123 FOLLOWING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: 123
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: 123
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND UNBOUNDED FOLLOWING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: 123
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS BETWEEN CURRENT ROW AND CURRENT ROW frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN CURRENT ROW AND CURRENT ROW)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :CURRENT_ROW,
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :CURRENT_ROW,
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS BETWEEN CURRENT ROW AND 123 FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN CURRENT ROW AND 123 FOLLOWING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :CURRENT_ROW,
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: 123
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :CURRENT_ROW,
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> FOLLOWING AND 123 FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 FOLLOWING AND 123 FOLLOWING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: 123
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: 123
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> FOLLOWING AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: 123
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: :UNBOUNDED
+				),
+			)
+		)
 	)
 end
 
