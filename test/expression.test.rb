@@ -556,7 +556,9 @@ test "IN operator with an unqualified function reference" do
 		member: Plume::ColumnReference.new(column_name: "c0"),
 		collection: Plume::FunctionReference.new(
 			function_name: "foobar",
-			arguments: [],
+			arguments: Plume::FunctionArguments.new(
+				expressions: [],
+			)
 		)
 	)
 end
@@ -569,7 +571,9 @@ test "IN operator with a qualified function reference" do
 		collection: Plume::FunctionReference.new(
 			schema_name: "sc0",
 			function_name: "foobar",
-			arguments: [],
+			arguments: Plume::FunctionArguments.new(
+				expressions: [],
+			)
 		)
 	)
 end
@@ -581,7 +585,9 @@ test "IN operator with an unqualified function reference with arguments" do
 		member: Plume::ColumnReference.new(column_name: "c0"),
 		collection: Plume::FunctionReference.new(
 			function_name: "foobar",
-			arguments: [1, 2, 3],
+			arguments: Plume::FunctionArguments.new(
+				expressions: [1, 2, 3],
+			)
 		)
 	)
 end
@@ -594,7 +600,9 @@ test "IN operator with a qualified function reference with arguments" do
 		collection: Plume::FunctionReference.new(
 			schema_name: "sc0",
 			function_name: "foobar",
-			arguments: [1, 2, 3],
+			arguments: Plume::FunctionArguments.new(
+				expressions: [1, 2, 3],
+			)
 		)
 	)
 end
@@ -647,7 +655,9 @@ test "NOT IN operator with an unqualified function reference" do
 		member: Plume::ColumnReference.new(column_name: "c0"),
 		collection: Plume::FunctionReference.new(
 			function_name: "foobar",
-			arguments: [],
+			arguments: Plume::FunctionArguments.new(
+				expressions: [],
+			)
 		)
 	)
 end
@@ -660,7 +670,9 @@ test "NOT IN operator with a qualified function reference" do
 		collection: Plume::FunctionReference.new(
 			schema_name: "sc0",
 			function_name: "foobar",
-			arguments: [],
+			arguments: Plume::FunctionArguments.new(
+				expressions: [],
+			)
 		)
 	)
 end
@@ -672,7 +684,9 @@ test "NOT IN operator with an unqualified function reference with arguments" do
 		member: Plume::ColumnReference.new(column_name: "c0"),
 		collection: Plume::FunctionReference.new(
 			function_name: "foobar",
-			arguments: [1, 2, 3],
+			arguments: Plume::FunctionArguments.new(
+				expressions: [1, 2, 3],
+			)
 		)
 	)
 end
@@ -685,7 +699,9 @@ test "NOT IN operator with a qualified function reference with arguments" do
 		collection: Plume::FunctionReference.new(
 			schema_name: "sc0",
 			function_name: "foobar",
-			arguments: [1, 2, 3],
+			arguments: Plume::FunctionArguments.new(
+				expressions: [1, 2, 3],
+			)
 		)
 	)
 end
@@ -784,8 +800,15 @@ test "Simple function call" do
 	parser = Plume::Parser.new("ABS(-1)")
 	expr = parser.expression
 	assert_equal expr, Plume::FunctionReference.new(
-		function_name: "COUNT",
-		arguments: [:*]
+		function_name: :ABS,
+		arguments: Plume::FunctionArguments.new(
+			expressions: [
+				Plume::UnaryExpression.new(
+					operator: :NEGATE,
+					operand: 1
+				),
+			]
+		)
 	)
 end
 
@@ -793,8 +816,8 @@ test "Aggregate function call" do
 	parser = Plume::Parser.new("COUNT(*)")
 	expr = parser.expression
 	assert_equal expr, Plume::FunctionReference.new(
-		function_name: "COUNT",
-		arguments: [:*]
+		function_name: :COUNT,
+		arguments: Plume::StarFunctionArgument.new
 	)
 end
 
