@@ -160,7 +160,9 @@ module Plume
 								collection = FunctionReference.new(
 									schema_name:,
 									function_name:,
-									arguments:,
+									arguments: FunctionArguments.new(
+										expressions: arguments
+									),
 								)
 							else
 								table_name = name
@@ -177,7 +179,9 @@ module Plume
 
 							collection = FunctionReference.new(
 								function_name:,
-								arguments:,
+								arguments: FunctionArguments.new(
+									expressions: arguments
+								),
 							)
 						else
 							table_name = ref
