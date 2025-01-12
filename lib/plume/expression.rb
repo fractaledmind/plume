@@ -218,7 +218,7 @@ module Plume
 						escape:,
 					)
 				elsif (mop = either :GLOB, :REGEXP, :MATCH, nil)
-					op = negated ? "NOT#{mop}".to_sym : mop
+					op = negated ? :"NOT#{mop}" : mop
 					right = expression(op_precedence + 1)
 					return BinaryExpression.new(
 						operator: TOKEN_TO_OPERATOR[op],
@@ -241,7 +241,7 @@ module Plume
 					)
 				elsif maybe :IS
 					negated = maybe :NOT
-					op = negated ? "#{op}NOT".to_sym : op
+					op = :"#{op}NOT" if negated
 					maybe_all :DISTINCT, :FROM
 					right = expression(op_precedence + 1)
 					left = BinaryExpression.new(

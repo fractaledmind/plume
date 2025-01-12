@@ -66,45 +66,44 @@ test "Single unqualified column reference expression" do
 	parser = Plume::Parser.new("c0")
 	expr = parser.expression
 	assert_equal expr, Plume::ColumnReference.new(column_name: "c0")
-
 end
 
 # -- unary operations
 
 test "Bitwise NOT operation" do
- parser = Plume::Parser.new("~c0")
- expr = parser.expression
- assert_equal expr, Plume::UnaryExpression.new(
-  operator: :INVERT,
-  operand: Plume::ColumnReference.new(column_name: "c0")
- )
+	parser = Plume::Parser.new("~c0")
+	expr = parser.expression
+	assert_equal expr, Plume::UnaryExpression.new(
+		operator: :INVERT,
+		operand: Plume::ColumnReference.new(column_name: "c0")
+	)
 end
 
 test "Unary plus operation" do
- parser = Plume::Parser.new("+c0")
- expr = parser.expression
- assert_equal expr, Plume::UnaryExpression.new(
-  operator: :IDENTITY,
-  operand: Plume::ColumnReference.new(column_name: "c0")
- )
+	parser = Plume::Parser.new("+c0")
+	expr = parser.expression
+	assert_equal expr, Plume::UnaryExpression.new(
+		operator: :IDENTITY,
+		operand: Plume::ColumnReference.new(column_name: "c0")
+	)
 end
 
 test "Unary minus operation" do
- parser = Plume::Parser.new("-c0")
- expr = parser.expression
- assert_equal expr, Plume::UnaryExpression.new(
-  operator: :NEGATE,
-  operand: Plume::ColumnReference.new(column_name: "c0")
- )
+	parser = Plume::Parser.new("-c0")
+	expr = parser.expression
+	assert_equal expr, Plume::UnaryExpression.new(
+		operator: :NEGATE,
+		operand: Plume::ColumnReference.new(column_name: "c0")
+	)
 end
 
 test "Logical NOT operation" do
- parser = Plume::Parser.new("NOT c0")
- expr = parser.expression
- assert_equal expr, Plume::UnaryExpression.new(
-  operator: :NOT,
-  operand: Plume::ColumnReference.new(column_name: "c0")
- )
+	parser = Plume::Parser.new("NOT c0")
+	expr = parser.expression
+	assert_equal expr, Plume::UnaryExpression.new(
+		operator: :NOT,
+		operand: Plume::ColumnReference.new(column_name: "c0")
+	)
 end
 
 test "ISNULL operator" do
@@ -148,173 +147,173 @@ test "Binary extract operation" do
 end
 
 test "Binary retrieve operation" do
- parser = Plume::Parser.new("c0 ->> '$.key'")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :RETRIEVE,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: "$.key",
- )
+	parser = Plume::Parser.new("c0 ->> '$.key'")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :RETRIEVE,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: "$.key",
+	)
 end
 
 test "Multiplication operation" do
- parser = Plume::Parser.new("c0 * 5")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :MULTIPLY,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: 5,
- )
+	parser = Plume::Parser.new("c0 * 5")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :MULTIPLY,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: 5,
+	)
 end
 
 test "Division operation" do
- parser = Plume::Parser.new("c0 / 2")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :DIVIDE,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: 2,
- )
+	parser = Plume::Parser.new("c0 / 2")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :DIVIDE,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: 2,
+	)
 end
 
 test "Modulo operation" do
- parser = Plume::Parser.new("c0 % 3")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :MODULO,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: 3,
- )
+	parser = Plume::Parser.new("c0 % 3")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :MODULO,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: 3,
+	)
 end
 
 test "Addition operation" do
- parser = Plume::Parser.new("c0 + 10")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :ADD,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: 10,
- )
+	parser = Plume::Parser.new("c0 + 10")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :ADD,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: 10,
+	)
 end
 
 test "Subtraction operation" do
- parser = Plume::Parser.new("c0 - 5")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :SUB,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: 5,
- )
+	parser = Plume::Parser.new("c0 - 5")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :SUB,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: 5,
+	)
 end
 
 test "Bitwise AND operation" do
- parser = Plume::Parser.new("c0 & 7")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :BIT_AND,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: 7,
- )
+	parser = Plume::Parser.new("c0 & 7")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :BIT_AND,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: 7,
+	)
 end
 
 test "Bitwise OR operation" do
- parser = Plume::Parser.new("c0 | 8")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :BIT_OR,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: 8,
- )
+	parser = Plume::Parser.new("c0 | 8")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :BIT_OR,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: 8,
+	)
 end
 
 test "Bitwise left shift operation" do
- parser = Plume::Parser.new("c0 << 2")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :BIT_LSHIFT,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: 2,
- )
+	parser = Plume::Parser.new("c0 << 2")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :BIT_LSHIFT,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: 2,
+	)
 end
 
 test "Bitwise right shift operation" do
- parser = Plume::Parser.new("c0 >> 1")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :BIT_RSHIFT,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: 1,
- )
+	parser = Plume::Parser.new("c0 >> 1")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :BIT_RSHIFT,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: 1,
+	)
 end
 
 test "Less than comparison" do
- parser = Plume::Parser.new("c0 < 100")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :BELOW,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: 100,
- )
+	parser = Plume::Parser.new("c0 < 100")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :BELOW,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: 100,
+	)
 end
 
 test "Less than or equal comparison" do
- parser = Plume::Parser.new("c0 <= 50")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :ATMOST,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: 50,
- )
+	parser = Plume::Parser.new("c0 <= 50")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :ATMOST,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: 50,
+	)
 end
 
 test "Greater than or equal comparison" do
- parser = Plume::Parser.new("c0 >= 20")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :ATLEAST,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: 20,
- )
+	parser = Plume::Parser.new("c0 >= 20")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :ATLEAST,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: 20,
+	)
 end
 
 test "Equality comparison" do
- parser = Plume::Parser.new("c0 = 42")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :EQUALS,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: 42,
- )
+	parser = Plume::Parser.new("c0 = 42")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :EQUALS,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: 42,
+	)
 end
 
 test "Inequality comparison" do
- parser = Plume::Parser.new("c0 != 42")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :NOT_EQUALS,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: 42,
- )
+	parser = Plume::Parser.new("c0 != 42")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :NOT_EQUALS,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: 42,
+	)
 end
 
 test "IS comparison" do
- parser = Plume::Parser.new("c0 IS TRUE")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :IS,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: true,
- )
+	parser = Plume::Parser.new("c0 IS TRUE")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :IS,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: true,
+	)
 end
 
 test "IS NOT comparison" do
- parser = Plume::Parser.new("c0 IS NOT FALSE")
- expr = parser.expression
- assert_equal expr, Plume::BinaryExpression.new(
-  operator: :IS_NOT,
-  left: Plume::ColumnReference.new(column_name: "c0"),
-  right: false,
- )
+	parser = Plume::Parser.new("c0 IS NOT FALSE")
+	expr = parser.expression
+	assert_equal expr, Plume::BinaryExpression.new(
+		operator: :IS_NOT,
+		left: Plume::ColumnReference.new(column_name: "c0"),
+		right: false,
+	)
 end
 
 test "Greater than comparison with positive integer" do
@@ -712,7 +711,7 @@ test "CASE expression without base expression but with ELSE" do
 					right: 0
 				),
 				consequence: "Negative"
-			)
+			),
 		],
 		else_clause: "Zero"
 	)
@@ -739,7 +738,7 @@ test "CASE expression without base expression and without ELSE" do
 					right: 0
 				),
 				consequence: "Negative"
-			)
+			),
 		],
 	)
 end
@@ -757,7 +756,7 @@ test "CASE expression with base expression and with ELSE" do
 			Plume::CaseCondition.new(
 				predicate: Plume::ColumnReference.new(column_name: "w2"),
 				consequence: Plume::ColumnReference.new(column_name: "r2")
-			)
+			),
 		],
 		else_clause: Plume::ColumnReference.new(column_name: "r3")
 	)
@@ -776,7 +775,7 @@ test "CASE expression with base expression and without ELSE" do
 			Plume::CaseCondition.new(
 				predicate: Plume::ColumnReference.new(column_name: "w2"),
 				consequence: Plume::ColumnReference.new(column_name: "r2")
-			)
+			),
 		],
 	)
 end

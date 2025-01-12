@@ -505,7 +505,7 @@ module Plume
 				require current_token
 				bytesize = value.bytesize
 				# trim the leading /x'/i and trailing /'/ then decode the hexadecimal string
-				[value.byteslice(2, bytesize - 3)].pack('H*')
+				[value.byteslice(2, bytesize - 3)].pack("H*")
 			else
 				expected!(:BLOB)
 			end
@@ -770,7 +770,7 @@ module Plume
 			# ◯─▶┬▶[ with-stmt ]─┐
 			#    ├───────◀───────┘
 			# ┌──┴▶┬─────▶{ SELECT }─┬───────▶──────┬─┬▶[ result-column ]─┐
-			# │    │                 ├▶{ DISTINCT }┤ └─────{ , }◀─────────┤
+			# │    │                 ├▶{ DISTINCT }┤  └─────{ , }◀────────┤
 			# ▲    │                 └▶{ ALL }────▶┘                      │
 			# │    │    ┌──────────────────────────◀──────────────────────┘
 			# │    │    ├─▶{ FROM }┬─┬▶[ table-or-subquery ]─┬─┬─▶───┐
