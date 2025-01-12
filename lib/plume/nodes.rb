@@ -3,8 +3,8 @@
 module Plume
 	extend Literal::Types
 
-	NIL = Object.new
-	FALSE = Object.new
+	LiteralNil = Object.new
+	LiteralFalse = Object.new
 
 	class Node < Literal::Data; end
 

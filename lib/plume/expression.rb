@@ -281,8 +281,8 @@ module Plume
 				e
 			elsif (v = optional { literal_value })
 				case v
-				when NIL then nil
-				when FALSE then false
+				when LiteralNil then nil
+				when LiteralFalse then false
 				else v
 				end
 			elsif :ID == current_token

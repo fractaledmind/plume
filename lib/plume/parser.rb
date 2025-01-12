@@ -520,9 +520,9 @@ module Plume
 			#   ├─▶{ CURRENT_TIME }───────▶─┤
 			#   ├─▶{ CURRENT_DATE }───────▶─┤
 			#   └─▶{ CURRENT_TIMESTAMP }──▶─┘
-			return NIL if maybe :NULL
+			return LiteralNil if maybe :NULL
 			return true if current_token == :ID && current_value.upcase == "TRUE" && require(:ID)
-			return FALSE if current_token == :ID && current_value.upcase == "FALSE" && require(:ID)
+			return LiteralFalse if current_token == :ID && current_value.upcase == "FALSE" && require(:ID)
 			return :CURRENT_TIME if maybe :CURRENT_TIME
 			return :CURRENT_DATE if maybe :CURRENT_DATE
 			return :CURRENT_TIMESTAMP if maybe :CURRENT_TIMESTAMP
