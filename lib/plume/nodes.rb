@@ -229,22 +229,21 @@ module Plume
 	class SelectStatement < Node
 	end
 
+	class OrderingTerm < Node
+		prop :expression, Expression
+		prop :collation, _Nilable(String)
+		prop :direction, _Nilable(_Union(:ASC, :DESC))
+		prop :nulls, _Nilable(_Union(:FIRST, :LAST))
+	end
+
 	class FunctionArguments < Node
 		prop :distinct, _Nilable(_Boolean)
 		prop :expressions, _Array(Expression)
-		prop :order_by, _Nilable(_Array(Expression))
+		prop :order_by, _Nilable(_Array(OrderingTerm))
 	end
 
 	class StarFunctionArgument < Node; end
 	class EmptyFunctionArgument < Node; end
-
-	class FunctionReference < Node
-		prop :schema_name, _Nilable(String)
-		prop :function_name, _Union(String, Symbol)
-		prop :arguments, _Union(FunctionArguments, StarFunctionArgument, EmptyFunctionArgument)
-		prop :filter_clause, _Nilable(Expression)
-		prop :over_clause, _Nilable(Expression)
-	end
 
 	class FrameSpec < Node
 		prop :type, _Union(:RANGE, :ROWS, :GROUPS)
@@ -258,19 +257,20 @@ module Plume
 		prop :value, _Union(Expression, :UNBOUNDED)
 	end
 
-	class OrderingTerm < Node
-		prop :expression, Expression
-		prop :collation, _Nilable(String)
-		prop :direction, _Nilable(_Union(:ASC, :DESC))
-		prop :nulls, _Nilable(_Union(:FIRST, :LAST))
-	end
-
 	class OverClause < Node
 		prop :window_name, _Nilable(String)
 		prop :base_window_name, _Nilable(String)
 		prop :partition_by, _Nilable(_Array(Expression))
 		prop :order_by, _Nilable(_Array(OrderingTerm))
 		prop :frame, _Nilable(FrameSpec)
+	end
+
+	class FunctionReference < Node
+		prop :schema_name, _Nilable(String)
+		prop :function_name, _Union(String, Symbol)
+		prop :arguments, _Union(FunctionArguments, StarFunctionArgument, EmptyFunctionArgument)
+		prop :filter_clause, _Nilable(Expression)
+		prop :over_clause, _Nilable(OverClause)
 	end
 
 	class InExpression < Node
