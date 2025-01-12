@@ -309,9 +309,9 @@ module Plume
 						filter_clause: filter,
 						over_clause: over,
 					)
-				in [_, :DOT]
+				in [:DOT, _]
 					schema_or_table_name = identifier
-					accept :DOT
+					require :DOT
 					table_or_column_name = identifier
 					if maybe :DOT
 						column_name = identifier
