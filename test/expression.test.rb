@@ -474,6 +474,26 @@ test "NOT LIKE operator with string literals" do
 	)
 end
 
+test "LIKE operator with string literals and ESCAPE clause" do
+	parser = Plume::Parser.new("'str' like 'foo' escape '|'")
+	expr = parser.expression
+	assert_equal expr, Plume::LikeExpression.new(
+		left: "str",
+		right: "foo",
+		escape: "|",
+	)
+end
+
+test "NOT LIKE operator with string literals and ESCAPE clause" do
+	parser = Plume::Parser.new("'str' not like 'foo' escape '|'")
+	expr = parser.expression
+	assert_equal expr, Plume::NotLikeExpression.new(
+		left: "str",
+		right: "foo",
+		escape: "|",
+	)
+end
+
 test "IS NOT NULL operator" do
 	parser = Plume::Parser.new("c0 IS NOT NULL")
 	expr = parser.expression
@@ -606,6 +626,17 @@ test "BETWEEN operator with integer values" do
 	expr = parser.expression
 	assert_equal expr, Plume::TernaryExpression.new(
 		operator: :BETWEEN,
+		left: 2,
+		middle: 1,
+		right: 10
+	)
+end
+
+test "NOT BETWEEN operator with integer values" do
+	parser = Plume::Parser.new("2 not between 1 and 10")
+	expr = parser.expression
+	assert_equal expr, Plume::TernaryExpression.new(
+		operator: :NOT_BETWEEN,
 		left: 2,
 		middle: 1,
 		right: 10
@@ -902,6 +933,17 @@ test "CASE expression with base expression and without ELSE" do
 	)
 end
 
+# -- CAST expressions
+
+test "CAST expression with integer type" do
+	parser = Plume::Parser.new("CAST(c0 AS INTEGER)")
+	expr = parser.expression
+	assert_equal expr, Plume::CastExpression.new(
+		expression: Plume::ColumnReference.new(column_name: "c0"),
+		as: Plume::IntegerType.new(name: "INTEGER"),
+	)
+end
+
 # -- function calls
 
 test "Simple function call with no argument" do
@@ -935,6 +977,20 @@ test "Aggregate function call with STAR argument" do
 	assert_equal expr, Plume::FunctionReference.new(
 		function_name: :COUNT,
 		arguments: Plume::StarFunctionArgument.new
+	)
+end
+
+test "Aggregate function call with STAR argument and filter clause" do
+	parser = Plume::Parser.new("COUNT(*) FILTER (WHERE c0 > 0)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :COUNT,
+		arguments: Plume::StarFunctionArgument.new,
+		filter_clause: Plume::BinaryExpression.new(
+			operator: :ABOVE,
+			left: Plume::ColumnReference.new(column_name: "c0"),
+			right: 0
+		)
 	)
 end
 
@@ -1566,6 +1622,29 @@ test "Window function call with no arguments and window definition with ROWS BET
 		function_name: :ROW_NUMBER,
 		arguments: Plume::EmptyFunctionArgument.new,
 		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: 123
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and base window name with ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (win ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			base_window_name: "win",
 			frame: Plume::FrameSpec.new(
 				type: :ROWS,
 				starting_boundary: Plume::FrameBoundary.new(
