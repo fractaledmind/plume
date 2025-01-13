@@ -26,7 +26,6 @@ module Plume
 			BITOR:    55,
 			LSHIFT:   55,
 			RSHIFT:   55,
-			ESCAPE:   52,
 			NOT:      50,
 			LT:       40,
 			GT:       40,
