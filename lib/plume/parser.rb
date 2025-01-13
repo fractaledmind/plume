@@ -200,9 +200,7 @@ module Plume
 		}
 
 		def initialize(sql)
-			@sql = sql
 			@lexer = Lexer.new(sql, skip_spaces: true)
-			@token_index = 0
 			@peek_buffer = []
 		end
 
@@ -885,8 +883,7 @@ module Plume
 			# save one allocation as `Array#each` (at least up to Ruby 3.3) actually allocates one object
 			i, len = 0, tokens.length
 			while i < len
-				token = tokens[i]
-				if token == current_token
+				if tokens[i] == current_token
 					advance
 					i += 1
 				else
@@ -900,9 +897,9 @@ module Plume
 		def maybe_all(*tokens)
 			advance = true
 			i, len = 0, tokens.length
-			peek_buffer = ensure_buffer(len)
+			buf = ensure_buffer(len)
 			while i < len
-				if tokens[i] != peek_buffer[i]
+				if tokens[i] != buf[i*3]
 					advance = false
 					break
 				end
@@ -931,12 +928,14 @@ module Plume
 		end
 
 		def optional
-			start_index = @token_index
 			start_buffer = @peek_buffer.dup
+			start_lexer_cursor = @lexer.cursor
+			start_lexer_pos = @lexer.anchor
 			yield
 		rescue SyntaxError
-			@token_index = start_index
 			@peek_buffer = start_buffer
+			@lexer.cursor = start_lexer_cursor
+			@lexer.anchor = start_lexer_pos
 			nil
 		end
 
@@ -984,38 +983,62 @@ module Plume
 			end
 		end
 
+		# Access the current token type in the lexer stream.
+		# Reads but doesn't consume the token at the head of the buffer.
 		def current_token
-			ensure_buffer
-			@peek_buffer.first
+			buf = ensure_buffer
+			buf[0]
 		end
 
-		def peek(n = 1)
-			ensure_buffer(n + 1)
-			(n == 1) ? @peek_buffer[1] : @peek_buffer[1, n]
-		end
-
+		# Access the string value for the current token.
+		# Reads but doesn't consume the start_pos and end_pos values at the head of the buffer.
 		def current_value
-			@lexer.value_at(@token_index)
+			buf = ensure_buffer
+			beg = buf[1]
+		  fin = buf[2]
+
+			@lexer.sql.byteslice(beg...fin)
 		end
 
+		# Peek at the next `n` tokens in the lexer stream.
+		# Does not advance the lexer cursor and does not consider the current token.
+		def peek(n = 1)
+			buf = ensure_buffer(n + 1)
+			return buf[3] if n == 1 # symbol element of the 2nd token
+
+			[].tap do |a|
+				i, len = 1, buf.length
+				while i <= n && i < len
+					a << buf[i*3]
+					i += 1
+				end
+			end
+		end
+
+		# Advance the implicit cursor pointing to the first token in the buffer by `n` tokens.
+		# Returns the new token at the head of the buffer.
+		# Note: to shift a "token" from the buffer, we need to shift 3 elements (token, start_pos, end_pos).
 		def advance(n = 1)
 			ensure_buffer(n)
-			@token_index += n
-			n.times { @peek_buffer.shift }
+			(n*3).times { @peek_buffer.shift }
 			current_token
 		end
 
+		# TODO: fix
 		def values(n = 1)
 			ensure_buffer(n)
 			(0...n).map { |i| @lexer.value_at(@token_index + i) }
 		end
 
+		# Ensure that the `@peek_buffer` has at least `size` tokens.
+		# Note: the buffer is a flat array of `[token, start_pos, end_pos]` triples,
+		# so, a buffer of `size` 2 will have 6 elements (2 * 3).
 		def ensure_buffer(size = 1)
-			peek_buffer = @peek_buffer
-			while peek_buffer.size < size
-				peek_buffer << @lexer.next_token
+			@peek_buffer.tap do |buf|
+				while buf.size < (size * 3)
+					buf << @lexer.next_token << @lexer.anchor << @lexer.cursor
+				end
 			end
-			peek_buffer
 		end
 
 		def expected!(*expected)
@@ -1024,8 +1047,8 @@ module Plume
 
 		def error!(token, value, expected)
 			# TODO: we should handle multi-line sql highlighting
-			highlight = (" " * @lexer.token_pos) + ("^" * (@lexer.cursor - @lexer.token_pos))
-			msg = "Unexpected token #{token}[#{value.inspect}] at:\n  #{@sql.strip}\n  #{highlight}\n  Expected one of: #{expected.join(", ")}\n"
+			highlight = (" " * @lexer.anchor) + ("^" * (@lexer.cursor - @lexer.anchor))
+			msg = "Unexpected token #{token}[#{value.inspect}] at:\n  #{@lexer.sql.strip}\n  #{highlight}\n  Expected one of: #{expected.join(", ")}\n"
 
 			raise SyntaxError, msg
 		end

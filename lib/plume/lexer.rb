@@ -293,7 +293,8 @@ module Plume
 			it[126]	=	:BITNOT		# ~
 		end
 
-		attr_reader :sql, :cursor, :token_pos
+		attr_reader :sql
+		attr_accessor :cursor, :anchor
 
 		def initialize(sql, skip_spaces: false)
 			case sql.encoding
@@ -303,12 +304,11 @@ module Plume
 				@sql = sql.encode(Encoding::UTF_8).freeze
 			end
 			@skip_spaces = skip_spaces
-			@cursor, @token_pos = 0
-			@token_positions = []
+			@cursor, @anchor = 0
 		end
 
 		def tokens(with_values = false)
-			@cursor, @token_pos = 0
+			@cursor, @anchor = 0
 			Enumerator.new do |yielder|
 				loop do
 					token = next_token
@@ -320,21 +320,14 @@ module Plume
 		end
 
 		def next_token
-			@token_pos = @cursor
+			@anchor = @cursor
 			token = lex_next_token
 			return next_token if token == :SPACE && @skip_spaces
-			@token_positions << [@token_pos, @cursor]
 			token
 		end
 
 		def value
-			@sql.byteslice(@token_pos...@cursor)
-		end
-
-		def value_at(index)
-			start, end_pos = @token_positions[index]
-			return if start.nil? || end_pos.nil?
-			@sql.byteslice(start...end_pos)
+			@sql.byteslice(@anchor...@cursor)
 		end
 
 		private
@@ -597,7 +590,7 @@ module Plume
 
 					step while xdigit?(peek)
 
-					if peek != 39 || ((@cursor - @token_pos) % 2) != 0
+					if peek != 39 || ((@cursor - @anchor) % 2) != 0
 						token_type = :ILLEGAL
 						step until (b = peek).nil? || b == 39 # "'"
 					end
