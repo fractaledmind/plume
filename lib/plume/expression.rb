@@ -342,7 +342,11 @@ module Plume
 				require :AS
 				t = type_name
 				require :RP
-				{ CAST: [e, t] }
+
+				CastExpression.new(
+					expression: e,
+					as: t,
+				)
 			elsif maybe :CASE
 				if maybe :WHEN
 					conditions = one_or_more(sep: :WHEN) do
