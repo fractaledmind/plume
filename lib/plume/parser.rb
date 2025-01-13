@@ -995,7 +995,7 @@ module Plume
 		def current_value
 			buf = ensure_buffer
 			beg = buf[1]
-		  fin = buf[2]
+			fin = buf[2]
 
 			@lexer.sql.byteslice(beg...fin)
 		end
