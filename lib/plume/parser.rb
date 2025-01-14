@@ -413,35 +413,6 @@ module Plume
 			)
 		end
 
-		def raise_function
-			# ◯─▶{ RAISE }─▶{ ( }┬─▶{ IGNORE }────────────────────▶─────────┬▶{ ) }──▶◯
-			#                    ├─▶{ ROLLBACK }─┬▶{ , }─▶{ error-message }─┘
-			#                    ├─▶{ ABORT }──▶─┤
-			#                    └─▶{ FAIL }───▶─┘
-			require_all :RAISE, :LP
-			if maybe :IGNORE
-				require :RP
-				{ RAISE: :IGNORE }
-			elsif maybe :ROLLBACK
-				require :COMMA
-				error_message = identifier
-				require :RF
-				{ RAISE: { ROLLBACK: error_message } }
-			elsif maybe :ABORT
-				require :COMMA
-				error_message = identifier
-				require :RF
-				{ RAISE: { ABORT: error_message } }
-			elsif maybe :FAIL
-				require :COMMA
-				error_message = identifier
-				require :RF
-				{ RAISE: { FAIL: error_message } }
-			else
-				expected!(:IGNORE, :ROLLBACK, :ABORT, :FAIL)
-			end
-		end
-
 		def signed_number
 			# ◯─┬───▶────┬─▶{ numeric-literal }─▶◯
 			#   ├─▶{ + }─┤

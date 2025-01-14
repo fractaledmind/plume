@@ -388,8 +388,39 @@ module Plume
 						else_clause:,
 					)
 				end
+			elsif :RAISE == current_token
+				left = raise_function
 			else
 				expected!(".............")
+			end
+		end
+
+		def raise_function
+			# ◯─▶{ RAISE }─▶{ ( }┬─▶{ IGNORE }────────────────────▶─────────┬▶{ ) }──▶◯
+			#                    ├─▶{ ROLLBACK }─┬▶{ , }─▶{ error-message }─┘
+			#                    ├─▶{ ABORT }──▶─┤
+			#                    └─▶{ FAIL }───▶─┘
+			require_all :RAISE, :LP
+			if maybe :IGNORE
+				require :RP
+				RaiseExpression.new(type: :IGNORE)
+			elsif maybe :ROLLBACK
+				require :COMMA
+				error_message = identifier
+				require :RP
+				RaiseExpression.new(type: :ROLLBACK, message: error_message)
+			elsif maybe :ABORT
+				require :COMMA
+				error_message = identifier
+				require :RP
+				RaiseExpression.new(type: :ABORT, message: error_message)
+			elsif maybe :FAIL
+				require :COMMA
+				error_message = identifier
+				require :RP
+				RaiseExpression.new(type: :FAIL, message: error_message)
+			else
+				expected!(:IGNORE, :ROLLBACK, :ABORT, :FAIL)
 			end
 		end
 
