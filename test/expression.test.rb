@@ -1637,6 +1637,18 @@ test "Window function call with no arguments and window definition with ROWS BET
 	)
 end
 
+test "Window function call with no arguments and only base window name" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (win)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			base_window_name: "win"
+		)
+	)
+end
+
 test "Window function call with no arguments and base window name with ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW frame spec without exclude clause" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (win ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)")
 	expr = parser.expression
@@ -1655,6 +1667,110 @@ test "Window function call with no arguments and base window name with ROWS BETW
 					type: :FOLLOWING,
 					value: :UNBOUNDED
 				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and base window name with ordering term and frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (win ORDER BY c0 ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			base_window_name: "win",
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnReference.new(column_name: "c0")
+				),
+			],
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: 123
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE NO OTHERS" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE NO OTHERS)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :RANGE,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				exclude: :NO_OTHERS
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE CURRENT ROW" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE CURRENT ROW)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :RANGE,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				exclude: :CURRENT_ROW
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE GROUP" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE GROUP)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :RANGE,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				exclude: :GROUP
+			)
+		)
+	)
+end
+
+test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE TIES" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE TIES)")
+	expr = parser.expression
+	assert_equal expr, Plume::FunctionReference.new(
+		function_name: :ROW_NUMBER,
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :RANGE,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				exclude: :TIES
 			)
 		)
 	)
