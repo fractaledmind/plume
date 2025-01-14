@@ -848,7 +848,9 @@ module Plume
 		# nm ::= ID|INDEXED|JOIN_KW
 		# nm ::= STRING
 		def identifier
-			if one_of? :STRING, :ID, :INDEXED, :CROSS, :FULL, :INNER, :LEFT, :NATURAL, :OUTER, :RIGHT
+			if :STRING == current_token
+				string_literal
+			elsif one_of? :ID, :INDEXED, :CROSS, :FULL, :INNER, :LEFT, :NATURAL, :OUTER, :RIGHT
 				value = current_value
 				require current_token
 				value
