@@ -2,6 +2,13 @@
 
 module Plume
 	class Parser
+		class ErrorMessage
+			attr_reader :msg
+
+			def initialize(msg)
+				@msg = msg
+			end
+		end
 		SyntaxError = Class.new(StandardError)
 		# see: https://github.com/sqlite/sqlite/blob/master/src/parse.y#L255-L283
 		TOKEN_FALLBACKS = {
@@ -205,7 +212,13 @@ module Plume
 		end
 
 		def parse
-			sql_stmt_list
+			result = catch(:ERROR) { sql_stmt_list }
+
+			if ErrorMessage === result
+				raise SyntaxError.new(result.msg)
+			else
+				result
+			end
 		end
 
 		# private
@@ -904,12 +917,17 @@ module Plume
 			start_buffer = @peek_buffer.dup
 			start_lexer_cursor = @lexer.cursor
 			start_lexer_pos = @lexer.anchor
-			yield
-		rescue SyntaxError
-			@peek_buffer = start_buffer
-			@lexer.cursor = start_lexer_cursor
-			@lexer.anchor = start_lexer_pos
-			nil
+
+			result = catch(:ERROR) { yield }
+
+			if ErrorMessage === result
+				@peek_buffer = start_buffer
+				@lexer.cursor = start_lexer_cursor
+				@lexer.anchor = start_lexer_pos
+				nil
+			else
+				result
+			end
 		end
 
 		def one_or_more(sep: :COMMA, given: nil)
@@ -1023,7 +1041,7 @@ module Plume
 			highlight = (" " * @lexer.anchor) + ("^" * (@lexer.cursor - @lexer.anchor))
 			msg = "Unexpected token #{token}[#{value.inspect}] at:\n  #{@lexer.sql.strip}\n  #{highlight}\n  Expected one of: #{expected.join(", ")}\n"
 
-			raise SyntaxError, msg
+			throw :ERROR, ErrorMessage.new(msg)
 		end
 	end
 end
