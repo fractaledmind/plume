@@ -1010,7 +1010,7 @@ module Plume
 
 			[].tap do |a|
 				i, len = 1, buf.length
-				while i <= n && i < len
+				while i <= n
 					a << buf[i*3]
 					i += 1
 				end
