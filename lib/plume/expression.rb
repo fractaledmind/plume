@@ -248,6 +248,11 @@ module Plume
 						left:,
 						right:,
 					)
+				elsif maybe :COLLATE
+					left = CollationExpression.new(
+						expression: left,
+						collation_name: identifier.to_sym.upcase
+					)
 				else
 					require op
 					right = expression(op_precedence + 1)

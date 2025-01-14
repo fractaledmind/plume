@@ -72,6 +72,11 @@ module Plume
 		},
 	)
 
+	class CollationExpression < Node
+		prop :expression, Expression
+		prop :collation_name, CollationName
+	end
+
 	class RaiseExpression < Node
 		prop :type, _Union(:IGNORE, :ROLLBACK, :ABORT, :FAIL)
 		prop :message, _Nilable(String)
