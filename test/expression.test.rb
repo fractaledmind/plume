@@ -1,5 +1,51 @@
 # frozen_string_literal: true
 
+# EXISTS
+
+test "COLLATE expression" do
+	parser = Plume::Parser.new("'foo' COLLATE NOCASE")
+	expr = parser.expression
+	assert_equal expr, Plume::CollationExpression.new(
+		expression: "foo",
+		collation_name: :NOCASE,
+	)
+end
+
+test "RAISE expression with IGNORE" do
+	parser = Plume::Parser.new("RAISE (IGNORE)")
+	expr = parser.expression
+	assert_equal expr, Plume::RaiseExpression.new(
+		type: :IGNORE
+	)
+end
+
+test "RAISE expression with ROLLBACK" do
+	parser = Plume::Parser.new("RAISE (ROLLBACK, 'error message')")
+	expr = parser.expression
+	assert_equal expr, Plume::RaiseExpression.new(
+		type: :ROLLBACK,
+		message: "error message"
+	)
+end
+
+test "RAISE expression with ABORT" do
+	parser = Plume::Parser.new("RAISE (ABORT, 'error message')")
+	expr = parser.expression
+	assert_equal expr, Plume::RaiseExpression.new(
+		type: :ABORT,
+		message: "error message"
+	)
+end
+
+test "RAISE expression with FAIL" do
+	parser = Plume::Parser.new("RAISE (FAIL, 'error message')")
+	expr = parser.expression
+	assert_equal expr, Plume::RaiseExpression.new(
+		type: :FAIL,
+		message: "error message"
+	)
+end
+
 # -- literal values
 
 test "Single integer literal expression" do
