@@ -229,3 +229,55 @@ test "parse basic create table with one column and a check constraint" do
 		)
 	)
 end
+
+test "parse a basic create table with STRICT table option" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0) STRICT
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+				),
+			],
+			strict: true,
+		)
+	)
+end
+
+test "parse a basic create table with WITHOUT ROWID table option" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0) WITHOUT ROWID
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+				),
+			],
+			without_row_id: true,
+		)
+	)
+end
+
+test "parse a basic create table with STRICT and WITHOUT ROWID table options" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0) STRICT, WITHOUT ROWID
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+				),
+			],
+			strict: true,
+			without_row_id: true,
+		)
+	)
+end

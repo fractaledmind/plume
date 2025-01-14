@@ -28,12 +28,15 @@ module Plume
 			else
 				expected!(:AS, :LP)
 			end
+			options = optional { table_options } # nil || [:STRICT, true] || [true] || [:STRICT]
 
 			CreateTableStatement.new(
 				schema_name:,
 				table_name:,
 				temporary: (true if temporary),
 				if_not_exists: (true if if_not_exists),
+				strict: (true if options&.include?(:STRICT)),
+				without_row_id: (true if options&.include?(true)),
 				columns:
 			)
 		end
@@ -98,6 +101,16 @@ module Plume
 				{ FOREIGN_KEY: [columns, clause] }
 			else
 				expected!(:CONSTRAINT, :PRIMARY, :UNIQUE, :CHECK, :FOREIGN)
+			end
+		end
+
+		def table_options
+			#     ┌─▶{ WITHOUT }─▶{ ROWID }─┐
+			# ◯─┬─┤                         ├─┬─▶◯
+			#   │ └─▶{ STRICT }─────────────┘ │
+			#   └──────◀───────────────{ , }◀─┘
+			one_or_more do
+				maybe(:STRICT) || maybe_all(:WITHOUT, :ROWID) || expected!(:STRICT, :WITHOUT)
 			end
 		end
 
