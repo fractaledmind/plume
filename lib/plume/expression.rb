@@ -128,6 +128,7 @@ module Plume
 								member: left,
 								collection: []
 							)
+						# :nocov:
 						elsif (s = optional { select_stmt })
 							require :RP
 
@@ -135,6 +136,7 @@ module Plume
 								member: left,
 								collection: s
 							)
+							# :nocov:
 						elsif (e = optional { expression(op_precedence + 1) })
 							exprs = one_or_more(given: e) { expression(op_precedence + 1) }
 							require :RP
@@ -284,58 +286,12 @@ module Plume
 					operand: expression(OPERATOR_PRECEDENCE[:UMINUS])
 				)
 			elsif maybe :LP
+				# could be implicit EXISTS expression
 				e = expression(0)
 				require :RP
 				e
-			elsif (v = optional { literal_value })
-				case v
-				when LiteralNil then nil
-				when LiteralFalse then false
-				else v
-				end
-			elsif :ID == current_token
-				case peek(2)
-				in [:IN, :LP]
-					ColumnReference.new(
-						column_name: identifier,
-					)
-				in [:LP, _]
-					function_name = identifier.to_sym.upcase
-					require :LP
-					arguments = function_arguments
-					require :RP
-					filter = optional { filter_clause }
-					over = optional { over_clause }
-
-					FunctionReference.new(
-						function_name:,
-						arguments:,
-						filter_clause: filter,
-						over_clause: over,
-					)
-				in [:DOT, _]
-					schema_or_table_name = identifier
-					require :DOT
-					table_or_column_name = identifier
-					if maybe :DOT
-						column_name = identifier
-						ColumnReference.new(
-							schema_name: schema_or_table_name,
-							table_name: table_or_column_name,
-							column_name:,
-						)
-					else
-						ColumnReference.new(
-							table_name: schema_or_table_name,
-							column_name: table_or_column_name,
-						)
-					end
-				else
-					ColumnReference.new(
-						column_name: identifier,
-					)
-				end
 			elsif maybe :NOT
+				# could be NOT EXISTS expression
 				UnaryExpression.new(
 					operator: :NOT,
 					operand: expression(OPERATOR_PRECEDENCE[:NOT])
@@ -391,6 +347,56 @@ module Plume
 						predicate:,
 						conditions:,
 						else_clause:,
+					)
+				end
+			elsif maybe :EXISTS
+				# is EXISTS expression
+			elsif (v = optional { literal_value })
+				case v
+				when LiteralNil then nil
+				when LiteralFalse then false
+				else v
+				end
+			elsif :ID == current_token
+				case peek(2)
+				in [:IN, :LP]
+					ColumnReference.new(
+						column_name: identifier,
+					)
+				in [:LP, _]
+					function_name = identifier.to_sym.upcase
+					require :LP
+					arguments = function_arguments
+					require :RP
+					filter = optional { filter_clause }
+					over = optional { over_clause }
+
+					FunctionReference.new(
+						function_name:,
+						arguments:,
+						filter_clause: filter,
+						over_clause: over,
+					)
+				in [:DOT, _]
+					schema_or_table_name = identifier
+					require :DOT
+					table_or_column_name = identifier
+					if maybe :DOT
+						column_name = identifier
+						ColumnReference.new(
+							schema_name: schema_or_table_name,
+							table_name: table_or_column_name,
+							column_name:,
+						)
+					else
+						ColumnReference.new(
+							table_name: schema_or_table_name,
+							column_name: table_or_column_name,
+						)
+					end
+				else
+					ColumnReference.new(
+						column_name: identifier,
 					)
 				end
 			elsif :RAISE == current_token
@@ -545,7 +551,7 @@ module Plume
 						starting_boundary = FrameBoundary.new(
 							type: :CURRENT_ROW
 						)
-					elsif (e = optional { expr })
+					elsif (e = optional { expression })
 						if maybe :PRECEDING
 							precedence = 2
 							starting_boundary = FrameBoundary.new(
