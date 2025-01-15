@@ -65,7 +65,42 @@ test "parse a basic temporary create table with one column" do
 	)
 end
 
-test "parse a basic create table with one column with a type" do
+test "parse a basic create table if not exists with one column" do
+	assert_statement(
+		<<~SQL,
+			create table if not exists tb0 (c0)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+				),
+			],
+			if_not_exists: true,
+		)
+	)
+end
+
+test "parse a basic create temp table if not exists with one column" do
+	assert_statement(
+		<<~SQL,
+			create temp table if not exists tb0 (c0)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+				),
+			],
+			temporary: true,
+			if_not_exists: true,
+		)
+	)
+end
+
+test "parse a basic create table with one column with a int type" do
 	assert_statement(
 		<<~SQL,
 			create temporary table tb0 (c0 int)
@@ -76,6 +111,99 @@ test "parse a basic create table with one column with a type" do
 				Plume::ColumnDefinition.new(
 					name: "c0",
 					type_name: Plume::IntegerType.new(name: "int"),
+				),
+			],
+			temporary: true
+		)
+	)
+end
+
+test "parse a basic create table with one column with a char type" do
+	assert_statement(
+		<<~SQL,
+			create temporary table tb0 (c0 char)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					type_name: Plume::TextType.new(name: "char"),
+				),
+			],
+			temporary: true
+		)
+	)
+end
+
+test "parse a basic create table with one column with a blob type" do
+	assert_statement(
+		<<~SQL,
+			create temporary table tb0 (c0 blob)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					type_name: Plume::BlobType.new(name: "blob"),
+				),
+			],
+			temporary: true
+		)
+	)
+end
+
+test "parse a basic create table with one column with a real type" do
+	assert_statement(
+		<<~SQL,
+			create temporary table tb0 (c0 real)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					type_name: Plume::RealType.new(name: "real"),
+				),
+			],
+			temporary: true
+		)
+	)
+end
+
+test "parse a basic create table with one column with a any type" do
+	assert_statement(
+		<<~SQL,
+			create temporary table tb0 (c0 any)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					type_name: Plume::AnyType.new(name: "any"),
+				),
+			],
+			temporary: true
+		)
+	)
+end
+
+test "parse a basic create table with one column with a constrained type" do
+	assert_statement(
+		<<~SQL,
+			create temporary table tb0 (c0 decimal(4, 6))
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					type_name: Plume::AnyType.new(
+						name: "decimal",
+						constraints: [4, 6],
+					),
 				),
 			],
 			temporary: true
@@ -222,6 +350,248 @@ test "parse basic create table with one column and a check constraint" do
 								left: Plume::ColumnReference.new(column_name: "c0"),
 								right: 0
 							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a default signed number" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 default 123)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::DefaultColumnConstraint.new(
+							value: 123,
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a default literal value" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 default 'foo')
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::DefaultColumnConstraint.new(
+							value: "foo",
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a default expression" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 default ('a' || 'b'))
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::DefaultColumnConstraint.new(
+							value: Plume::BinaryExpression.new(
+								operator: :CONCAT,
+								left: "a",
+								right: "b",
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a collate constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 collate rtrim)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::CollateColumnConstraint.new(
+							collation_name: :RTRIM,
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a generated as constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 generated always as (1 + 2))
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::GeneratedAsColumnConstraint.new(
+							expression: Plume::BinaryExpression.new(
+								operator: :ADD,
+								left: 1,
+								right: 2,
+							),
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and an as constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 as (1 + 2))
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::GeneratedAsColumnConstraint.new(
+							expression: Plume::BinaryExpression.new(
+								operator: :ADD,
+								left: 1,
+								right: 2,
+							),
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a stored generated as constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 generated always as (1 + 2) stored)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::GeneratedAsColumnConstraint.new(
+							expression: Plume::BinaryExpression.new(
+								operator: :ADD,
+								left: 1,
+								right: 2,
+							),
+							type: :STORED,
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a stored as constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 as (1 + 2) stored)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::GeneratedAsColumnConstraint.new(
+							expression: Plume::BinaryExpression.new(
+								operator: :ADD,
+								left: 1,
+								right: 2,
+							),
+							type: :STORED,
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a virtual generated as constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 generated always as (1 + 2) virtual)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::GeneratedAsColumnConstraint.new(
+							expression: Plume::BinaryExpression.new(
+								operator: :ADD,
+								left: 1,
+								right: 2,
+							),
+							type: :VIRTUAL,
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a virtual as constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 as (1 + 2) virtual)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::GeneratedAsColumnConstraint.new(
+							expression: Plume::BinaryExpression.new(
+								operator: :ADD,
+								left: 1,
+								right: 2,
+							),
+							type: :VIRTUAL,
 						),
 					]
 				),
