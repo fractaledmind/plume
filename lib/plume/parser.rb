@@ -993,7 +993,13 @@ module Plume
 				a << (given || yield)
 
 				if sep
-					a << yield while maybe sep
+					while maybe sep
+						if (val = optional { yield })
+							a << val
+						else
+							break
+						end
+					end
 				else
 					while (x = optional { yield })
 						a << x
