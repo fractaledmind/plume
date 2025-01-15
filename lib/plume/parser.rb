@@ -831,14 +831,14 @@ module Plume
 
 		# nm ::= ID|INDEXED|JOIN_KW
 		# nm ::= STRING
-		def identifier
+		def identifier(except: [])
 			if :STRING == current_token
 				string_literal
 			elsif one_of? :ID, :INDEXED, :CROSS, :FULL, :INNER, :LEFT, :NATURAL, :OUTER, :RIGHT
 				value = current_value
 				require current_token
 				value
-			elsif TOKEN_FALLBACKS[current_token]
+			elsif !except.include?(current_token) && TOKEN_FALLBACKS[current_token]
 				value = current_token
 				require current_token
 				value
