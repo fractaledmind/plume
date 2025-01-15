@@ -1,0 +1,1 @@
+CREATE TABLE techo(a PRIMARY KEY, b, c);

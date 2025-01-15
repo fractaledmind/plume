@@ -1,0 +1,1 @@
+SELECT coalesce(instr('abcdefg',NULL),'nil');

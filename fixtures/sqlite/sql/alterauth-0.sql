@@ -1,0 +1,1 @@
+ALTER TABLE t2 RENAME c TO ccc

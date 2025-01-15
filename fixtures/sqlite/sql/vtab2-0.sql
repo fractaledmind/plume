@@ -1,0 +1,2 @@
+CREATE VIRTUAL TABLE schema USING schema;
+SELECT * FROM schema;

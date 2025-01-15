@@ -1,0 +1,4 @@
+SAVEPOINT abc;
+INSERT INTO sqlite_dbpage VALUES(2, NULL);
+ROLLBACK TO abc;
+COMMIT;

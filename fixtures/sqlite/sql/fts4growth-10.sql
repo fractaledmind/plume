@@ -1,0 +1,1 @@
+INSERT INTO x3(x3) VALUES('optimize')

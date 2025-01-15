@@ -1,0 +1,3 @@
+DELETE FROM c9;
+INSERT INTO c2 VALUES(79),(77),(76);
+PRAGMA foreign_key_check;

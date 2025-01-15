@@ -1,0 +1,4 @@
+SELECT (a%5), sum(b) FILTER (WHERE b<20) AS bbb
+FROM t1
+GROUP BY (a%5) HAVING sum(b) FILTER (WHERE b<20) >34
+ORDER BY 1

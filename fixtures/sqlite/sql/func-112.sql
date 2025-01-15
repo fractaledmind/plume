@@ -1,0 +1,1 @@
+SELECT match(a,b) FROM t1 WHERE 0;

@@ -1,0 +1,1 @@
+SELECT substr(a,2,2) FROM t2

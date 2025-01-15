@@ -1,0 +1,1 @@
+CREATE VIRTUAL TABLE t1 USING fts3(english,spanish,german);

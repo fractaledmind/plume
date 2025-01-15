@@ -1,0 +1,1 @@
+CREATE VIRTUAL TABLE blobs_echo USING echo(blobs)

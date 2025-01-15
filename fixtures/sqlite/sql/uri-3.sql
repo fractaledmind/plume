@@ -1,0 +1,1 @@
+ATTACH 'file:test.db2?mode=rw' AS aux

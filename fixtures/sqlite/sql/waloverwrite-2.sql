@@ -1,0 +1,1 @@
+UPDATE t1 SET y = randomblob(798) WHERE x=$x

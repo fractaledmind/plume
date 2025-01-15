@@ -1,0 +1,1 @@
+pragma main.locking_mode = normal;

@@ -1,0 +1,1 @@
+INSERT INTO xyz(xyz) VALUES('merge=2,2')

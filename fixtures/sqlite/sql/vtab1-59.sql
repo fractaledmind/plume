@@ -1,0 +1,1 @@
+DELETE FROM sqlite_master WHERE sql LIKE 'insert%'

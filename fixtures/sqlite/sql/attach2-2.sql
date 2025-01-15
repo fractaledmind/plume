@@ -1,0 +1,1 @@
+SELECT * FROM file2.t1

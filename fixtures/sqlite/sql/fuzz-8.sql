@@ -1,0 +1,1 @@
+SELECT 1 FROM (SELECT * FROM sqlite_master WHERE random())

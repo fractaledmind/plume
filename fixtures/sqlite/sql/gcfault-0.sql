@@ -1,0 +1,1 @@
+SELECT group_concat(e, (SELECT s FROM s WHERE i=1)) FROM e

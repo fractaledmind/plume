@@ -1,0 +1,2 @@
+INSERT INTO t1 VALUES( randomblob(170000) );
+COMMIT;

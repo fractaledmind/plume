@@ -1,0 +1,2 @@
+DELETE FROM t1;
+VACUUM;

@@ -1,0 +1,1 @@
+SELECT rowid FROM t2 WHERE c MATCH 'lorem';

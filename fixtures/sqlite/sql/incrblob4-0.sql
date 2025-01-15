@@ -1,0 +1,2 @@
+PRAGMA page_size = 1024;
+CREATE TABLE t1(k INTEGER PRIMARY KEY, v);

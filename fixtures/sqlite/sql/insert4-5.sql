@@ -1,0 +1,2 @@
+INSERT INTO dest SELECT * FROM src;
+SELECT * FROM dest;

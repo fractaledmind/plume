@@ -1,0 +1,1 @@
+SELECT max(rowid) FROM t4 UNION SELECT max(rowid) FROM t5

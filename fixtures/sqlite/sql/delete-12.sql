@@ -1,0 +1,1 @@
+INSERT INTO table2 VALUES(2,3)

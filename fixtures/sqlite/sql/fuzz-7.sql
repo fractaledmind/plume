@@ -1,0 +1,1 @@
+SELECT CAST(zeroblob(1000) AS text);

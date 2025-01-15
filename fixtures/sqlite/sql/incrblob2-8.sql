@@ -1,0 +1,1 @@
+UPDATE OR REPLACE t1 SET id = 65 WHERE id = 35

@@ -1,0 +1,1 @@
+SELECT typeof(a) FROM t1

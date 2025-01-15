@@ -1,0 +1,1 @@
+INSERT INTO t1(docid, content) VALUES($docid, $content)

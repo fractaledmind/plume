@@ -1,0 +1,1 @@
+select length(zeroblob(-1))

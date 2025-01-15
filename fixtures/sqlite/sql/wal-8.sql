@@ -1,0 +1,1 @@
+ATTACH 'test2.db' AS t2; PRAGMA journal_mode=WAL;

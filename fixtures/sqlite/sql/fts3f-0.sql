@@ -1,0 +1,1 @@
+SELECT docid FROM ft WHERE ft MATCH 'one'

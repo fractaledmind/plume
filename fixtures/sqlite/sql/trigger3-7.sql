@@ -1,0 +1,2 @@
+UPDATE tbl SET c = 10;
+SELECT * FROM tbl;

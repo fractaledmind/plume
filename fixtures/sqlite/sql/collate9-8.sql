@@ -1,0 +1,1 @@
+SELECT y COLLATE "reverse sort" AS aaa FROM xy ORDER BY aaa

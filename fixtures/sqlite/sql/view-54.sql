@@ -1,0 +1,1 @@
+SELECT * FROM v3308b

@@ -1,0 +1,1 @@
+INSERT INTO prince VALUES(1, 2)

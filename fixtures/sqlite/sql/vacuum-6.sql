@@ -1,0 +1,2 @@
+INSERT INTO t7 SELECT * FROM t6;
+SELECT count(*) FROM t7;

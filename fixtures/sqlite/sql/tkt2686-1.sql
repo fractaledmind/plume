@@ -1,0 +1,1 @@
+INSERT INTO filler (fill) VALUES (randstr(1000, 10000))

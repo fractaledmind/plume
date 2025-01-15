@@ -1,0 +1,1 @@
+SELECT count(*) FROM t1 WHERE y=4

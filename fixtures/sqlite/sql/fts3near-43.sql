@@ -1,0 +1,1 @@
+SELECT docid FROM t1 WHERE content MATCH 'abbrev zygosis'

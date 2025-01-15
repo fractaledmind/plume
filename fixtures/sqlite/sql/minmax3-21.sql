@@ -1,0 +1,1 @@
+SELECT max(x COLLATE nocase), max(x) FROM t4;

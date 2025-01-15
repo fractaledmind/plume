@@ -1,0 +1,1 @@
+SELECT typeof(sum(x)) FROM t6

@@ -1,0 +1,1 @@
+SELECT * FROM e WHERE match('pattern', rowid, 'pattern2');

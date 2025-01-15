@@ -1,0 +1,1 @@
+SELECT count(a) AS cnt FROM t4 ORDER BY cnt

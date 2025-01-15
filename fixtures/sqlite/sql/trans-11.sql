@@ -1,0 +1,1 @@
+PRAGMA fullfsync=OFF

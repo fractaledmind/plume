@@ -1,0 +1,1 @@
+DELETE FROM a WHERE oid

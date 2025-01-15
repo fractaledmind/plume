@@ -1,0 +1,1 @@
+SELECT Tabc.a, Txyz.x, * FROM tabc, txyz;

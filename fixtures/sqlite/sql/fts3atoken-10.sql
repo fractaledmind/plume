@@ -1,0 +1,1 @@
+SELECT fts3_tokenizer_internal_test()

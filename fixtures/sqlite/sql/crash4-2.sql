@@ -1,0 +1,1 @@
+INSERT INTO a(id,name) VALUES(2,'two')

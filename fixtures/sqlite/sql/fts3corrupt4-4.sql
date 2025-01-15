@@ -1,0 +1,1 @@
+SELECT rowid FROM t0 WHERE t0 MATCH '1 NEAR 1'

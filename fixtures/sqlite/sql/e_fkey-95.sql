@@ -1,0 +1,2 @@
+UPDATE child2 SET c = NULL;
+COMMIT;

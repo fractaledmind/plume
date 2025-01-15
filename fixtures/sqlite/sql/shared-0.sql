@@ -1,0 +1,1 @@
+INSERT INTO seq SELECT i + :max, x FROM seq;

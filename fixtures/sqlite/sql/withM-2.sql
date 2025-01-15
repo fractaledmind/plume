@@ -1,0 +1,6 @@
+WITH w1(a,b) AS (
+SELECT 1, 1
+UNION ALL
+SELECT a+1, b + 2*a + 1 FROM w1
+)
+SELECT * FROM w1 LIMIT 5;

@@ -1,0 +1,1 @@
+SELECT round($x1,1);

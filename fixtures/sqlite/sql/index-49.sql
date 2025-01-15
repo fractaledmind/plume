@@ -1,0 +1,1 @@
+DROP INDEX "t6i1";

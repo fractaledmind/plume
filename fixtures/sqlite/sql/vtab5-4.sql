@@ -1,0 +1,2 @@
+DROP TABLE techo;
+DROP TABLE treal;

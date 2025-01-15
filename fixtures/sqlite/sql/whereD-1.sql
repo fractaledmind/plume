@@ -1,0 +1,3 @@
+CREATE INDEX t42d ON t42(d);
+CREATE INDEX t42e ON t42(e);
+SELECT * FROM t41 AS x LEFT JOIN t42 AS y ON (y.d=x.c) OR (y.e=x.b);

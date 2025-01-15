@@ -1,0 +1,2 @@
+BEGIN;
+SELECT * FROM whoami

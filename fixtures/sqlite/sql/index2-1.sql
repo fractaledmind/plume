@@ -1,0 +1,1 @@
+SELECT round(sum(c1000)) FROM t1

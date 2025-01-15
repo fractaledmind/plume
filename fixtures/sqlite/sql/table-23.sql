@@ -1,0 +1,1 @@
+EXPLAIN DROP TABLE test1

@@ -1,0 +1,1 @@
+INSERT INTO setup(name, data) VALUES('dir', NULL)

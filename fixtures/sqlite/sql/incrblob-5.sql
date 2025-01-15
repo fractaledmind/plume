@@ -1,0 +1,1 @@
+INSERT INTO blobs(k, v, i) VALUES(123, 567.765, NULL);

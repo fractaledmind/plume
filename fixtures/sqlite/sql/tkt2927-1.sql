@@ -1,0 +1,3 @@
+SELECT a, b FROM t1
+UNION ALL
+SELECT a, b FROM t1

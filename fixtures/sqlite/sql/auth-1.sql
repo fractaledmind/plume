@@ -1,0 +1,1 @@
+UPDATE t6 SET rowID=rowID+100

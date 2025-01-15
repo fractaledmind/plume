@@ -1,0 +1,1 @@
+SELECT a, max(b), b, max(c), c FROM t2 GROUP BY a ORDER BY a;

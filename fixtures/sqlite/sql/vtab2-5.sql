@@ -1,0 +1,1 @@
+SELECT name, arrayname, value FROM vars WHERE name='A';

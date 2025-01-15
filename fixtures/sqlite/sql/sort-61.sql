@@ -1,0 +1,1 @@
+INSERT INTO t10 VALUES( $i/10, $i%10 )

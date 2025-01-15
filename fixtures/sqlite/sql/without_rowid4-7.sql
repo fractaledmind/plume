@@ -1,0 +1,5 @@
+CREATE TABLE t1(a,b,c, PRIMARY KEY(a,b,c)) WITHOUT rowid;
+INSERT INTO t1 VALUES(1,2,3);
+CREATE VIEW v1 AS
+SELECT a+b AS x, b+c AS y, a+c AS z FROM t1;
+SELECT * FROM v1;

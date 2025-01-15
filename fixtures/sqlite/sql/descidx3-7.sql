@@ -1,0 +1,1 @@
+SELECT i FROM t1 WHERE a=1 AND b>0 AND b<'zzz'

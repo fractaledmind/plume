@@ -1,0 +1,1 @@
+SELECT a, sum(b) FROM t2 GROUP BY a;

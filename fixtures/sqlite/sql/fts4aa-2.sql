@@ -1,0 +1,1 @@
+SELECT docid FROM t1_docsize EXCEPT SELECT docid FROM t1

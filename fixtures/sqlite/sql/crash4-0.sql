@@ -1,0 +1,1 @@
+CREATE TABLE a(id INTEGER, name CHAR(50))

@@ -1,0 +1,1 @@
+SELECT rowid FROM t5 WHERE t5 MATCH 'british'

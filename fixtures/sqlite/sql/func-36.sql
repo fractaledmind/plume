@@ -1,0 +1,1 @@
+SELECT typeof(round(5.1));

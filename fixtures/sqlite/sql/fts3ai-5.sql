@@ -1,0 +1,1 @@
+SELECT content FROM t1 WHERE rowid = 4

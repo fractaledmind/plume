@@ -1,0 +1,1 @@
+SELECT d FROM t11 WHERE c IN (1,2,3,4,5);

@@ -1,0 +1,1 @@
+SELECT * FROM t11 ORDER BY b

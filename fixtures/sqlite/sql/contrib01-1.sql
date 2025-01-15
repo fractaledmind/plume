@@ -1,0 +1,6 @@
+SELECT T2.A, T2.B, T1.D, T1.E, T1.F, T1.G, T1.H, MAX(T1.C), '^'
+FROM T1, T2
+WHERE T1.B = T2.B
+AND T1.C = T2.C
+GROUP BY T2.A, T2.B, T1.D, T1.E, T1.F, T1.G, T1.H
+ORDER BY +max(t1.c);

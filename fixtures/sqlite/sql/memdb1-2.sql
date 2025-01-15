@@ -1,0 +1,1 @@
+SELECT x, y FROM main.t3 EXCEPT SELECT x, y FROM aux1.t3;

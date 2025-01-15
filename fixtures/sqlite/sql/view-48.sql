@@ -1,0 +1,1 @@
+SELECT x, y FROM v15 LIMIT 1

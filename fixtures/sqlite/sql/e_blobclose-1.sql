@@ -1,0 +1,1 @@
+SELECT * FROM x1 WHERE a = 15

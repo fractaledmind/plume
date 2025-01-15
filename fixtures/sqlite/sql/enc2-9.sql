@@ -1,0 +1,2 @@
+CREATE TABLE t5(a);
+INSERT INTO t5 VALUES('sqlite');

@@ -1,0 +1,1 @@
+INSERT INTO x1 VALUES(NULL, CAST ($s AS blob))

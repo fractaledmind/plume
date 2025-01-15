@@ -1,0 +1,1 @@
+CREATE INDEX t2e ON t2(e);

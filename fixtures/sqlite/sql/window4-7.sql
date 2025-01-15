@@ -1,0 +1,1 @@
+SELECT cume_dist() OVER () FROM t1

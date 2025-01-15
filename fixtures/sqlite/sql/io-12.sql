@@ -1,0 +1,1 @@
+INSERT INTO abc VALUES(3, 4)

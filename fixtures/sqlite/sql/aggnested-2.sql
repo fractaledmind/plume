@@ -1,0 +1,1 @@
+SELECT (SELECT string_agg(b1,a1) FROM t2) FROM t1;

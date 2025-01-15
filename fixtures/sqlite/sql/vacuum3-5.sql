@@ -1,0 +1,2 @@
+PRAGMA page_size=16384;
+VACUUM;

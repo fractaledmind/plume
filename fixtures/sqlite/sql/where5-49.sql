@@ -1,0 +1,1 @@
+SELECT x IS NULL FROM t3

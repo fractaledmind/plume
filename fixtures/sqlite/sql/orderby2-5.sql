@@ -1,0 +1,1 @@
+SELECT e, b FROM t1, t2 WHERE a=1 ORDER BY d, e;

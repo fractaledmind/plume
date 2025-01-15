@@ -1,0 +1,1 @@
+SELECT c FROM t1 WHERE a > 1 AND c LIKE 'I%'

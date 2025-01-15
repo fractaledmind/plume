@@ -1,0 +1,1 @@
+UPDATE A SET name='new text for row 3' WHERE id=3

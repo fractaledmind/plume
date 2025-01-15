@@ -1,0 +1,1 @@
+CREATE INDEX i1 ON t1(t,u,v,w,x,y,z)

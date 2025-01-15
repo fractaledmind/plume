@@ -1,0 +1,1 @@
+SELECT * FROM t4 WHERE x=1234;

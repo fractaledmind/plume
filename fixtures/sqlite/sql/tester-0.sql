@@ -1,0 +1,1 @@
+SELECT tbl_name AS t FROM sqlite_master WHERE type = 'table'

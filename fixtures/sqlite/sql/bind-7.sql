@@ -1,0 +1,1 @@
+SELECT quote(cast(x_coalesce(x) AS blob)) FROM t3

@@ -1,0 +1,1 @@
+SELECT random() AS y FROM t1 ORDER BY 1;

@@ -1,0 +1,1 @@
+SELECT coalesce(upper(a),'nil') FROM t2

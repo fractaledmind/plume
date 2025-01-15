@@ -1,0 +1,1 @@
+INSERT INTO sqlite_dbpage values($page_count, NULL);

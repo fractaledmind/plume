@@ -1,0 +1,1 @@
+ALTER TABLE t11c ADD COLUMN abc;

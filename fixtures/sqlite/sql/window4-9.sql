@@ -1,0 +1,1 @@
+SELECT id, min(b) OVER (PARTITION BY a ORDER BY id) FROM t7;

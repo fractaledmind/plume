@@ -1,0 +1,1 @@
+SELECT hex ( unhex('ABCDEF') );

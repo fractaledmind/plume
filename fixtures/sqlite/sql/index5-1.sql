@@ -1,0 +1,1 @@
+INSERT INTO t1 VALUES(randstr(100,100))

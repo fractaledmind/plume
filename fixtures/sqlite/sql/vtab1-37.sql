@@ -1,0 +1,1 @@
+SELECT rowid, * FROM echo_c WHERE +rowid IN (0,1,5,2,'a',3,NULL)

@@ -1,0 +1,1 @@
+SELECT "name", "partial", '|' FROM out ORDER BY "name"

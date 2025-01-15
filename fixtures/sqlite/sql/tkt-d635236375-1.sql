@@ -1,0 +1,1 @@
+SELECT count(*) FROM t1, t2 GROUP BY id1, id1;

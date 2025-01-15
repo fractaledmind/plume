@@ -1,0 +1,1 @@
+INSERT INTO tree VALUES(NULL, $parentid, $seg)

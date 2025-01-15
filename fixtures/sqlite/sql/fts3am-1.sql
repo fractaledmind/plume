@@ -1,0 +1,1 @@
+SELECT COUNT(col_a), COUNT(col_b), COUNT(*) FROM t1;

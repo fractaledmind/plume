@@ -1,0 +1,1 @@
+DELETE FROM parent WHERE x = 'key2'

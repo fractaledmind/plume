@@ -1,0 +1,1 @@
+SELECT replace('aaaaaaa', 'a', '0123456789');

@@ -1,0 +1,1 @@
+SELECT instr(x'78c3a4e282ac79','y');

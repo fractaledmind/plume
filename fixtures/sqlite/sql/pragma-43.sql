@@ -1,0 +1,1 @@
+PRAGMA cache_size

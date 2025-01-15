@@ -1,0 +1,6 @@
+DELETE FROM t1;
+BEGIN;
+INSERT INTO t1(a,b) VALUES(1,2);
+SELECT sum(length(y)) FROM t2;
+COMMIT;
+SELECT * FROM t1;

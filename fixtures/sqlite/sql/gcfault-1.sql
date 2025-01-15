@@ -1,0 +1,1 @@
+SELECT string_agg(e, (SELECT s FROM s WHERE i=2)) FROM e

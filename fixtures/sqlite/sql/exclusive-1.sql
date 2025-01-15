@@ -1,0 +1,3 @@
+PRAGMA locking_mode = NORMAL;
+DROP TABLE t3;
+DROP TABLE abc;

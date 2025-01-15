@@ -1,0 +1,1 @@
+SELECT * FROM schema WHERE dflt_value IS NULL LIMIT 1

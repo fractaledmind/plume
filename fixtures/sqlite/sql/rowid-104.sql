@@ -1,0 +1,1 @@
+DELETE FROM t7temp; INSERT INTO t7temp VALUES(1);

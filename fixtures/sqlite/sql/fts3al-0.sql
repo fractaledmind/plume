@@ -1,0 +1,1 @@
+CREATE VIRTUAL TABLE t4 USING fts3(content)

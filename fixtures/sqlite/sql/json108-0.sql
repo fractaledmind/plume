@@ -1,0 +1,3 @@
+CREATE TEMP TABLE t1(j0,j5);
+WITH RECURSIVE c(n) AS (VALUES(0) UNION ALL SELECT n+1 FROM c WHERE n<9)
+INSERT INTO t1 SELECT random_json(n), random_json5(n) FROM c;

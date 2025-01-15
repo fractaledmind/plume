@@ -1,0 +1,1 @@
+select a, b from vw where a<103 or a>226 order by a

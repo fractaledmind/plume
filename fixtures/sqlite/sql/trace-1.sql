@@ -1,0 +1,1 @@
+SELECT y FROM t1b WHERE x GLOB $xyzzy

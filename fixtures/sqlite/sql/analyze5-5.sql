@@ -1,0 +1,1 @@
+SELECT idx, count(*) FROM sqlite_stat4 GROUP BY 1 ORDER BY 1

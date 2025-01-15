@@ -1,0 +1,3 @@
+DELETE FROM result4;
+UPDATE v5 SET b = main.v5.b+9900000 WHERE main.v5.x BETWEEN 3 AND 5;
+SELECT * FROM result4 ORDER BY a;

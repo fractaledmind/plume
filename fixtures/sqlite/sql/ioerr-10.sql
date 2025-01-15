@@ -1,0 +1,2 @@
+DELETE FROM t1 WHERE oid > 85;
+COMMIT;

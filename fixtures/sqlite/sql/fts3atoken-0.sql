@@ -1,0 +1,1 @@
+SELECT fts3_tokenizer('blah', fts3_tokenizer('simple')) IS NULL;

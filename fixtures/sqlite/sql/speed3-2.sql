@@ -1,0 +1,1 @@
+CREATE TABLE aux.t1(a INTEGER, b TEXT, c INTEGER);

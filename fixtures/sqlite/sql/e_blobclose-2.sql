@@ -1,0 +1,1 @@
+SELECT a, val() FROM x1 LIMIT 1

@@ -1,0 +1,2 @@
+CREATE TABLE treal(a PRIMARY KEY, b, c);
+CREATE VIRTUAL TABLE techo USING echo(treal);

@@ -1,0 +1,1 @@
+SELECT +tabc.a AS AAA, -tabc.b AS BBB, tabc.c CCC FROM tabc

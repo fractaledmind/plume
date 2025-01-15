@@ -1,0 +1,1 @@
+SELECT count(b) FROM t2 WHERE b = X'ABCD';

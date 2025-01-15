@@ -1,0 +1,1 @@
+SELECT quote(a), quote(b) FROM tbl2;

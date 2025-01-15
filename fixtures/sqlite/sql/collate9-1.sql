@@ -1,0 +1,1 @@
+SELECT x FROM xy ORDER BY x

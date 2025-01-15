@@ -1,0 +1,1 @@
+SELECT x, rank() OVER (ORDER BY x) FROM t2 ORDER BY 1,2

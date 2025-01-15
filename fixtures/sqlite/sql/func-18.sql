@@ -1,0 +1,1 @@
+SELECT substr('abcdefg',1,0x100000002)

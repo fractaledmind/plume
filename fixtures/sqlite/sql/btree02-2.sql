@@ -1,0 +1,1 @@
+INSERT INTO t1(a,ax,b) VALUES(printf('(%s)',$a),random(),$bx)

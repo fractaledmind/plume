@@ -1,0 +1,1 @@
+INSERT INTO t1 SELECT a + (1 << $i), b + (1 << $i) FROM t1

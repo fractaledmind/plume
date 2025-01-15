@@ -1,0 +1,1 @@
+SELECT md5sum(a || b) FROM t1;

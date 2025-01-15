@@ -1,0 +1,3 @@
+INSERT INTO c12 SELECT x FROM c8;
+DELETE FROM c8;
+PRAGMA foreign_key_check;

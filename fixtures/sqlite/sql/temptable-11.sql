@@ -1,0 +1,2 @@
+CREATE INDEX mask ON t2(x);
+SELECT * FROM t2;

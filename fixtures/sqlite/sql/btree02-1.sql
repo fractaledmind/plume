@@ -1,0 +1,1 @@
+INSERT INTO t2(x,y) VALUES($b,$cnt)

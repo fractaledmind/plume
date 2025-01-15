@@ -1,0 +1,1 @@
+select typeof(zeroblob(-1))

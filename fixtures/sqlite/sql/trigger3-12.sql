@@ -1,0 +1,1 @@
+CREATE VIEW tbl_view AS SELECT * FROM tbl

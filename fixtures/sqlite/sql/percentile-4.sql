@@ -1,0 +1,1 @@
+SELECT percentile_disc(x,$in*0.01) FROM t1

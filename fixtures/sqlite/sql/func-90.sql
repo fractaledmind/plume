@@ -1,0 +1,1 @@
+SELECT test_destructor('hello world'), test_destructor_count();

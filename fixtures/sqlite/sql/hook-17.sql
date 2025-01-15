@@ -1,0 +1,1 @@
+REPLACE INTO t4 VALUES(1, 'c');

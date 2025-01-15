@@ -1,0 +1,1 @@
+ALTER TABLE t1 ADD COLUMN z; UPDATE t1 SET z=zeroblob(600)

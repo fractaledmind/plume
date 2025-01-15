@@ -1,0 +1,1 @@
+INSERT INTO t1 VALUES(randstr(10,10));

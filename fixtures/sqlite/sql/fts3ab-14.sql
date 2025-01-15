@@ -1,0 +1,1 @@
+SELECT rowid FROM t4 WHERE plusone MATCH 'one'

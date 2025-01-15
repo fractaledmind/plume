@@ -1,0 +1,1 @@
+SELECT * FROM v5; -- warm up the cache

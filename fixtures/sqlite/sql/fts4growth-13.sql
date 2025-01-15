@@ -1,0 +1,1 @@
+SELECT level, idx, second(end_block) FROM x3_segdir WHERE level=1

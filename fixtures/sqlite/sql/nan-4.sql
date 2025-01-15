@@ -1,0 +1,1 @@
+SELECT CAST(x AS text), typeof(x) FROM t1

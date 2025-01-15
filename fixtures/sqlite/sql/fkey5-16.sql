@@ -1,0 +1,3 @@
+DELETE FROM c10;
+INSERT INTO c3 VALUES(68),(67),(65);
+PRAGMA foreign_key_check;

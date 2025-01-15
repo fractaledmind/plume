@@ -1,0 +1,1 @@
+UPDATE t1 SET a=randomblob(12), b=randomblob(1500) WHERE (rowid%32)=0

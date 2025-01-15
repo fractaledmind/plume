@@ -1,0 +1,1 @@
+SELECT typeof(x'616263')

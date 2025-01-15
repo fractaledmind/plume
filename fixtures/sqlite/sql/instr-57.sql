@@ -1,0 +1,1 @@
+SELECT instr('xä€y',x'79');

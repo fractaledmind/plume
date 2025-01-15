@@ -1,0 +1,3 @@
+DETACH aux;
+DETACH aux2;
+DETACH aux3;

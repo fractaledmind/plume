@@ -1,0 +1,1 @@
+SELECT rowid, * FROM echo_c WHERE rowid NOT IN (0,5,'a',2,3,NULL)

@@ -1,0 +1,1 @@
+INSERT INTO t1 VALUES(11,'hello','world')

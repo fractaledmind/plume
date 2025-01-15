@@ -1,0 +1,1 @@
+SELECT instr(12345,34);

@@ -1,0 +1,1 @@
+UPDATE t1 SET x=x+100 WHERE rowid=$rowid

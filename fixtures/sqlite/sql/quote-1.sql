@@ -1,0 +1,1 @@
+UPDATE '@abc' SET '#xyz'=11

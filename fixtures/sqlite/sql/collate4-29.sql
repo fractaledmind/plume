@@ -1,0 +1,1 @@
+SELECT max(b, '101') FROM collate4t1;

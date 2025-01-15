@@ -1,0 +1,1 @@
+SELECT (- -21) % NOT (456 LIKE zeroblob(10));

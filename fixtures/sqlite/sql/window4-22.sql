@@ -1,0 +1,1 @@
+SELECT (SELECT min(a) OVER ()) FROM t2

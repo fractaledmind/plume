@@ -1,0 +1,1 @@
+SELECT typeof(b), b FROM t1 GROUP BY a HAVING b='456'

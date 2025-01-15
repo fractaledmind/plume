@@ -1,0 +1,1 @@
+SELECT a FROM t4 ORDER BY a

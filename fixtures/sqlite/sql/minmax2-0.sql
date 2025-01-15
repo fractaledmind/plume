@@ -1,0 +1,1 @@
+CREATE INDEX t1i1 ON t1(x DESC)

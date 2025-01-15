@@ -1,0 +1,1 @@
+SELECT name, "origin" FROM out ORDER BY name DESC

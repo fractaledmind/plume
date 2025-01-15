@@ -1,0 +1,1 @@
+UPDATE t1 SET v = $new WHERE k = 20

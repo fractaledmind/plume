@@ -1,0 +1,1 @@
+SELECT sql FROM aux.sqlite_schema WHERE type = 'table'

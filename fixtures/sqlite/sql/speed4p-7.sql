@@ -1,0 +1,1 @@
+UPDATE t5 SET i=i+1 WHERE t=$t

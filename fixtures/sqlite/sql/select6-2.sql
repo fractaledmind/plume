@@ -1,0 +1,1 @@
+SELECT count(*) FROM (SELECT DISTINCT y FROM t1)

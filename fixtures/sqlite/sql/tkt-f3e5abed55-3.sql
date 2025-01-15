@@ -1,0 +1,3 @@
+ATTACH 'test.db2' AS aux;
+SELECT * FROM t1;
+SELECT * FROM t2;

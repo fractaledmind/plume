@@ -1,0 +1,1 @@
+SELECT * FROM main.sqlite_master, aux.sqlite_master

@@ -1,0 +1,3 @@
+PRAGMA locking_mode = EXCLUSIVE;
+BEGIN IMMEDIATE; COMMIT;
+PRAGMA locking_mode = NORMAL;

@@ -1,0 +1,1 @@
+SELECT * FROM t6 WHERE y=NULL AND z IN ('hello');

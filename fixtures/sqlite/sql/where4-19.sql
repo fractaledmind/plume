@@ -1,0 +1,1 @@
+CREATE TABLE t6(y,z,PRIMARY KEY(y,z));

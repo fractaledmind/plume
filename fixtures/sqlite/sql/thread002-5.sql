@@ -1,0 +1,1 @@
+SELECT * FROM aux3.t1

@@ -1,0 +1,1 @@
+INSERT INTO t1 VALUES($i/10,$b,$i,$i)

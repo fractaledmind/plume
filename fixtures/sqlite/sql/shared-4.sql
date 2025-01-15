@@ -1,0 +1,1 @@
+ATTACH 'test.db' AS test

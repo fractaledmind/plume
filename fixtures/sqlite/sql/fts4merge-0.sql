@@ -1,0 +1,1 @@
+SELECT level, string_agg(idx, ' ') FROM t4_segdir GROUP BY level

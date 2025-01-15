@@ -1,0 +1,1 @@
+INSERT INTO t5 (x) values(0)

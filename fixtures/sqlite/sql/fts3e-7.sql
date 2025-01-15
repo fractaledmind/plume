@@ -1,0 +1,1 @@
+SELECT docid FROM t1 WHERE t1 MATCH 'this' ORDER BY docid;

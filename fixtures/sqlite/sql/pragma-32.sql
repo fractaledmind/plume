@@ -1,0 +1,1 @@
+pragma auto_vacuum = 0

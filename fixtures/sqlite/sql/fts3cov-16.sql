@@ -1,0 +1,1 @@
+SELECT * FROM xx WHERE xx MATCH 'two'

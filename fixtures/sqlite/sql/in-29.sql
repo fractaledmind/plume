@@ -1,0 +1,1 @@
+SELECT * FROM t6 WHERE a IN ('2');

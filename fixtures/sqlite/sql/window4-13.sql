@@ -1,0 +1,1 @@
+SELECT NTILE(256) OVER (ORDER BY total) - 1 AS nt FROM t8;

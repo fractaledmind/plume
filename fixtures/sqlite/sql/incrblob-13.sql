@@ -1,0 +1,1 @@
+SELECT * FROM blobs WHERE rowid = 4;

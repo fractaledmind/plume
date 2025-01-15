@@ -1,0 +1,1 @@
+SELECT b FROM t600, carray(inttoptr($PTR4),5,'double') WHERE a=value;

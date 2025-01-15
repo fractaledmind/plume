@@ -1,0 +1,1 @@
+SELECT quote(value) FROM sqlite_dbdata WHERE pgno=2 AND cell=0 AND field=1;

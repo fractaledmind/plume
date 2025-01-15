@@ -1,0 +1,1 @@
+SELECT real2hex($x) a, real2hex(CAST(quote($x) AS real)) b

@@ -1,0 +1,1 @@
+SELECT * FROM test1 WHERE f1<(select count(*) from test2)

@@ -1,0 +1,1 @@
+SELECT * FROM vt1 LIMIT 10

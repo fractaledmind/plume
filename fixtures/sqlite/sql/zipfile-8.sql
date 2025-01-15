@@ -1,0 +1,1 @@
+DELETE FROM zz WHERE name=$name

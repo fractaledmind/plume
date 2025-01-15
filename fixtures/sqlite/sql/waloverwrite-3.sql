@@ -1,0 +1,2 @@
+WITH cnt(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM cnt WHERE i<20)
+INSERT INTO t2 SELECT i, randomblob(800) FROM cnt;

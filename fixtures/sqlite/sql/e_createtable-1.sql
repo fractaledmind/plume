@@ -1,0 +1,1 @@
+CREATE TABLE t3(i, j, UNIQUE(i, j) )

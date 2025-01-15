@@ -1,0 +1,1 @@
+SELECT a, typeof(a), b, typeof(b), c, typeof(c) FROM t1 LIMIT 1;

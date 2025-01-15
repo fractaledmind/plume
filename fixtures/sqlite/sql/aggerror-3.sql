@@ -1,0 +1,1 @@
+SELECT x_count(*) FROM t1

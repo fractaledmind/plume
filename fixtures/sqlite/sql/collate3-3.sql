@@ -1,0 +1,1 @@
+select * from collate3t1

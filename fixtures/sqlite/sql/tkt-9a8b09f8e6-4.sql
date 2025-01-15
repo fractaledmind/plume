@@ -1,0 +1,5 @@
+CREATE TABLE t5(x, y);
+INSERT INTO t5 VALUES('1', 'one');
+INSERT INTO t5 VALUES(1, 'two');
+INSERT INTO t5 VALUES('1.0', 'three');
+INSERT INTO t5 VALUES(1.0, 'four');

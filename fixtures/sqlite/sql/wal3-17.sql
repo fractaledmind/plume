@@ -1,0 +1,1 @@
+UPDATE whoami SET x = $c

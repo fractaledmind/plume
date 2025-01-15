@@ -1,0 +1,1 @@
+INSERT INTO t3(rowid, c) VALUES(3+$i, $bigtext)

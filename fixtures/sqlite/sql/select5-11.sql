@@ -1,0 +1,1 @@
+SELECT a FROM t2 GROUP BY a;

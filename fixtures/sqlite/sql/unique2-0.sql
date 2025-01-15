@@ -1,0 +1,1 @@
+INSERT INTO t1(x,y) VALUES(1,1),(2,2),(3,2),(4,3)

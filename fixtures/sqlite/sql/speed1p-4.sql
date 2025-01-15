@@ -1,0 +1,1 @@
+SELECT count(*), avg(b) FROM t1 WHERE c LIKE $pattern

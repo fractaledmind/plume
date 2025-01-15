@@ -1,0 +1,1 @@
+INSERT INTO abc (a1) VALUES(NULL)

@@ -1,0 +1,3 @@
+SELECT * FROM (
+SELECT b COLLATE nocase IN (SELECT c FROM t2) FROM t1
+);

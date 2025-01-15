@@ -1,0 +1,1 @@
+SELECT * FROM v_t3_b;

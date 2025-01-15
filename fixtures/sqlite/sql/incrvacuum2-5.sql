@@ -1,0 +1,1 @@
+PRAGMA main.incremental_vacuum(5)

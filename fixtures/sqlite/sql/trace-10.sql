@@ -1,0 +1,1 @@
+SELECT '$::t6str', [$::t6str], $::t6str, ?1, "?1", $::t6str FROM t6

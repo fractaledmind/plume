@@ -1,0 +1,1 @@
+CREATE TABLE TEST2(one text)

@@ -1,0 +1,2 @@
+CREATE TABLE yy(a, b);
+INSERT INTO yy VALUES(77, 88);

@@ -1,0 +1,1 @@
+SELECT * FROM echo_c WHERE +a IN (1,3,8,'x',NULL,15,24)

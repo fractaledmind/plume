@@ -1,0 +1,1 @@
+PRAGMA integrity_check(1)

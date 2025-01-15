@@ -1,0 +1,1 @@
+pragma incremental_vacuum(10)

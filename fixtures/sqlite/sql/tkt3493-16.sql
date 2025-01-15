@@ -1,0 +1,1 @@
+SELECT typeof(a), a FROM t1 GROUP BY b HAVING a=123

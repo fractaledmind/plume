@@ -1,0 +1,2 @@
+DELETE FROM t1 WHERE x%2==0;
+SELECT count(*) FROM t1;

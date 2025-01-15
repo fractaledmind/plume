@@ -1,0 +1,1 @@
+SELECT CAST('123abc' AS text)

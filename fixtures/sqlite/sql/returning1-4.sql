@@ -1,0 +1,1 @@
+INSERT INTO t1(x,y) VALUES(4,5) RETURNING "x"+"y";

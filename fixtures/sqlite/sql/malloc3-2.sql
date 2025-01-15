@@ -1,0 +1,1 @@
+SELECT * FROM def, ghi WHERE d = g;

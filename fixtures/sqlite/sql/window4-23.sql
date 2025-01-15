@@ -1,0 +1,1 @@
+SELECT (SELECT avg(a)) FROM t2 ORDER BY 1

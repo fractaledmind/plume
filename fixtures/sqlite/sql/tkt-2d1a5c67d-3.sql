@@ -1,0 +1,1 @@
+SELECT * FROM t4 WHERE a = 'xyz'

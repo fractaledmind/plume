@@ -1,0 +1,1 @@
+SELECT b FROM collate2t1 WHERE b IN ('aa', 'bb') ORDER BY 1, oid;

@@ -1,0 +1,1 @@
+SELECT count(*) FROM ab WHERE a = $::cp200;

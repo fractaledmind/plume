@@ -1,0 +1,1 @@
+CREATE TABLE t4(a, b, UNIQUE(a,b))

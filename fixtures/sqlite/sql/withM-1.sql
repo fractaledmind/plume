@@ -1,0 +1,6 @@
+WITH w1 AS ( SELECT * FROM t1 ),
+w2 AS (
+WITH w3 AS ( SELECT * FROM w1 )
+SELECT * FROM w3
+)
+SELECT * FROM w2;

@@ -1,0 +1,1 @@
+INSERT INTO t2(docid, words) VALUES($docid, $words)

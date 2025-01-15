@@ -1,0 +1,2 @@
+CREATE VIRTUAL TABLE x1 USING fuzzer(x1_rules);
+SELECT word FROM x1 WHERE word MATCH 'xax';

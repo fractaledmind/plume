@@ -1,0 +1,1 @@
+SELECT a, b, c FROM ab NATURAL JOIN bc;

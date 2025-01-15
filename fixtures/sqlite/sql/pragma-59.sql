@@ -1,0 +1,2 @@
+DROP INDEX i2;
+CREATE INDEX i2 ON t1(c,d,b);

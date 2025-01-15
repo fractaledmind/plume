@@ -1,0 +1,1 @@
+PRAGMA legacy_alter_table = OFF

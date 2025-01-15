@@ -1,0 +1,1 @@
+SELECT typeof(+x) FROM t29 ORDER BY id

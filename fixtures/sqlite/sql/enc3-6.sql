@@ -1,0 +1,2 @@
+SELECT rowid FROM t2
+WHERE CAST(a AS text) LIKE CAST(x'610062002500' AS text);

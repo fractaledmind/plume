@@ -1,0 +1,1 @@
+SELECT * FROM abc16 WHERE a < 'abc';

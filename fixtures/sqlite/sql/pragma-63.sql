@@ -1,0 +1,1 @@
+PRAGMA main.table_info(trial);

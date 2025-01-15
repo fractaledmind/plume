@@ -1,0 +1,1 @@
+SELECT 2 IN (SELECT c FROM t7)

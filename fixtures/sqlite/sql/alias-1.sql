@@ -1,0 +1,1 @@
+SELECT x, sequence() AS y FROM t1 WHERE y>0

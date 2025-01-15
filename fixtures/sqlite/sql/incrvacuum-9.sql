@@ -1,0 +1,2 @@
+DROP TABLE abc;
+DELETE FROM tbl2;

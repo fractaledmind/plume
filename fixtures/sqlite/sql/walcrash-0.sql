@@ -1,0 +1,1 @@
+SELECT sum(a)==max(b) FROM t1

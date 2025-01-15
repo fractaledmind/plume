@@ -1,0 +1,1 @@
+SELECT * FROM terms WHERE rec('cnt', term) AND +term>'brain'

@@ -1,0 +1,1 @@
+SELECT docid FROM t1 WHERE content MATCH 'specification NEAR/000019 attach'

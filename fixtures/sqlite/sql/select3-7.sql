@@ -1,0 +1,1 @@
+SELECT log*2+1, avg(n)-min(n) FROM t1 GROUP BY log ORDER BY log

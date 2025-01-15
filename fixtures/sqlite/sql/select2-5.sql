@@ -1,0 +1,1 @@
+SELECT * FROM aa, bb WHERE NOT min(a,b);

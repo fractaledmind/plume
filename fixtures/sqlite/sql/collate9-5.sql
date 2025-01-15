@@ -1,0 +1,1 @@
+SELECT y, y < 'seven' FROM xy ORDER BY x

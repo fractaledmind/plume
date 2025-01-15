@@ -1,0 +1,1 @@
+UPDATE ft_content SET c1b = 'hello world' WHERE c1b = $numbers

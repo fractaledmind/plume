@@ -1,0 +1,2 @@
+EXPLAIN QUERY PLAN
+SELECT name FROM album CROSS JOIN track USING (aid) ORDER BY title, tn

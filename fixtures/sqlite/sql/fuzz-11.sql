@@ -1,0 +1,2 @@
+CREATE TABLE abc(b);
+INSERT INTO abc VALUES('ABCDE');

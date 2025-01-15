@@ -1,0 +1,2 @@
+INSERT INTO b VALUES('Gilan');
+INSERT INTO b VALUES('Ardabil');

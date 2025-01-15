@@ -1,0 +1,1 @@
+SELECT max(b+c) FROM t11

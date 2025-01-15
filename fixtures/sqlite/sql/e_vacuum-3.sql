@@ -1,0 +1,1 @@
+SELECT pageno FROM stat WHERE name = 't1' ORDER BY pageno

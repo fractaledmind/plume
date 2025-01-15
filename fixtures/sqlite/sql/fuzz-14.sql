@@ -1,0 +1,2 @@
+CREATE TABLE abc(a, b, c);
+INSERT INTO abc VALUES(123, 456, 789);

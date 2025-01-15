@@ -1,0 +1,1 @@
+SELECT a, (SELECT count(*) FROM t2 WHERE a=c) FROM t1;

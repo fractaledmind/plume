@@ -1,0 +1,1 @@
+CREATE TABLE parent(x, y, UNIQUE(y, x))

@@ -1,0 +1,1 @@
+SELECT rootpage, tbl_name FROM sqlite_schema

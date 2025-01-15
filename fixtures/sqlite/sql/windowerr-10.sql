@@ -1,0 +1,1 @@
+SELECT sum(a) OVER () AS xyz FROM t1 ORDER BY sum(xyz);

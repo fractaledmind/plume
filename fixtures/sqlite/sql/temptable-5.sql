@@ -1,0 +1,2 @@
+CREATE INDEX i2 ON t2(x);
+DROP TABLE t2;

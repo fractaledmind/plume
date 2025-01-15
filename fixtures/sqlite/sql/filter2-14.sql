@@ -1,0 +1,4 @@
+SELECT
+avg(b) FILTER (WHERE b>a),
+avg(b) FILTER (WHERE b<a)
+FROM t1 GROUP BY (a%2) ORDER BY 1,2;

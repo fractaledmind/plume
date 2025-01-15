@@ -1,0 +1,1 @@
+SELECT * FROM collate4t1;

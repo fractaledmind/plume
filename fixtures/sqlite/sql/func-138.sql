@@ -1,0 +1,1 @@
+SELECT group_concat(t1), string_agg(t1,',') FROM tbl1

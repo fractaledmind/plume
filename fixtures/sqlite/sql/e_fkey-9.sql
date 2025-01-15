@@ -1,0 +1,1 @@
+INSERT INTO p VALUES(1, 2, 3)

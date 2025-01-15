@@ -1,0 +1,3 @@
+ROLLBACK TO one;
+COMMIT;
+SELECT * FROM t1;

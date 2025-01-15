@@ -1,0 +1,1 @@
+SELECT fullname, value FROM tclvar WHERE name='vtabJ' ORDER BY fullname;

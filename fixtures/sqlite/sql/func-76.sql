@@ -1,0 +1,1 @@
+SELECT random() is not null;

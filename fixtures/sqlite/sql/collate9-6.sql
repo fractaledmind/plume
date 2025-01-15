@@ -1,0 +1,1 @@
+SELECT y, y COLLATE "reverse sort" < 'seven' FROM xy ORDER BY x

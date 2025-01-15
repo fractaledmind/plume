@@ -1,0 +1,1 @@
+SELECT level, count(*) FROM x1_segdir GROUP BY level

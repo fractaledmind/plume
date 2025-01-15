@@ -1,0 +1,1 @@
+BEGIN ; SELECT count(a) FROM t1

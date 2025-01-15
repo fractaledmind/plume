@@ -1,0 +1,1 @@
+CREATE TABLE filler(a,b,c);

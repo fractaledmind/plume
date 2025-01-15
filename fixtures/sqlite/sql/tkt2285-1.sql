@@ -1,0 +1,3 @@
+BEGIN;
+CREATE TABLE abc(a, b, c);
+ROLLBACK;

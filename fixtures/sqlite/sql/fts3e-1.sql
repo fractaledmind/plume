@@ -1,0 +1,1 @@
+SELECT docid FROM t1 WHERE c LIKE '%test' ORDER BY docid;

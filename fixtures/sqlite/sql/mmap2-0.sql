@@ -1,0 +1,1 @@
+PRAGMA mmap_size = 8000000

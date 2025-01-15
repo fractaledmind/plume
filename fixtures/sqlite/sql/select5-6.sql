@@ -1,0 +1,1 @@
+SELECT count(x) FROM t1 WHERE x>100

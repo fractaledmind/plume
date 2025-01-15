@@ -1,0 +1,1 @@
+SELECT round(t1,2) FROM tbl1

@@ -1,0 +1,1 @@
+SELECT substr(t, $i1, $i2) FROM t1

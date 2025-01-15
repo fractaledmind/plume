@@ -1,0 +1,1 @@
+CREATE INDEX abc_index ON abc(a);

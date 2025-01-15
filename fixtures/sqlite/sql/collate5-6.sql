@@ -1,0 +1,1 @@
+SELECT a FROM collate5t1 UNION select a FROM collate5t2;

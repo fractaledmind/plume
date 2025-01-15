@@ -1,0 +1,1 @@
+SELECT LENGTH(REPLACE($::str, 'C', $::rep));

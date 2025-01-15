@@ -1,0 +1,1 @@
+SELECT coalesce(max(x),999) FROM t3;

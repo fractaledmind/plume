@@ -1,0 +1,1 @@
+INSERT INTO tbl1 VALUES('a', 'b', 'c');

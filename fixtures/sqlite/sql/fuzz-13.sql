@@ -1,0 +1,1 @@
+SELECT 'abcd' UNION SELECT 'efgh' ORDER BY 1 ASC, 1 ASC;

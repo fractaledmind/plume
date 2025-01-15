@@ -1,0 +1,1 @@
+SELECT docid, * FROM t4 WHERE docid = 1;

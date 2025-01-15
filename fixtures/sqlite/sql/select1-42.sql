@@ -1,0 +1,1 @@
+SELECT test1 . f1, test1 . f2 FROM test1 LIMIT 1

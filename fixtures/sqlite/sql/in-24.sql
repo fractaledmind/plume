@@ -1,0 +1,1 @@
+SELECT b FROM t1 WHERE a NOT IN t4;

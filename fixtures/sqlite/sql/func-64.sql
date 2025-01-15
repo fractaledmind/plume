@@ -1,0 +1,1 @@
+EXPLAIN SELECT sum(a) FROM t2;

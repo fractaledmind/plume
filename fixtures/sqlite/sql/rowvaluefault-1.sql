@@ -1,0 +1,1 @@
+SELECT fou FROM xyz WHERE (two, thr) IS ('C', 'C')

@@ -1,0 +1,2 @@
+INSERT INTO t1 VALUES(5);
+SELECT count(*) FROM t2;

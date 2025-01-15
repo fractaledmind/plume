@@ -1,0 +1,1 @@
+SELECT percentile(x,$in) FROM t1

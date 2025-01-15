@@ -1,0 +1,1 @@
+SELECT max((SELECT count() FROM t35b)) FROM t35a;

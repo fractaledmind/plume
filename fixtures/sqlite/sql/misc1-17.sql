@@ -1,0 +1,1 @@
+SELECT abort+asc,max(key,pragma,temp) FROM t4

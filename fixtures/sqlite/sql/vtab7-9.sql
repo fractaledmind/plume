@@ -1,0 +1,1 @@
+INSERT INTO db2.stuff VALUES('abc', 'square', 'green');

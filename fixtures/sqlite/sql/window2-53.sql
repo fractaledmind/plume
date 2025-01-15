@@ -1,0 +1,1 @@
+SELECT count(*) OVER (ORDER BY b) FROM t1

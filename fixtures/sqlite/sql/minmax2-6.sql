@@ -1,0 +1,1 @@
+SELECT min(c+b) FROM t11

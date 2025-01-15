@@ -1,0 +1,1 @@
+INSERT INTO t1 VALUES(a_string(201), a_string(301))

@@ -1,0 +1,1 @@
+SELECT b FROM v4 ORDER BY 1;

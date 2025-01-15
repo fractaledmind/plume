@@ -1,0 +1,1 @@
+SELECT j1.b FROM (t1 INNER JOIN t2 ON a=c) AS j1

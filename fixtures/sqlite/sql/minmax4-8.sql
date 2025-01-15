@@ -1,0 +1,2 @@
+DELETE FROM t1 WHERE q IS NOT NULL;
+SELECT p, max(q) FROM t1;

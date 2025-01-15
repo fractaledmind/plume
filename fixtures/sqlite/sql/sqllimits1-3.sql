@@ -1,0 +1,1 @@
+CREATE TABLE trig (a INTEGER, b INTEGER);

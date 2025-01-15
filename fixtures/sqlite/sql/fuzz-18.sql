@@ -1,0 +1,1 @@
+DROP TABLE abc; DROP TABLE def; DROP TABLE ghi;

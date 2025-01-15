@@ -1,0 +1,1 @@
+SELECT * FROM t41 AS x LEFT JOIN t42 AS y ON (y.d=x.c) OR (y.d=x.b);

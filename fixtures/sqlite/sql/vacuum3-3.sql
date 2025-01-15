@@ -1,0 +1,1 @@
+UPDATE t1 SET d = randomblob(1000);

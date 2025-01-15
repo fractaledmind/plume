@@ -1,0 +1,2 @@
+ROLLBACK;
+SELECT length(x) FROM t1

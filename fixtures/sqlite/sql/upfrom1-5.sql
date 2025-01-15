@@ -1,0 +1,2 @@
+UPDATE t3 SET c=x FROM t4;
+SELECT * FROM t3 ORDER BY a;

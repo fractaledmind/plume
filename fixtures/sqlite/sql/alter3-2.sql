@@ -1,0 +1,2 @@
+CREATE TABLE abc(a, b, c);
+ALTER TABLE abc ADD d DEFAULT NULL;

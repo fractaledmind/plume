@@ -1,0 +1,1 @@
+PRAGMA temp_store_directory;

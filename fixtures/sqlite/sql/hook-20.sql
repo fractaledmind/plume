@@ -1,0 +1,1 @@
+INSERT INTO t3 SELECT a, b FROM t2

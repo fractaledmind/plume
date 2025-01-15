@@ -1,0 +1,1 @@
+SELECT x75 FROM manycol WHERE x50=350

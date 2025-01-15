@@ -1,0 +1,1 @@
+PRAGMA full_column_names=on

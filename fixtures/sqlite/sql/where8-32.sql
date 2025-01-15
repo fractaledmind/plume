@@ -1,0 +1,4 @@
+SELECT c FROM t1, t2 WHERE a BETWEEN 1 AND 2 OR a = (
+SELECT sum(e IS NULL) FROM t2 AS inner WHERE t2.d>inner.d
+)
+ORDER BY c

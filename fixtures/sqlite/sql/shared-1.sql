@@ -1,0 +1,1 @@
+DELETE FROM seq WHERE i = :i

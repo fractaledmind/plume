@@ -1,0 +1,1 @@
+SELECT rowid FROM blobs ORDER BY rowid

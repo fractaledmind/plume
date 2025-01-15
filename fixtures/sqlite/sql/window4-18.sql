@@ -1,0 +1,1 @@
+SELECT sum( max(t) ) OVER () FROM t8 GROUP BY total;

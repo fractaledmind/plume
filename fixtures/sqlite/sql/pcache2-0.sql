@@ -1,0 +1,1 @@
+PRAGMA cache_size=10; SELECT 1 FROM sqlite_master;

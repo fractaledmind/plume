@@ -1,0 +1,1 @@
+SELECT p, min(q) FROM t1;

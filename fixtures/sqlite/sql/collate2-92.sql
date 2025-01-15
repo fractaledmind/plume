@@ -1,0 +1,1 @@
+SELECT a IN ('aa', 'bb') FROM collate2t1;

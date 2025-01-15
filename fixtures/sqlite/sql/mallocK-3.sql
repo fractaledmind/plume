@@ -1,0 +1,1 @@
+SELECT * FROM x2 WHERE x = str('19') AND y = str('4')

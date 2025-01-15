@@ -1,0 +1,1 @@
+SELECT name FROM aux.sqlite_master ORDER BY 1;

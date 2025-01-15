@@ -1,0 +1,1 @@
+SELECT max(b) FROM t7 WHERE a=4;

@@ -1,0 +1,3 @@
+INSERT INTO t1 VALUES(randomblob(1200));
+INSERT INTO t1 VALUES(randomblob(1200));
+INSERT INTO t1 VALUES(randomblob(1200));

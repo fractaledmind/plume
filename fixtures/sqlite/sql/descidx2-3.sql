@@ -1,0 +1,1 @@
+SELECT a FROM t1 WHERE b>3 AND b<7;

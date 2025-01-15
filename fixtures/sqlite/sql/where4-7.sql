@@ -1,0 +1,1 @@
+SELECT * FROM t2 LEFT JOIN t3 ON a=x WHERE y IS $null;

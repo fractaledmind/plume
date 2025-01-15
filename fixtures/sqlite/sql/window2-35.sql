@@ -1,0 +1,4 @@
+SELECT a, sum(b) OVER (
+PARTITION BY (b%10)
+ORDER BY b
+) FROM t2 ORDER BY a;

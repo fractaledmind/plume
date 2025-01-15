@@ -1,0 +1,1 @@
+SELECT * FROM test1 WHERE f2==88 ORDER BY f1,f2

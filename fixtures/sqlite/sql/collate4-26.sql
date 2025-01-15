@@ -1,0 +1,1 @@
+SELECT max(b, a) FROM collate4t1;

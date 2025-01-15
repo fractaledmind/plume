@@ -1,0 +1,1 @@
+SELECT a, sum(b), typeof(sum(b)) FROM t1 GROUP BY a ORDER BY a;

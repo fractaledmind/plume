@@ -1,0 +1,1 @@
+SELECT * FROM t6 ORDER BY a

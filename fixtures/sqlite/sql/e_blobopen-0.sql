@@ -1,0 +1,1 @@
+DELETE FROM b1 WHERE a = 1

@@ -1,0 +1,1 @@
+UPDATE t5 AS apples SET b=1 FROM t5 AS apples;

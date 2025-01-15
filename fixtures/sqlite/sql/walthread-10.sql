@@ -1,0 +1,1 @@
+REPLACE INTO t1 VALUES($row, randomblob(300))

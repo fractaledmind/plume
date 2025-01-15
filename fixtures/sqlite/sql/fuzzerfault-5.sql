@@ -1,0 +1,2 @@
+CREATE VIRTUAL TABLE x1 USING fuzzer(x1_rules);
+SELECT count(*) FROM (SELECT * FROM x1 WHERE word MATCH 'a' LIMIT 2);

@@ -1,0 +1,1 @@
+SELECT * FROM sqlite_sequence WHERE name='t3928'

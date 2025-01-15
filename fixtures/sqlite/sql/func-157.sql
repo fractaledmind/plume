@@ -1,0 +1,1 @@
+SELECT testdirectonly(15)

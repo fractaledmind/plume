@@ -1,0 +1,3 @@
+BEGIN;
+DELETE FROM t5;
+INSERT INTO t8 VALUES('hello world');

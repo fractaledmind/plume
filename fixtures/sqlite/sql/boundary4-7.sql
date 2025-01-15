@@ -1,0 +1,1 @@
+SELECT rowid, a, x FROM t1 ORDER BY +a DESC

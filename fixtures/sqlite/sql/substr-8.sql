@@ -1,0 +1,1 @@
+SELECT ifnull(substr('abcdefg',NULL,1),'nil')

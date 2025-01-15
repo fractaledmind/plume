@@ -1,0 +1,1 @@
+SELECT  glob('2',a) FROM e

@@ -1,0 +1,1 @@
+INSERT INTO t1 VALUES($i/10,$i/17,$i/27,$i/37)

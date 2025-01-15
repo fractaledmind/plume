@@ -1,0 +1,3 @@
+INSERT INTO t1 VALUES(5,0);
+SELECT p, max(q) FROM t1;
+SELECT p FROM (SELECT max(q), p FROM t1);

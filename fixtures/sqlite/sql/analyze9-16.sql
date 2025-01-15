@@ -1,0 +1,1 @@
+INSERT INTO t1(x, y) VALUES($i, $i)

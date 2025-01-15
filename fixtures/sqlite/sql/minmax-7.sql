@@ -1,0 +1,1 @@
+SELECT max(x) FROM t1 WHERE y=0;

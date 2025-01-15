@@ -1,0 +1,1 @@
+SELECT a = ( SELECT d FROM (SELECT d FROM t2) ) FROM t1

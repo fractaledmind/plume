@@ -1,0 +1,1 @@
+INSERT INTO t7 VALUES(2,'y');

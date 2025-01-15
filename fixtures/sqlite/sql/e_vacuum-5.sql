@@ -1,0 +1,1 @@
+PRAGMA page_size ; PRAGMA auto_vacuum

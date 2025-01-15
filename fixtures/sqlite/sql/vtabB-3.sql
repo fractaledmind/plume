@@ -1,0 +1,1 @@
+SELECT * FROM t1 WHERE x IN (SELECT rowid FROM t2);

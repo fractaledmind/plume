@@ -1,0 +1,1 @@
+CREATE TEMP TABLE temp_t1(a, b);

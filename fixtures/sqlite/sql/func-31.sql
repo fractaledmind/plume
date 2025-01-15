@@ -1,0 +1,1 @@
+SELECT abs(a) FROM t2

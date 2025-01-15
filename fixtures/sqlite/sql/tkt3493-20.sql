@@ -1,0 +1,1 @@
+SELECT a='abc' FROM t2 GROUP BY a

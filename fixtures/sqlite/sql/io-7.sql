@@ -1,0 +1,1 @@
+INSERT INTO abc VALUES(7,randstr(230,230));

@@ -1,0 +1,1 @@
+select ifnull(a+b,99) from t1;

@@ -1,0 +1,1 @@
+SELECT execsql('CREATE TABLE t1(x)');

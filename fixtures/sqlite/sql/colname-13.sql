@@ -1,0 +1,1 @@
+SELECT Tabc.a, tAbc.b, taBc.c FROM tabc

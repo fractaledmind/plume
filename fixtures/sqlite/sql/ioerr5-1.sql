@@ -1,0 +1,1 @@
+CREATE INDEX i1 ON a(id, name);

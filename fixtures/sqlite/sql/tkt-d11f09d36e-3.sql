@@ -1,0 +1,4 @@
+SAVEPOINT tr;
+UPDATE t1 set x = x+10000;
+ROLLBACK TO tr;
+RELEASE tr;

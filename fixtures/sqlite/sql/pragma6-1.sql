@@ -1,0 +1,1 @@
+PRAGMA quick_check;

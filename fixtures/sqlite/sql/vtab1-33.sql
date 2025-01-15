@@ -1,0 +1,1 @@
+SELECT * FROM echo_c WHERE b IS NULL AND a = 15;

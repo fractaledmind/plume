@@ -1,0 +1,7 @@
+DELETE FROM t1;
+WITH RECURSIVE
+c(i) AS (VALUES(1) UNION ALL SELECT i+1 FROM c WHERE i<30)
+INSERT INTO t1(a,b) SELECT i, zeroblob(6542) FROM c;
+UPDATE t1 SET b=zeroblob(2331);
+UPDATE t1 SET b=zeroblob(65496) WHERE a=$::i;
+PRAGMA integrity_check;

@@ -1,0 +1,1 @@
+SELECT str||'' FROM echo_strings ORDER BY 1;

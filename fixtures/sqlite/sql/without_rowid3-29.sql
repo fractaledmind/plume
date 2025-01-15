@@ -1,0 +1,2 @@
+CREATE TABLE pp(x, y, PRIMARY KEY(x, y)) WITHOUT ROWID;
+CREATE TABLE cc(a, b, FOREIGN KEY(a, b) REFERENCES pp(x, z));

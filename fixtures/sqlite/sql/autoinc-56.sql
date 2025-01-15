@@ -1,0 +1,1 @@
+SELECT * FROM sqlite_sequence WHERE name LIKE 't3928%' ORDER BY name;
