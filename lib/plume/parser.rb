@@ -898,7 +898,7 @@ module Plume
 				require current_token
 				value
 			elsif !except.include?(current_token) && TOKEN_FALLBACKS[current_token]
-				value = current_token
+				value = current_token.name
 				require current_token
 				value
 			else
