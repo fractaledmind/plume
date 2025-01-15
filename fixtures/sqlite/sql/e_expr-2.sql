@@ -1,0 +1,1 @@
+PRAGMA encoding = 'utf-16be'

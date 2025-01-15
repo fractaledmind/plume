@@ -1,0 +1,3 @@
+SELECT max(b) OVER (
+ORDER BY a
+) FROM t2

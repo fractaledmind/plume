@@ -1,0 +1,1 @@
+CREATE VIRTUAL TABLE v_col USING schema

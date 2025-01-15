@@ -1,0 +1,1 @@
+SELECT a FROM t6 WHERE (x='y' OR y='y') AND c=27027 ORDER BY a;

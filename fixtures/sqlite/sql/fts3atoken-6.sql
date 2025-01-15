@@ -1,0 +1,1 @@
+SELECT fts3_tokenizer_test('simple', 'I don''t see how');

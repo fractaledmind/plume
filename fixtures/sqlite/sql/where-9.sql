@@ -1,0 +1,2 @@
+SELECT w, x, y FROM t1 WHERE x IN (1,5) AND y IN (9,8,3025,1000,3969)
+ORDER BY x, y

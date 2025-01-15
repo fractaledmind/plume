@@ -1,0 +1,4 @@
+BEGIN;
+DROP TABLE aux.tbl;
+DROP TABLE tbl;
+ROLLBACK;

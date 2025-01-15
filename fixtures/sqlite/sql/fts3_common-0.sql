@@ -1,0 +1,1 @@
+INSERT INTO t1(docid, x, y) VALUES($i, $x, $y)

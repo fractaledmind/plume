@@ -1,0 +1,1 @@
+SELECT sql FROM main.sqlite_master

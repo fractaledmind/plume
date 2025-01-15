@@ -1,0 +1,1 @@
+SELECT "t a".* FROM "t a";

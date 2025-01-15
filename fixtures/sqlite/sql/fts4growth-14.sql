@@ -1,0 +1,1 @@
+INSERT INTO x4 SELECT words FROM t1

@@ -1,0 +1,1 @@
+SELECT b>a FROM t2 GROUP BY a, b

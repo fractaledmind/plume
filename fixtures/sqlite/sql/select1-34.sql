@@ -1,0 +1,1 @@
+SELECT 10 IN (SELECT rowid FROM sqlite_master);

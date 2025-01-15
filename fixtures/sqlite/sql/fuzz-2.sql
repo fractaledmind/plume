@@ -1,0 +1,1 @@
+SELECT zeroblob(10) LIKE 'abc';

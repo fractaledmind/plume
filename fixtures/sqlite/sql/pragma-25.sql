@@ -1,0 +1,1 @@
+UPDATE t1 SET a = randstr(10,10);

@@ -1,0 +1,1 @@
+PRAGMA locking_mode = EXCLUSIVE

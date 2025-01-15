@@ -1,0 +1,1 @@
+SELECT percentile_cont(x,$in*0.01) FROM t1

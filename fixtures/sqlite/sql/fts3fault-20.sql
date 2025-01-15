@@ -1,0 +1,1 @@
+SELECT mit(matchinfo(t8, 'a')) FROM t8 WHERE t8 MATCH 'a b c'

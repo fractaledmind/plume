@@ -1,0 +1,3 @@
+BEGIN;
+UPDATE t1 set x = x+10000;
+ROLLBACK;

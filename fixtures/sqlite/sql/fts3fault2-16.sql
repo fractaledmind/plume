@@ -1,0 +1,1 @@
+SELECT count(*) FROM t9 WHERE t9 MATCH '"one two three"'

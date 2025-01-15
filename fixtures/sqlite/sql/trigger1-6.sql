@@ -1,0 +1,1 @@
+CREATE TEMP TABLE t2(x,y);

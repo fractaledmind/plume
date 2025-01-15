@@ -1,0 +1,1 @@
+SELECT b FROM t2 WHERE a IN (2, 0)

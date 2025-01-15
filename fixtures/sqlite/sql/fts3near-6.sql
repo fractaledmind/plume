@@ -1,0 +1,1 @@
+SELECT docid FROM t1 WHERE content MATCH '"one two" NEAR/2 five'

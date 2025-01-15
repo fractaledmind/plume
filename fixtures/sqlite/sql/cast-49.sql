@@ -1,0 +1,1 @@
+SELECT typeof(CAST('123abc' AS integer))

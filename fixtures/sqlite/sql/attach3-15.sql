@@ -1,0 +1,1 @@
+DROP VIEW aux.v1;

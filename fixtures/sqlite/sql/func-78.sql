@@ -1,0 +1,1 @@
+SELECT randomblob(32) is not null;

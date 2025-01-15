@@ -1,0 +1,2 @@
+DELETE FROM p WHERE a = 2;
+SELECT * FROM c1;

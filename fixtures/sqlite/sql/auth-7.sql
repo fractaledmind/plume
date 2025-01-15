@@ -1,0 +1,1 @@
+SELECT t6.a FROM t6, t7

@@ -1,0 +1,1 @@
+DELETE FROM t1 WHERE b IN (2, 4, 6, 8);

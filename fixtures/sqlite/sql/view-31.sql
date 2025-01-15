@@ -1,0 +1,2 @@
+CREATE VIEW v7(a) AS SELECT pqr+xyz FROM v6;
+SELECT * FROM v7 ORDER BY a;

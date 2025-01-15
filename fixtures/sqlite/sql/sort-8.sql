@@ -1,0 +1,1 @@
+SELECT flt FROM t1 ORDER BY flt

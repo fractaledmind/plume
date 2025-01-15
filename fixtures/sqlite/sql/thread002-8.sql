@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS aux1.t2

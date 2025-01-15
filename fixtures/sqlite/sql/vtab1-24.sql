@@ -1,0 +1,1 @@
+SELECT a glob '2' FROM e

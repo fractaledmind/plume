@@ -1,0 +1,1 @@
+INSERT INTO a VALUES(4000, '')

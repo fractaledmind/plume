@@ -1,0 +1,5 @@
+CREATE TABLE t41(a,b,c);
+INSERT INTO t41 VALUES(1,2,3), (4,5,6);
+CREATE TABLE t42(d,e,f);
+INSERT INTO t42 VALUES(3,6,9), (4,8,12);
+SELECT * FROM t41 AS x LEFT JOIN t42 AS y ON (y.d=x.c) OR (y.e=x.b);

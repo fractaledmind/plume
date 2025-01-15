@@ -1,0 +1,1 @@
+INSERT INTO t1 VALUES($ii, randomblob(200), randomblob(200))

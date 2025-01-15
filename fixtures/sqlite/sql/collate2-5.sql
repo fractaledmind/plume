@@ -1,0 +1,1 @@
+SELECT a FROM collate2t1 WHERE c COLLATE binary > 'aa' ORDER BY 1;

@@ -1,0 +1,1 @@
+INSERT INTO test2 VALUES('abc','xyz')

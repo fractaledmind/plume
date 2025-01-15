@@ -1,0 +1,1 @@
+UPDATE b2 SET c = 43 WHERE a=3

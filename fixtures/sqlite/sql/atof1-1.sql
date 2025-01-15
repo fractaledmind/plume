@@ -1,0 +1,1 @@
+SELECT CAST(quote($x) AS real) c

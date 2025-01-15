@@ -1,0 +1,1 @@
+SELECT ifnull(ifnull(b,c),d) FROM t1 ORDER BY a;

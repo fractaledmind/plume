@@ -1,0 +1,1 @@
+INSERT INTO t1 VALUES($t,$u,$v,$w,$x,$y,$z)

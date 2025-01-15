@@ -1,0 +1,1 @@
+CREATE TEMP TABLE t4(c1);

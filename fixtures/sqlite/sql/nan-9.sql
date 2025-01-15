@@ -1,0 +1,3 @@
+DELETE FROM t1;
+INSERT INTO t1 VALUES('2.5e+10000');
+SELECT x, typeof(x) FROM t1;

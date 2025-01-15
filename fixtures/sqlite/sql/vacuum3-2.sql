@@ -1,0 +1,3 @@
+DROP TABLE t1;
+CREATE TABLE t1(a, b, c, d);
+INSERT INTO t1 VALUES(1, 2, 3, NULL);

@@ -1,0 +1,1 @@
+SELECT quote(x) || ' ' || quote(y) FROM t1

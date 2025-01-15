@@ -1,0 +1,1 @@
+SELECT median(x) FROM t1

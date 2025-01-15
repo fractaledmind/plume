@@ -1,0 +1,2 @@
+CREATE TABLE t1(x);
+CREATE TABLE t2(x);

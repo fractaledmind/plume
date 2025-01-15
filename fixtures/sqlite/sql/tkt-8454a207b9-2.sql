@@ -1,0 +1,2 @@
+ALTER TABLE t1 ADD COLUMN d TEXT DEFAULT -'hello';
+SELECT d, typeof(d) FROM t1;

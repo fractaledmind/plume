@@ -1,0 +1,1 @@
+SELECT snippet(t2, '[', ']', '...') FROM t2 WHERE t2 MATCH $q

@@ -1,0 +1,1 @@
+INSERT OR REPLACE INTO b2 VALUES(11, 'abcdefghij', 6)

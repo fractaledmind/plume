@@ -1,0 +1,1 @@
+PRAGMA aux.journal_mode = delete;

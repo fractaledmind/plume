@@ -1,0 +1,1 @@
+SELECT typeof(trim('hello',NULL));

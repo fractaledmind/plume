@@ -1,0 +1,2 @@
+PRAGMA cache_size = 10;
+BEGIN EXCLUSIVE;

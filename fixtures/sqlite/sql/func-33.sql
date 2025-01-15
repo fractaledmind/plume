@@ -1,0 +1,1 @@
+SELECT coalesce(round(a,2),'nil') FROM t2

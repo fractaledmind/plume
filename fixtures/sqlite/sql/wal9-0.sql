@@ -1,0 +1,3 @@
+BEGIN;
+INSERT INTO t VALUES('hello');
+ROLLBACK;

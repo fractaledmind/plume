@@ -1,0 +1,1 @@
+INSERT INTO tclvar(fullname, value) VALUES('vtabJ(4)',NULL);

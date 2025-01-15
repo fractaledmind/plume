@@ -1,0 +1,1 @@
+SELECT * FROM av3 WHERE a = 'av3 a' AND b = 'av3 b';

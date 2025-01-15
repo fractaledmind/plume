@@ -1,0 +1,1 @@
+SELECT substr(t1,-2,1) FROM tbl1 ORDER BY t1

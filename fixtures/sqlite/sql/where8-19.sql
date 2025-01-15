@@ -1,0 +1,1 @@
+SELECT a, d FROM t1, t2 WHERE b=e

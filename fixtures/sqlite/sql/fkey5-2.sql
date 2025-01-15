@@ -1,0 +1,1 @@
+PRAGMA main.foreign_key_check;

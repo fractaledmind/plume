@@ -1,0 +1,1 @@
+CREATE VIRTUAL TABLE t2 USING fts4(tokenize=unicode61, x);

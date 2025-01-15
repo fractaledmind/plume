@@ -1,0 +1,3 @@
+SELECT c FROM t1 WHERE
+a BETWEEN 2 AND 4 OR b = 'nine'
+ORDER BY rowid

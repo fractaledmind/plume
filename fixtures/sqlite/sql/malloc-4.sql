@@ -1,0 +1,1 @@
+SELECT a FROM abc ORDER BY a

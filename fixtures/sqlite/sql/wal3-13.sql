@@ -1,0 +1,1 @@
+INSERT INTO blue VALUES(1, 2)

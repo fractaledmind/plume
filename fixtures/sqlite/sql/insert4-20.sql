@@ -1,0 +1,4 @@
+PRAGMA foreign_keys=OFF;
+DELETE FROM t7b;
+INSERT INTO t7b SELECT * FROM t7c;
+SELECT * FROM t7b;

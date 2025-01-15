@@ -1,0 +1,1 @@
+UPDATE t1 SET d = zeroblob(10000);

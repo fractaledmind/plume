@@ -1,0 +1,1 @@
+SELECT * FROM (SELECT max(x) FROM t1);

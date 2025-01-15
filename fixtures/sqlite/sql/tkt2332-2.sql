@@ -1,0 +1,1 @@
+SELECT length(v) FROM blobs WHERE k = $::iKey;

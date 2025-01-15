@@ -1,0 +1,1 @@
+SELECT name FROM v_col WHERE tablename = 't1' AND pk

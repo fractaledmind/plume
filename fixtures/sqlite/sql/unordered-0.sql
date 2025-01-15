@@ -1,0 +1,1 @@
+UPDATE sqlite_stat1 SET stat = stat || ' unordered'

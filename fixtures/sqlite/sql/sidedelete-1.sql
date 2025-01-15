@@ -1,0 +1,1 @@
+INSERT INTO sequence SELECT a+(SELECT max(a) FROM sequence) FROM sequence;

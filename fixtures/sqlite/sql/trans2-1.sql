@@ -1,0 +1,1 @@
+INSERT INTO t1 VALUES($id,$u1,zeroblob($z),$u2)

@@ -1,0 +1,1 @@
+CREATE TABLE abc(a PRIMARY KEY, b)

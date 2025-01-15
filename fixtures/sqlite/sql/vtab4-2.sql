@@ -1,0 +1,1 @@
+UPDATE techo SET a = 2;

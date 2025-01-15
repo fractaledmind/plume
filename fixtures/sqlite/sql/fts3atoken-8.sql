@@ -1,0 +1,1 @@
+SELECT fts3_tokenizer_test('icu', 'I don''t see how');

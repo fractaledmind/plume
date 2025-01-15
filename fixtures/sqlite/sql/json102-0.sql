@@ -1,0 +1,1 @@
+SELECT json_extract(json_array($::str),'$[0]')==$::str

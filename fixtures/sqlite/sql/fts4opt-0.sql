@@ -1,0 +1,1 @@
+CREATE VIRTUAL TABLE t2 USING fts4(words, prefix="1,2,3")

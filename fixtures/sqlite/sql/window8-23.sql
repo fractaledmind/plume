@@ -1,0 +1,5 @@
+SELECT sum(a) OVER (
+PARTITION BY (
+SELECT t FROM map WHERE v=a
+) ORDER BY a
+) FROM tx;

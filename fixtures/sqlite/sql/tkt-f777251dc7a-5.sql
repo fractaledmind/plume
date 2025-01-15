@@ -1,0 +1,1 @@
+SELECT ins() AS x FROM t2 UNION ALL SELECT ins() AS x FROM t1

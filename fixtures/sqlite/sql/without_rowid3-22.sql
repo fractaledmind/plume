@@ -1,0 +1,1 @@
+SELECT sql FROM temp.sqlite_schema WHERE type = 'table'

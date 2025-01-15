@@ -1,0 +1,1 @@
+SELECT a, c FROM t7 AS v7

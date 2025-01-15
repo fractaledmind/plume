@@ -1,0 +1,2 @@
+BEGIN;
+INSERT INTO abc VALUES(7, 8, 9);

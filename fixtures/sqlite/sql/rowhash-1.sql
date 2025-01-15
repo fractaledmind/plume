@@ -1,0 +1,1 @@
+INSERT OR IGNORE INTO t1 VALUES($key, 'a', 'b', 'c')

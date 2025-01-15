@@ -1,0 +1,1 @@
+SELECT quote(substr(x'313233343536373839',0x7ffffffffffffffe,5))

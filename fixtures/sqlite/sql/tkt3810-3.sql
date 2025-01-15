@@ -1,0 +1,1 @@
+SELECT name FROM sqlite_temp_master;

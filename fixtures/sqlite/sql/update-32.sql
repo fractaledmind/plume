@@ -1,0 +1,2 @@
+UPDATE t1 AS xyz SET e=e+1 WHERE EXISTS(SELECT 1 FROM t1 WHERE t1.a<xyz.a);
+SELECT a,e FROM t1;

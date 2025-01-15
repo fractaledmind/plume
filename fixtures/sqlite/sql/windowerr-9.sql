@@ -1,0 +1,1 @@
+SELECT sum( sum(a) OVER () ) FROM t1;

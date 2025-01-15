@@ -1,0 +1,1 @@
+SELECT DISTINCT c FROM t3 WHERE b BETWEEN '.xx..' AND '.xxxx'

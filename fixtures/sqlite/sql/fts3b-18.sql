@@ -1,0 +1,1 @@
+SELECT docid FROM t4 WHERE t4 MATCH 'testing'

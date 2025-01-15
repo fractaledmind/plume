@@ -1,0 +1,1 @@
+SELECT sum(length(y)) FROM t1

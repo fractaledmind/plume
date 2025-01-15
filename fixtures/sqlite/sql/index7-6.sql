@@ -1,0 +1,5 @@
+CREATE TABLE t2(a,b PRIMARY KEY) without rowid;
+INSERT INTO t2(a,b) SELECT value, value FROM nums WHERE value<1000;
+UPDATE t2 SET a=NULL WHERE b%5==0;
+CREATE INDEX t2a1 ON t2(a) WHERE a IS NOT NULL;
+SELECT count(*) FROM t2 WHERE a IS NOT NULL;

@@ -1,0 +1,1 @@
+SELECT * FROM tablet8 LIMIT 1

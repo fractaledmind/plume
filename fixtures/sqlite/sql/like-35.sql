@@ -1,0 +1,2 @@
+CREATE INDEX t11cnc ON t11(c COLLATE nocase);
+CREATE INDEX t11cb ON t11(c COLLATE binary);

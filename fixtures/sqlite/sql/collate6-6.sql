@@ -1,0 +1,1 @@
+DROP TABLE collate6tab;

@@ -1,0 +1,1 @@
+CREATE TEMP TABLE temp_table(a);

@@ -1,0 +1,1 @@
+SELECT pointer_change(y, 'blob', 'bytes', 'blob') FROM t1

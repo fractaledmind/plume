@@ -1,0 +1,1 @@
+DROP TABLE collate1t1;

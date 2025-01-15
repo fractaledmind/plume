@@ -1,0 +1,1 @@
+INSERT INTO t1 SELECT * FROM t1 WHERE docid=$docid

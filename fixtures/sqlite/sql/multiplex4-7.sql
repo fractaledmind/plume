@@ -1,0 +1,1 @@
+EXPLAIN PRAGMA multiplex_truncate=0;

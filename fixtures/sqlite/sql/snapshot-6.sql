@@ -1,0 +1,3 @@
+COMMIT;
+INSERT INTO t3 VALUES('e', 't');
+BEGIN;

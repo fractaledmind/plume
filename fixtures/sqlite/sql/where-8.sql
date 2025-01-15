@@ -1,0 +1,1 @@
+SELECT count(*) FROM t1 WHERE t1.w

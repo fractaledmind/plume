@@ -1,0 +1,1 @@
+ALTER TABLE aux.t1 RENAME TO t2

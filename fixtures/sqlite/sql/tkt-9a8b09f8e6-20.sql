@@ -1,0 +1,1 @@
+SELECT x FROM t2 WHERE '1.0' IN (x);

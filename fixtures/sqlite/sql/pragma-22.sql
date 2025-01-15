@@ -1,0 +1,1 @@
+pragma temp_store = 1

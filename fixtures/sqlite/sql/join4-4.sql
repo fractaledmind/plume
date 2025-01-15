@@ -1,0 +1,1 @@
+create index i2 on t2(z);

@@ -1,0 +1,1 @@
+SELECT tablename FROM schema GROUP by length(tablename);

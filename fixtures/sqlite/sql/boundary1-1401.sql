@@ -1,0 +1,1 @@
+SELECT rowid, a FROM t1 WHERE x='ffffffff7fffffff'

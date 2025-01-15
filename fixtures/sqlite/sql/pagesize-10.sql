@@ -1,0 +1,2 @@
+ROLLBACK;
+SELECT count(*) FROM t1;

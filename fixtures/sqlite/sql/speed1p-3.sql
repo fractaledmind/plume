@@ -1,0 +1,1 @@
+SELECT count(*), avg(b) FROM t1 WHERE b>=$lwr AND b<$upr

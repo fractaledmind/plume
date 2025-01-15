@@ -1,0 +1,1 @@
+SELECT count(CASE WHEN b IN ('abc','xyz') THEN 'x' END) FROM t3

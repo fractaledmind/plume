@@ -1,0 +1,1 @@
+INSERT INTO t1(a, b, c) VALUES( 2*($i/100), $i%10, $c )

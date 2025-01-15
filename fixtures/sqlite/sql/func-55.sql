@@ -1,0 +1,1 @@
+SELECT upper(t1) FROM tbl1

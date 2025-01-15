@@ -1,0 +1,1 @@
+SELECT * FROM DemoTable UNION ALL SELECT * FROM DemoView;

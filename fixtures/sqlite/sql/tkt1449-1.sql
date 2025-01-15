@@ -1,0 +1,1 @@
+select NEWENTITIES from ITEMS where ((ISSUEID = 'x') and (OBJECTID = 'y'))

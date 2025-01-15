@@ -1,0 +1,4 @@
+SELECT
+a, b, MIN(a) FILTER(WHERE b > 0) OVER win
+FROM t1
+WINDOW win AS ();

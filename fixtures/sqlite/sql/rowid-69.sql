@@ -1,0 +1,1 @@
+SELECT rowid, a FROM t6 WHERE rowid>=-5.5

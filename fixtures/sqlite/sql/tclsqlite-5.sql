@@ -1,0 +1,1 @@
+SELECT typeof(a), typeof(b), typeof(c) FROM t3

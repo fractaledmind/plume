@@ -1,0 +1,1 @@
+SELECT * FROM (SELECT * FROM t4) WHERE a = 'THIS';

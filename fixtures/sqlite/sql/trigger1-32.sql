@@ -1,0 +1,1 @@
+SELECT * FROM insert_log;

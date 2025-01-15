@@ -1,0 +1,1 @@
+SELECT log, count(*) FROM t1 GROUP BY log HAVING log>=4 ORDER BY log

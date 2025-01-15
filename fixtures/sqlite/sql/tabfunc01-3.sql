@@ -1,0 +1,1 @@
+SELECT b FROM t600, carray(inttoptr($PTR2),5,'int64') WHERE a=value;

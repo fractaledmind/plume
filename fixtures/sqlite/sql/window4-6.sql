@@ -1,0 +1,1 @@
+SELECT percent_rank() OVER () FROM t1

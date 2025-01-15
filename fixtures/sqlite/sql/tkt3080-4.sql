@@ -1,0 +1,1 @@
+SELECT execsql(x) FROM t1

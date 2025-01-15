@@ -1,0 +1,1 @@
+SELECT typeof(sum(a3)) FROM a GROUP BY a1;

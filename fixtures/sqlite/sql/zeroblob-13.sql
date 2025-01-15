@@ -1,0 +1,1 @@
+SELECT CAST (zeroblob(100) AS REAL);

@@ -1,0 +1,1 @@
+SELECT instr('abc€xyzzy','xyz');

@@ -1,0 +1,1 @@
+SELECT instr($::HAYSTACK, $::NEEDLE) FROM t1

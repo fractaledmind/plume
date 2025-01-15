@@ -1,0 +1,1 @@
+SELECT * FROM test2 WHERE f1=22 AND f2=-4.44

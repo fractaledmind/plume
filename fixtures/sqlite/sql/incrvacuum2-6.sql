@@ -1,0 +1,1 @@
+PRAGMA aux.incremental_vacuum

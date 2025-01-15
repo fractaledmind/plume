@@ -1,0 +1,1 @@
+SELECT min(x) FROM t1 WHERE y=0;

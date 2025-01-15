@@ -1,0 +1,1 @@
+SELECT x FROM t2 WHERE y=2;

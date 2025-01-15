@@ -1,0 +1,2 @@
+CREATE VIEW v1b AS SELECT t1.a, b+c, t1.c FROM t1;
+SELECT * FROM v1b LIMIT 1

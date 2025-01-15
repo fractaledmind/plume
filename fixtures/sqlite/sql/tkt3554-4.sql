@@ -1,0 +1,1 @@
+INSERT INTO test VALUES('a', 10000, 12000);

@@ -1,0 +1,1 @@
+SELECT v FROM blobs WHERE rowid = 1;

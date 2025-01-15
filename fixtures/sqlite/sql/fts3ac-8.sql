@@ -1,0 +1,1 @@
+SELECT rowid FROM email WHERE email MATCH 'mark OR susan'

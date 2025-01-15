@@ -1,0 +1,3 @@
+PRAGMA cache_size = 2000;
+CREATE TABLE t1(x,y);
+INSERT INTO t1 VALUES(randomblob(1000000),1);

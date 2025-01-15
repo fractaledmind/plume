@@ -1,0 +1,2 @@
+CREATE TABLE t3(a, b, UNIQUE(a, b));
+ROLLBACK TO one;

@@ -1,0 +1,1 @@
+SELECT rowid, length(block), block FROM t2_segments

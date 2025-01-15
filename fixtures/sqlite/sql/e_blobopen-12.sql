@@ -1,0 +1,1 @@
+SELECT j FROM c2

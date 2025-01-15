@@ -1,0 +1,1 @@
+SELECT '@abc'.'!pqr', '@abc'.'#xyz'+5 FROM '@abc'

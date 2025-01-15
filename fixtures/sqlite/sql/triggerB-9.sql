@@ -1,0 +1,1 @@
+SELECT * FROM t3_changes WHERE colnum=$i

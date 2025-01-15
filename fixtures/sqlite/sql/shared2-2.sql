@@ -1,0 +1,2 @@
+BEGIN;
+DELETE FROM numbers;

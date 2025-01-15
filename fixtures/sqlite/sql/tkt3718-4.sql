@@ -1,0 +1,1 @@
+INSERT INTO t2 SELECT a+5, b||'+5' FROM t1

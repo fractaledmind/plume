@@ -1,0 +1,1 @@
+SELECT md5sum(x) FROM t2;

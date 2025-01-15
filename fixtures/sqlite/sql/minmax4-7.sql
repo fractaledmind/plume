@@ -1,0 +1,2 @@
+INSERT INTO t1 VALUES(7,NULL);
+SELECT p, max(q) FROM t1;

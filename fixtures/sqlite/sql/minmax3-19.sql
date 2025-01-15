@@ -1,0 +1,1 @@
+SELECT max(x COLLATE binary), max(x COLLATE nocase) FROM t4;

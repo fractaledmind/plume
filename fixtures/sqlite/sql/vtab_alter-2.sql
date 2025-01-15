@@ -1,0 +1,1 @@
+ALTER TABLE t1echo RENAME TO new

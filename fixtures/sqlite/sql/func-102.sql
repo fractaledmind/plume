@@ -1,0 +1,1 @@
+CREATE TABLE tbl2(a, b);

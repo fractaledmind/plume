@@ -1,0 +1,1 @@
+CREATE TABLE "create" (f1 int)

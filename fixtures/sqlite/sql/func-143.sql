@@ -1,0 +1,1 @@
+SELECT 'BEGIN-'||group_concat(t1) FROM tbl1

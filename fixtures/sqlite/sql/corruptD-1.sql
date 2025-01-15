@@ -1,0 +1,1 @@
+INSERT INTO t1 VALUES($ii, $ii * $ii)

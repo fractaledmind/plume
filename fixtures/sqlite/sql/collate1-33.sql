@@ -1,0 +1,1 @@
+SELECT c1||'' FROM collate1t1 ORDER BY 1;

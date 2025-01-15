@@ -1,0 +1,1 @@
+SELECT b, typeof(b), upper(b), typeof(b), b FROM t1

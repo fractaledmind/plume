@@ -1,0 +1,3 @@
+INSERT INTO t1 VALUES(14);
+BEGIN;
+PRAGMA application_id;

@@ -1,0 +1,1 @@
+SELECT sum(length(x)) FROM t29

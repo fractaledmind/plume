@@ -1,0 +1,1 @@
+CREATE TABLE y_base(a, b, c)

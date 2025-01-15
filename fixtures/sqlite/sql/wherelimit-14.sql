@@ -1,0 +1,1 @@
+DELETE FROM t1 WHERE x=1

@@ -1,0 +1,1 @@
+SELECT t1.a, v3.a AS n FROM t1 JOIN v3

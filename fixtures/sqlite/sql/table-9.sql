@@ -1,0 +1,1 @@
+SELECT name as "X" FROM sqlite_master WHERE type!='meta'

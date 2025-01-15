@@ -1,4 +1,0 @@
--- misc3.test
--- 
--- execsql {BEGIN; EXPLAIN ROLLBACK}
-BEGIN; EXPLAIN ROLLBACK

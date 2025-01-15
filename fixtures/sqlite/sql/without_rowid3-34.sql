@@ -1,0 +1,4 @@
+CREATE TABLE nought(a, b PRIMARY KEY, c) WITHOUT rowid;
+CREATE TABLE cross(d, e, f,
+FOREIGN KEY(e) REFERENCES nought(b) ON UPDATE CASCADE
+);

@@ -1,0 +1,1 @@
+INSERT INTO techo VALUES(1, 2, 3);

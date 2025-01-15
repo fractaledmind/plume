@@ -1,0 +1,3 @@
+DELETE FROM log;
+UPDATE t1 SET x=x+1;
+SELECT * FROM log

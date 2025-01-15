@@ -1,0 +1,3 @@
+DELETE FROM log;
+UPDATE t1 SET a = 'a';
+SELECT * FROM log;

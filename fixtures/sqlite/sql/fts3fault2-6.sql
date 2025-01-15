@@ -1,0 +1,1 @@
+INSERT INTO ft(ft) VALUES('rebuild')

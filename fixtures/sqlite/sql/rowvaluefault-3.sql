@@ -1,0 +1,1 @@
+SELECT fou FROM xyz WHERE (one, two) IN (SELECT one, two FROM xyz)

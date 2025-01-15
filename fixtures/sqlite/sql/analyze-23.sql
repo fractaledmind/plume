@@ -1,0 +1,2 @@
+SELECT DISTINCT idx FROM sqlite_stat4 ORDER BY 1;
+SELECT DISTINCT tbl FROM sqlite_stat4 ORDER BY 1;

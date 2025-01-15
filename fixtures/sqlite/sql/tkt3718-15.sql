@@ -1,0 +1,1 @@
+SELECT a FROM t2 WHERE (a%5)==0 ORDER BY a+0

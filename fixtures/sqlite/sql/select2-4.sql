@@ -1,0 +1,1 @@
+SELECT * FROM aa, bb WHERE min(a,b);

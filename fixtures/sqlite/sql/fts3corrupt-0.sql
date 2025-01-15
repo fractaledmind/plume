@@ -1,0 +1,1 @@
+UPDATE t1_segdir SET root = $blob

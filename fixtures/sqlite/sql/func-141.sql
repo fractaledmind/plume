@@ -1,0 +1,1 @@
+SELECT group_concat(NULL,t1) FROM tbl1

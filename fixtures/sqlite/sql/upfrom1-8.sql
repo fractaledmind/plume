@@ -1,0 +1,1 @@
+UPDATE t5 SET b=1 FROM t5;

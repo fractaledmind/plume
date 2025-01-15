@@ -1,0 +1,2 @@
+BEGIN;
+DELETE FROM t3 WHERE (oid%3)==0;

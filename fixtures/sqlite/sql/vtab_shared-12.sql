@@ -1,0 +1,3 @@
+CREATE VIRTUAL TABLE ft USING fts3;
+INSERT INTO ft VALUES('hello world');
+SELECT * FROM ft;

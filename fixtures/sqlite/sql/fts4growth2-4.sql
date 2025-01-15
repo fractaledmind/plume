@@ -1,0 +1,1 @@
+SELECT max(level) FROM x1_segdir

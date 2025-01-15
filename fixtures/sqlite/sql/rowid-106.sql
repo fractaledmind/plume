@@ -1,0 +1,1 @@
+INSERT INTO t13(rowid,x) VALUES($n,$n*$n)

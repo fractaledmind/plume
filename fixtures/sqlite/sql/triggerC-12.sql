@@ -1,0 +1,1 @@
+SELECT count(*), max(x), min(x) FROM t3b

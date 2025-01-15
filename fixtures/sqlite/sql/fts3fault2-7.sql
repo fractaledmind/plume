@@ -1,0 +1,1 @@
+CREATE VIRTUAL TABLE ft USING fts4(a, tokenize=unicode61);

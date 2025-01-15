@@ -1,0 +1,1 @@
+REINDEX main.t1;

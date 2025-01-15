@@ -1,0 +1,1 @@
+SELECT x50 FROM manycol ORDER BY x80+0

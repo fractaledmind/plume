@@ -1,0 +1,1 @@
+SELECT rank() OVER () FROM t2

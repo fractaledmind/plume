@@ -1,0 +1,1 @@
+UPDATE t2_segments SET block = $blob WHERE rowid = $rowid

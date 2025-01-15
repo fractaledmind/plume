@@ -1,0 +1,1 @@
+SELECT * FROM aux.sqlite_master WHERE name = 'i1';

@@ -1,0 +1,1 @@
+SELECT min(b) FROM t7 WHERE a=4;

@@ -1,0 +1,1 @@
+INSERT INTO x1_rules VALUES(0, $c1||$c2, $c3||$c4, $cost)

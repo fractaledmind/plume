@@ -1,0 +1,2 @@
+DELETE FROM p1;
+SELECT d, c FROM c1;

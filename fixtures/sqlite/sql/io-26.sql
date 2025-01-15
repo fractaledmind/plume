@@ -1,0 +1,1 @@
+INSERT INTO abc VALUES(11, 12);

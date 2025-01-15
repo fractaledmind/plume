@@ -1,0 +1,1 @@
+SELECT rootpage FROM sqlite_master WHERE name='test1';

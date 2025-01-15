@@ -1,0 +1,1 @@
+SELECT count(distinct a) FILTER (WHERE b='odd') FROM t1

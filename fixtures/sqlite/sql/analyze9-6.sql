@@ -1,0 +1,1 @@
+INSERT INTO t1 VALUES($i%2, $b, $i/2, 'abc')

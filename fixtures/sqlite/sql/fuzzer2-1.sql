@@ -1,0 +1,1 @@
+UPDATE x1_rules SET cost = 20 WHERE cost<20 AND cFrom!='xx'

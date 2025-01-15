@@ -1,0 +1,1 @@
+CREATE VIRTUAL TABLE techo USING echo(t1);

@@ -1,0 +1,1 @@
+SELECT * FROM t1 WHERE a=2 AND f(b) AND f(c)

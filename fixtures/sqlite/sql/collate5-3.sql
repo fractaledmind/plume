@@ -1,0 +1,1 @@
+SELECT DISTINCT a, b FROM collate5t1;

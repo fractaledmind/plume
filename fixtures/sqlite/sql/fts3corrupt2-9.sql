@@ -1,0 +1,1 @@
+UPDATE t2_segdir SET root = $blob WHERE rowid = $rowid

@@ -1,0 +1,1 @@
+INSERT INTO def VALUES('a', 'b');

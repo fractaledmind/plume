@@ -1,0 +1,2 @@
+COMMIT;
+SELECT * FROM king;

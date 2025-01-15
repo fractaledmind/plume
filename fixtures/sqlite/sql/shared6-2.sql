@@ -1,0 +1,3 @@
+COMMIT;
+BEGIN;
+SELECT * FROM t1;

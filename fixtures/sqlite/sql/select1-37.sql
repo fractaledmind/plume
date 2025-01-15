@@ -1,0 +1,1 @@
+CREATE TABLE test2(t1 text, t2 text)

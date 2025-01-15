@@ -1,0 +1,1 @@
+SELECT coalesce(a,'xyz') FROM t2

@@ -1,0 +1,1 @@
+SELECT * FROM ((SELECT * FROM t2)) AS t3;

@@ -1,0 +1,1 @@
+ANALYZE main.t1

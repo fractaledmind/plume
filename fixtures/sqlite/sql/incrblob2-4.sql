@@ -1,0 +1,1 @@
+UPDATE t1 SET data = data || '' WHERE id = 3

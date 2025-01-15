@@ -1,0 +1,1 @@
+SELECT percent_rank() OVER (), cume_dist() OVER () FROM t1

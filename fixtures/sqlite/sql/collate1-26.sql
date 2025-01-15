@@ -1,0 +1,1 @@
+SELECT * FROM collate1t1 ORDER BY main.collate1t1.a;

@@ -1,0 +1,2 @@
+CREATE TABLE t1(a, b AS (f1(a+1)), c AS (f2(a+2)));
+INSERT INTO t1 VALUES(100),(200);

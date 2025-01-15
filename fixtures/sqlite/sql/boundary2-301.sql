@@ -1,0 +1,1 @@
+SELECT r, a FROM t1 WHERE x='ffff800000000000'

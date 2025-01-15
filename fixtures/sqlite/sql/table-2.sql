@@ -1,0 +1,1 @@
+SELECT name, tbl_name, type FROM sqlite_master WHERE type!='meta'

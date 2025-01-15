@@ -1,0 +1,2 @@
+DELETE FROM tbl;
+SELECT * FROM tbl;

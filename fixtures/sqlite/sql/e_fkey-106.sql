@@ -1,0 +1,2 @@
+DELETE FROM p1 WHERE a = 4;
+SELECT d, c FROM c1;

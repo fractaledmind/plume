@@ -1,0 +1,1 @@
+SELECT coalesce(instr(NULL,'x'),'nil');

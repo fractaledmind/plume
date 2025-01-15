@@ -1,0 +1,2 @@
+UPDATE p1 SET b = 10 WHERE b = 5;
+SELECT d, c FROM c1;

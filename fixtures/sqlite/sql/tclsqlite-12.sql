@@ -1,0 +1,1 @@
+SELECT typeof(ret_int())

@@ -1,0 +1,1 @@
+SELECT rowid, a, b, c FROM echo_abc

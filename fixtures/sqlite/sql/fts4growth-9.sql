@@ -1,0 +1,1 @@
+SELECT count(*) FROM x3_segdir

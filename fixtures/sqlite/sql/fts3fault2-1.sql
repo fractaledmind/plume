@@ -1,0 +1,3 @@
+CREATE VIRTUAL TABLE tx USING fts4(a, b);
+INSERT INTO tx VALUES('a b c', 'x y z');
+CREATE VIRTUAL TABLE terms2 USING fts4aux(tx);

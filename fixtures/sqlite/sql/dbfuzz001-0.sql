@@ -1,0 +1,1 @@
+PRAGMA writable_schema=on; PRAGMA integrity_check

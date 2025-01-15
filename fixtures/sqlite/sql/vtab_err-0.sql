@@ -1,0 +1,4 @@
+BEGIN;
+CREATE TABLE xyz(x);
+SELECT a FROM e;
+COMMIT;

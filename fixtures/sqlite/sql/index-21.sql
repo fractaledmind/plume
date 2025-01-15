@@ -1,0 +1,1 @@
+SELECT a FROM t4 WHERE a==0 ORDER BY b

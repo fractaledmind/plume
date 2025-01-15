@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS setup;
+BEGIN;
+CREATE VIRTUAL TABLE setup USING zipfile('test.zip')

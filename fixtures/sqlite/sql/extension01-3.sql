@@ -1,0 +1,1 @@
+SELECT writefile('./file2.txt', NULL);

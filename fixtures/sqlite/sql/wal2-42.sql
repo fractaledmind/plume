@@ -1,0 +1,1 @@
+INSERT INTO t1 VALUES(7, zeroblob(12*4096))

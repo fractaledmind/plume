@@ -1,0 +1,1 @@
+UPDATE t1 SET b=substr(b,1,65515)

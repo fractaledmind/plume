@@ -1,0 +1,1 @@
+SELECT * FROM echo_c WHERE a NOT IN (1,8,'x',NULL,15,24)

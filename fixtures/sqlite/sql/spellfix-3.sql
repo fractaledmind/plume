@@ -1,0 +1,1 @@
+INSERT INTO t3(word) VALUES($w)

@@ -1,0 +1,1 @@
+SELECT * FROM (SELECT min(x) FROM t1);

@@ -1,0 +1,1 @@
+SELECT a FROM ta WHERE b NOT IN (SELECT b FROM tb);

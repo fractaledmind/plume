@@ -1,0 +1,5 @@
+CREATE TABLE x1(a, b);
+WITH s(i) AS ( VALUES(1) UNION ALL SELECT i+1 FROM s WHERE i<1000 )
+INSERT INTO x1 SELECT randomblob(100), randomblob(100) FROM s;
+BEGIN;
+UPDATE x1 SET a=randomblob(101)

@@ -1,0 +1,1 @@
+CREATE TABLE abc3(a, b);

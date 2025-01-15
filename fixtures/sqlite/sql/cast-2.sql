@@ -1,0 +1,1 @@
+SELECT CAST(x'616263' AS text)

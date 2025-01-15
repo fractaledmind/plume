@@ -1,0 +1,1 @@
+INSERT INTO t1 VALUES($c1, $c2)

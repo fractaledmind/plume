@@ -1,0 +1,1 @@
+INSERT INTO xx(xx) VALUES('optimize')

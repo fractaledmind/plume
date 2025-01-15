@@ -1,0 +1,1 @@
+SELECT 'abc' FROM ( SELECT 'xyz' FROM t1 WHERE (SELECT 1) )

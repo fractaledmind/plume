@@ -1,0 +1,1 @@
+SELECT t FROM temp_table

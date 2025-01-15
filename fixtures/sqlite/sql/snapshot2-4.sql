@@ -1,0 +1,2 @@
+SELECT * FROM t2;
+BEGIN;

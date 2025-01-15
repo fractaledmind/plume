@@ -1,0 +1,1 @@
+CREATE TEMP TABLE mask(a,b,c)

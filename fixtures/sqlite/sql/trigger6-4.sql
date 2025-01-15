@@ -1,0 +1,3 @@
+DELETE FROM log;
+UPDATE t1 SET y=counter(5);
+SELECT * FROM t1;

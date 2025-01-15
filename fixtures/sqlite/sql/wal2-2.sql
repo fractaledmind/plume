@@ -1,0 +1,1 @@
+SELECT count(a), sum(a) FROM t1

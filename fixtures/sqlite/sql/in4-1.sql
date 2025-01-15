@@ -1,0 +1,1 @@
+SELECT * FROM t1 WHERE a IN ('aaa', 'bbb', 'ccc');

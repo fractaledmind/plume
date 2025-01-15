@@ -1,0 +1,1 @@
+CREATE VIEW blobs_view AS SELECT k, v, i FROM blobs

@@ -1,0 +1,1 @@
+SELECT instr(h, n) FROM t1

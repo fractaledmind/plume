@@ -1,0 +1,1 @@
+INSERT INTO t0 SELECT a+1, b FROM t0

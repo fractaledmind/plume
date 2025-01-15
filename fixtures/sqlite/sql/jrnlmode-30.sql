@@ -1,0 +1,1 @@
+pragma journal_mode=persist

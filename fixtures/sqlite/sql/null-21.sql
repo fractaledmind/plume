@@ -1,0 +1,1 @@
+select b from t1 union select c from t1 order by t1.b;

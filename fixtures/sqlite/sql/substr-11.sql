@@ -1,0 +1,1 @@
+SELECT substr(t, $idx) FROM t1

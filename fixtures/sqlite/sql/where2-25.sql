@@ -1,0 +1,3 @@
+CREATE INDEX i10 ON t10(a,b);
+COMMIT;
+SELECT count(*) FROM t10;

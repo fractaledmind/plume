@@ -1,0 +1,7 @@
+PRAGMA journal_mode=WAL;
+CREATE TABLE t1(a,b);
+CREATE INDEX t1b ON t1(b);
+CREATE TABLE t2(x,y);
+CREATE VIRTUAL TABLE nums USING wholenumber;
+INSERT INTO t2 SELECT value, randomblob(1000) FROM nums
+WHERE value BETWEEN 1 AND 1000;

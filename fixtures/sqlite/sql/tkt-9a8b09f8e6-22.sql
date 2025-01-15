@@ -1,0 +1,1 @@
+SELECT x FROM t3 WHERE x IN (1.0);

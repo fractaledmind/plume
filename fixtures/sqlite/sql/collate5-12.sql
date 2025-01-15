@@ -1,0 +1,1 @@
+SELECT a, b FROM collate5t1 EXCEPT select a, b FROM collate5t2;

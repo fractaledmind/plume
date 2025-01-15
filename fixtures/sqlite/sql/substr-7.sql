@@ -1,0 +1,1 @@
+SELECT ifnull(substr(NULL,1),'nil')

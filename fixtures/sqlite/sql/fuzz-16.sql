@@ -1,0 +1,1 @@
+SELECT hex(CAST(zeroblob(1000) AS integer))

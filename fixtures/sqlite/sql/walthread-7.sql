@@ -1,0 +1,1 @@
+INSERT INTO t1 VALUES($nextwrite, $sum1, $sum2)

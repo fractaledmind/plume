@@ -1,0 +1,1 @@
+UPDATE abc SET a = 0 WHERE oid%2

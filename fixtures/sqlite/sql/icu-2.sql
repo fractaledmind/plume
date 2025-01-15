@@ -1,0 +1,1 @@
+SELECT name FROM fruit ORDER BY name COLLATE AmericanEnglish ASC;

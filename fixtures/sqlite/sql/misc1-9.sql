@@ -1,0 +1,1 @@
+DELETE FROM manycol WHERE x98=998

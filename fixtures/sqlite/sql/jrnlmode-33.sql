@@ -1,0 +1,1 @@
+PRAGMA aux.journal_size_limit = 999999999999

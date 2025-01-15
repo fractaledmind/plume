@@ -1,0 +1,1 @@
+UPDATE tclvar SET value = var.v FROM var WHERE name = var.k;

@@ -1,0 +1,1 @@
+SELECT trim('xyxzy  hi  zzzy','xyz');

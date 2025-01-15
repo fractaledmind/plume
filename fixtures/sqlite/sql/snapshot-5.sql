@@ -1,0 +1,4 @@
+INSERT INTO t3 VALUES('s', 'e');
+INSERT INTO t3 VALUES('n', 't');
+BEGIN;
+SELECT * FROM t3;

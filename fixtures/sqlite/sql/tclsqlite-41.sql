@@ -1,0 +1,1 @@
+SELECT quote(@def), typeof(@def)

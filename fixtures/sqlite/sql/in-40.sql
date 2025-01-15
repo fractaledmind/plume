@@ -1,0 +1,1 @@
+SELECT 6 IN (SELECT c FROM t7)

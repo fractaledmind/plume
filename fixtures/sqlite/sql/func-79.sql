@@ -1,0 +1,1 @@
+SELECT typeof(randomblob(32));

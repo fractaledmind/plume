@@ -1,0 +1,1 @@
+CREATE VIRTUAL TABLE pachyderm USING echo(elephant);

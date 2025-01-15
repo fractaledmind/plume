@@ -1,0 +1,2 @@
+CREATE TABLE def(d, e, f);
+CREATE VIRTUAL TABLE def2 USING echo(def);

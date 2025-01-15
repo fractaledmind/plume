@@ -1,8 +1,0 @@
--- limit.test
--- 
--- execsql {
---     SELECT a+27 FROM t6 INTERSECT SELECT x FROM t2 
---        ORDER BY 1 DESC LIMIT 1 OFFSET 1;
--- }
-SELECT a+27 FROM t6 INTERSECT SELECT x FROM t2 
-ORDER BY 1 DESC LIMIT 1 OFFSET 1;

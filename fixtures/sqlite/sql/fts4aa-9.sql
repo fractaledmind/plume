@@ -1,0 +1,1 @@
+SELECT docid FROM t1 WHERE words MATCH $::q ORDER BY docid

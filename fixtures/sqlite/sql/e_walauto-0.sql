@@ -1,0 +1,1 @@
+INSERT INTO t1 VALUES(randomblob(100), randomblob(100))

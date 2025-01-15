@@ -1,0 +1,2 @@
+CREATE TEMP TABLE t1(j0,j5,p);
+CREATE TEMP TABLE kv(n,key,val);

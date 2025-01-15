@@ -1,0 +1,1 @@
+SELECT * FROM main.t1 NOT INDEXED WHERE a = 'one' AND b = 'two'

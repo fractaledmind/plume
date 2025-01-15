@@ -1,0 +1,1 @@
+INSERT INTO a VALUES($ii, randstr(800,1500));

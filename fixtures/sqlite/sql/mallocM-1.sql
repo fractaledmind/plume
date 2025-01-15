@@ -1,0 +1,1 @@
+SELECT instr (x'00', zeroblob(1))

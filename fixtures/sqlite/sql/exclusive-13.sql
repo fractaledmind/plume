@@ -1,0 +1,1 @@
+ATTACH 'test4.db' as aux3;

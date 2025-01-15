@@ -1,0 +1,1 @@
+PRAGMA temp.journal_mode = wal

@@ -1,0 +1,1 @@
+REPLACE INTO x3(docid, content) VALUES($iDoc, $L)

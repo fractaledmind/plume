@@ -1,0 +1,1 @@
+CREATE INDEX t11bb ON t11(b COLLATE binary);

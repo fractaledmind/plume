@@ -1,0 +1,1 @@
+SELECT 1 AS 'a','hello' AS 'b',2 AS 'c'

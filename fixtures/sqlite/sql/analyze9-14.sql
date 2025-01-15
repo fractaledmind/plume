@@ -1,0 +1,1 @@
+INSERT INTO t2 VALUES(CASE WHEN $i < 80 THEN 'one' ELSE 'two' END, $i)

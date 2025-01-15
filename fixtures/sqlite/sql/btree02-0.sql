@@ -1,0 +1,1 @@
+SELECT a, ax, b, cnt FROM t1 CROSS JOIN t3 WHERE b IS NOT NULL

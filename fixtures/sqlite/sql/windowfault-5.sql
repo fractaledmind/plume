@@ -1,0 +1,5 @@
+SELECT last_value(a) OVER win1,
+last_value(a) OVER win2
+FROM t1
+WINDOW win1 AS (ORDER BY a ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING),
+win2 AS (ORDER BY a)

@@ -1,0 +1,1 @@
+PRAGMA lock_proxy_file="mylittleproxy";

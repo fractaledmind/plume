@@ -1,0 +1,1 @@
+SELECT x, 1-sequence() AS y FROM t1 ORDER BY y

@@ -1,0 +1,1 @@
+INSERT INTO t2 VALUES($a, $b, $c, $c + $b*4 + $a*16);

@@ -1,0 +1,1 @@
+CREATE VIRTUAL TABLE tt USING fts4(content="xx yy");

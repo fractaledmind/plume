@@ -1,0 +1,1 @@
+SELECT rowid, length(root), root FROM t2_segdir

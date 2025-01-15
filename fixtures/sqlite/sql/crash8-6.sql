@@ -1,0 +1,1 @@
+SELECT b FROM main.ab WHERE a = 0

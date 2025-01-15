@@ -1,0 +1,1 @@
+DROP TABLE test2; SELECT name FROM sqlite_master WHERE type!='meta'

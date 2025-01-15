@@ -1,0 +1,1 @@
+SELECT x, y FROM t5 WHERE 1 IN (x);

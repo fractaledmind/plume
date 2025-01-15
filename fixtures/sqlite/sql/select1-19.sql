@@ -1,0 +1,1 @@
+SELECT y.* FROM t3 as y, t4 as z

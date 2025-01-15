@@ -1,0 +1,1 @@
+INSERT INTO blobs VALUES($::iKey, zeroblob($Len))

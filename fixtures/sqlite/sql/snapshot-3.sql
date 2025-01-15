@@ -1,0 +1,2 @@
+INSERT INTO t3 VALUES('f', 's');
+BEGIN;

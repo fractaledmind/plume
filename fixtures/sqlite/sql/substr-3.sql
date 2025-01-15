@@ -1,0 +1,1 @@
+SELECT substring($qstr, $i1, $i2)

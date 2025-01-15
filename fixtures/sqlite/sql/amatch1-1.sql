@@ -1,0 +1,3 @@
+INSERT INTO t1(t1) VALUES('optimize');
+CREATE VIRTUAL TABLE temp.t1aux USING fts4aux(main, t1);
+SELECT term FROM t1aux WHERE col=0 ORDER BY 1 LIMIT 5

@@ -1,0 +1,1 @@
+CREATE INDEX manycol_idx1 ON manycol(x99)

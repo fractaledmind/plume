@@ -1,0 +1,1 @@
+SELECT coalesce(nullif(1,1),'nil')

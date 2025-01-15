@@ -1,0 +1,1 @@
+SELECT rowid FROM h1 WHERE instr(a,b)

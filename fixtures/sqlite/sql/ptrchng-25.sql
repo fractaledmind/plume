@@ -1,0 +1,1 @@
+SELECT pointer_change(y, 'text', 'bytes', 'text') FROM t1

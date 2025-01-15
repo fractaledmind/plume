@@ -1,0 +1,1 @@
+CREATE TABLE tbl1(t1 text)

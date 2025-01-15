@@ -1,0 +1,1 @@
+SELECT typeof(x), length(x), typeof(y) FROM t29 ORDER BY id

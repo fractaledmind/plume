@@ -1,0 +1,1 @@
+PRAGMA soft_heap_limit(-1); PRAGMA soft_heap_limit;

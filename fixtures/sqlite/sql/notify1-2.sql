@@ -1,0 +1,3 @@
+CREATE TABLE t2(a, b);
+BEGIN;
+SELECT * FROM t1;

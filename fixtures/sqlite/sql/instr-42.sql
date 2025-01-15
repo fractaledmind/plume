@@ -1,0 +1,1 @@
+SELECT instr(x'',x'');

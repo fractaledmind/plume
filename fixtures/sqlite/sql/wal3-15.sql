@@ -1,0 +1,1 @@
+INSERT INTO blue VALUES(5, 6)

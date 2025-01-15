@@ -1,0 +1,1 @@
+UPDATE tbl3 SET a = 'G' where a = 'g';

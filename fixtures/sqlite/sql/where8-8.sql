@@ -1,0 +1,1 @@
+SELECT c FROM t1 WHERE a >= 9 OR b <= 'eight'

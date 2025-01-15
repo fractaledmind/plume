@@ -1,0 +1,1 @@
+SELECT c123 FROM t1

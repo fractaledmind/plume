@@ -1,0 +1,1 @@
+SELECT count(*) FROM x2 WHERE word MATCH 'abc';

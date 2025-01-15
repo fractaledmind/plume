@@ -1,0 +1,1 @@
+SELECT typeof(i), typeof(n), typeof(t), typeof(o) FROM t1;

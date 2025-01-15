@@ -1,0 +1,1 @@
+SELECT rtrim('  hi  ','xyz');

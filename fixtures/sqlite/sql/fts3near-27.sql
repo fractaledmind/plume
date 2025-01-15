@@ -1,0 +1,1 @@
+SELECT offsets(t1) FROM t1 WHERE content MATCH 'three NEAR/1 one'

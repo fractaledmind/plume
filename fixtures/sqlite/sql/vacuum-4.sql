@@ -1,0 +1,1 @@
+INSERT INTO t7 VALUES(1234567890,'hello','world');

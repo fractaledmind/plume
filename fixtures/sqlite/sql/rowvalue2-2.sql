@@ -1,0 +1,1 @@
+INSERT INTO t3 VALUES($a, $b, $c, $w)

@@ -1,0 +1,1 @@
+SELECT min(x COLLATE nocase), min(x) FROM t4;

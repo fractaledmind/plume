@@ -1,0 +1,1 @@
+INSERT INTO demo(word) VALUES ('amsterdam' || $l)

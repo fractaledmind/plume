@@ -1,0 +1,1 @@
+SELECT c FROM t1 WHERE +a IN(1, 2, 3) OR +a = 5

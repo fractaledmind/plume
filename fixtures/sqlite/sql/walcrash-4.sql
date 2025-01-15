@@ -1,0 +1,1 @@
+SELECT count(*) BETWEEN 34 AND 36 FROM t1 WHERE x != 1

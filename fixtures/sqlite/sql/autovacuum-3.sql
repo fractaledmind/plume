@@ -1,0 +1,1 @@
+DELETE FROM t1 WHERE rowid > (SELECT max(a)/2 FROM t1)

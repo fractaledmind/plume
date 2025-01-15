@@ -1,0 +1,1 @@
+SELECT coalesce(length(a),-1) FROM t2

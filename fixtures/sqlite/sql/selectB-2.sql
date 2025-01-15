@@ -1,0 +1,2 @@
+DROP INDEX i1;
+DROP INDEX i2;

@@ -1,0 +1,1 @@
+SELECT rootpage>=8192 FROM sqlite_master WHERE tbl_name = 't2';

@@ -1,0 +1,1 @@
+SELECT b, d FROM t1 CROSS JOIN t2 ON (c=a)

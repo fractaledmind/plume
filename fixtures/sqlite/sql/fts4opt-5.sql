@@ -1,0 +1,1 @@
+INSERT INTO fts (fts) VALUES ('optimize')

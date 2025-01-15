@@ -1,0 +1,1 @@
+SELECT * FROM temp.sqlite_master WHERE type = 'trigger';

@@ -1,0 +1,1 @@
+SELECT * FROM echo_c WHERE rowid = 1

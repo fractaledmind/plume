@@ -1,0 +1,1 @@
+CREATE TABLE t1(t,u,v TEXT COLLATE nocase,w,x,y,z)

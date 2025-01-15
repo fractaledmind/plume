@@ -1,0 +1,1 @@
+INSERT INTO ft VALUES('the quick brown fox');

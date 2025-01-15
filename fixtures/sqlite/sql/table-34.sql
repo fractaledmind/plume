@@ -1,0 +1,2 @@
+CREATE TEMPORARY TABLE t5 AS SELECT count(*) AS [y'all] FROM [t3"xyz];
+SELECT * FROM t5;

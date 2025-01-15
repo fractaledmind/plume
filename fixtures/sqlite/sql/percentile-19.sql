@@ -1,0 +1,1 @@
+SELECT median() WITHIN GROUP (ORDER BY x) FROM t2

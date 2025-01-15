@@ -1,0 +1,1 @@
+SELECT a, CAST(a AS integer), a FROM t1;

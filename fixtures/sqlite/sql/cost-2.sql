@@ -1,0 +1,1 @@
+INSERT INTO t6 VALUES($i%4, 'xyz', $i%8)

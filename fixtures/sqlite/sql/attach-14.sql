@@ -1,0 +1,1 @@
+DETACH DATABASE db2;

@@ -1,0 +1,1 @@
+SELECT v1.x, (Y) FROM v1

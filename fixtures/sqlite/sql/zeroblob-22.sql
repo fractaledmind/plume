@@ -1,0 +1,1 @@
+select hex(zeroblob(-1))

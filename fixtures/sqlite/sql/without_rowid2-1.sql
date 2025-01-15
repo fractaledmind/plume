@@ -1,0 +1,4 @@
+CREATE TABLE t2(
+x INT PRIMARY KEY,
+y TEXT
+) WITHOUT rowid;

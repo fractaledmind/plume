@@ -1,0 +1,1 @@
+SELECT $::string LIKE $::pattern;

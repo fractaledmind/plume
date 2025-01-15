@@ -1,0 +1,1 @@
+SELECT b FROM t600 WHERE a IN carray(inttoptr($PTR1),4,'int32');

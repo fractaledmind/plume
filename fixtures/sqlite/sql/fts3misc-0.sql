@@ -1,0 +1,4 @@
+WITH data(i) AS (
+SELECT 1 UNION ALL SELECT i+1 FROM data WHERE i<200
+)
+INSERT INTO t2(c198, c199) SELECT v1(i), v2(i) FROM data;

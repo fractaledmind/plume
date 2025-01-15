@@ -1,0 +1,1 @@
+SELECT x FROM t1 LIMIT :limit OFFSET :offset;

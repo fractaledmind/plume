@@ -1,0 +1,5 @@
+INSERT INTO t1 SELECT
+((a<<3) + b) & 2147483647,
+((b<<3) + c) & 2147483647,
+((c<<3) + a) & 2147483647
+FROM t1 ORDER BY rowid DESC LIMIT 1;

@@ -1,0 +1,1 @@
+SELECT term FROM t1aux WHERE term>'b' AND col=0 LIMIT 5

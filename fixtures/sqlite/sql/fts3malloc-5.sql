@@ -1,0 +1,1 @@
+CREATE VIRTUAL TABLE ft8 USING fts3(x, tokenize porter)

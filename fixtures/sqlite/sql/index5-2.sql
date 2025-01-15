@@ -1,0 +1,3 @@
+CREATE INDEX i1 ON t1(x);
+DROP INDEX I1;
+PRAGMA main.page_size;

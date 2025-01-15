@@ -1,0 +1,1 @@
+CREATE VIEW aux.v1 AS SELECT * FROM t3;

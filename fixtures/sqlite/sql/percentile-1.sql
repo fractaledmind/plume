@@ -1,0 +1,1 @@
+SELECT percentile(x,0) FROM t1

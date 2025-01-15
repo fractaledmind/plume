@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX t3_i2 ON t3(b)

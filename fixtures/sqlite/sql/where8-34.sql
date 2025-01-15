@@ -1,0 +1,1 @@
+SELECT a, d FROM t1, ((t2)) AS t3 WHERE (a=d OR b=e) AND a<5 ORDER BY a

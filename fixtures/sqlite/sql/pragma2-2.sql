@@ -1,0 +1,1 @@
+PRAGMA main.freelist_count;

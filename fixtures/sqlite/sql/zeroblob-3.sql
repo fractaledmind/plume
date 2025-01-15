@@ -1,0 +1,1 @@
+SELECT length(d) FROM t1

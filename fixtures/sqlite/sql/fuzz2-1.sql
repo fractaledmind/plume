@@ -1,0 +1,1 @@
+SELECT quote(t) FROM t0

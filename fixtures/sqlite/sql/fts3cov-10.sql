@@ -1,0 +1,1 @@
+SELECT count(*) FROM t5_segdir

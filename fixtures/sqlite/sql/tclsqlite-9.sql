@@ -1,0 +1,1 @@
+SELECT concat('a', b, 'z') FROM t1 WHERE b is NULL

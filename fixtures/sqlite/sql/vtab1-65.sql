@@ -1,0 +1,2 @@
+SELECT value FROM t2 UNION ALL
+SELECT value FROM t1 WHERE value<10

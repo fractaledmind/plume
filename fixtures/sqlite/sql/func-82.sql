@@ -1,0 +1,1 @@
+SELECT hex(replace('abcdefg','ef','12'))

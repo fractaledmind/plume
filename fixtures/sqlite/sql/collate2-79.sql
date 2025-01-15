@@ -1,0 +1,1 @@
+SELECT c = 'aa' FROM collate2t1;

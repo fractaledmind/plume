@@ -1,0 +1,1 @@
+SELECT 'a', * FROM t1 ; SELECT 'b', * FROM t3

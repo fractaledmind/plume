@@ -1,0 +1,1 @@
+pragma index_list(t3_bogus);

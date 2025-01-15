@@ -1,0 +1,1 @@
+pragma collation_list;

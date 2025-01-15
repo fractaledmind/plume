@@ -1,0 +1,1 @@
+DELETE FROM t4 WHERE rowid = $ii

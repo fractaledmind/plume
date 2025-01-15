@@ -1,0 +1,1 @@
+INSERT INTO t7 VALUES($i, $i)

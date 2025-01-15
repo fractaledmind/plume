@@ -1,0 +1,1 @@
+INSERT INTO t8 VALUES($i, $i)

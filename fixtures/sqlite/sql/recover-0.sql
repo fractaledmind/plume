@@ -1,0 +1,1 @@
+PRAGMA secure_delete = 0

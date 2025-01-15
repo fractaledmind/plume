@@ -1,0 +1,1 @@
+INSERT INTO abc VALUES(randstr(1500,1500))

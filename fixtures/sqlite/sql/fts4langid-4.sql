@@ -1,0 +1,1 @@
+INSERT INTO t4(docid, content, lid) VALUES($i, 'The Quick Brown Fox', $i)

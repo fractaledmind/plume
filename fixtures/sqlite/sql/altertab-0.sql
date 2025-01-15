@@ -1,0 +1,1 @@
+SELECT squish(sql) FROM sqlite_master WHERE name = 'tr1'

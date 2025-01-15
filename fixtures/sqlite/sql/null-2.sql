@@ -1,0 +1,1 @@
+select ifnull(b*c,99) from t1;

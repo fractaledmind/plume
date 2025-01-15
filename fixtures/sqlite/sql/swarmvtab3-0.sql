@@ -1,0 +1,1 @@
+INSERT INTO swarm VALUES($i, 't1', $i, $i);

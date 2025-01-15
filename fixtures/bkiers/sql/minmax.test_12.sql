@@ -1,8 +1,0 @@
--- minmax.test
--- 
--- execsql {
---     CREATE TABLE t2(a INTEGER PRIMARY KEY, b);
---     INSERT INTO t2 SELECT * FROM t1;
--- }
-CREATE TABLE t2(a INTEGER PRIMARY KEY, b);
-INSERT INTO t2 SELECT * FROM t1;

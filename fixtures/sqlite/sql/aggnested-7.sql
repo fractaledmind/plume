@@ -1,0 +1,24 @@
+DROP TABLE IF EXISTS t1;
+DROP TABLE IF EXISTS t2;
+CREATE TABLE t1 (
+id1 INTEGER,
+value1 INTEGER,
+x1 INTEGER
+);
+INSERT INTO t1 VALUES(4469,2,98),(4469,1,99),(4469,3,97);
+CREATE TABLE t2 (
+value2 INTEGER
+);
+INSERT INTO t2 VALUES(1);
+SELECT
+(SELECT sum(value2==xyz) FROM t2)
+FROM
+(SELECT value1 as xyz, max(x1) AS pqr
+FROM t1
+GROUP BY id1);
+SELECT
+(SELECT sum(value2<>xyz) FROM t2)
+FROM
+(SELECT value1 as xyz, max(x1) AS pqr
+FROM t1
+GROUP BY id1);

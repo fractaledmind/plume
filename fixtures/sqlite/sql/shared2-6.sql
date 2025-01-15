@@ -1,0 +1,1 @@
+INSERT INTO t1(a) VALUES(1)

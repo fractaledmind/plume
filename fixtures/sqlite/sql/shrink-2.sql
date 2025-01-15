@@ -1,0 +1,1 @@
+PRAGMA shrink_memory

@@ -1,0 +1,1 @@
+UPDATE t1_stat SET value=x'' WHERE id=0

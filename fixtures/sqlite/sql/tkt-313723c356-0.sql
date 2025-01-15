@@ -1,0 +1,1 @@
+SELECT min(rowid) FROM t1

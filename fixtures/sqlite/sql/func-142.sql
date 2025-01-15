@@ -1,0 +1,1 @@
+SELECT group_concat(t1,NULL), string_agg(t1,NULL) FROM tbl1

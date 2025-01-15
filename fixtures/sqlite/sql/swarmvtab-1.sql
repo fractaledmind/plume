@@ -1,0 +1,1 @@
+CREATE VIRTUAL TABLE temp.s1 USING swarmvtab('SELECT * FROM dir');

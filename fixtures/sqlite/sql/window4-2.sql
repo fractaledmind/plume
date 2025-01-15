@@ -1,0 +1,1 @@
+SELECT dense_rank() OVER (PARTITION BY x) FROM t2

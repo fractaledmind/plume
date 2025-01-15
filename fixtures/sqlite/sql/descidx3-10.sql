@@ -1,0 +1,1 @@
+SELECT i FROM t1 WHERE b>-9999 AND b<x'ffffffff'

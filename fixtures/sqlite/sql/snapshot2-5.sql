@@ -1,0 +1,1 @@
+PRAGMA wal_checkpoint = RESTART

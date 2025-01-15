@@ -1,0 +1,1 @@
+INSERT INTO fts (rowid, t) VALUES (3, 'xyz')

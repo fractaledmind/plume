@@ -1,0 +1,16 @@
+CREATE TABLE t6w(a, w);
+INSERT INTO t6w VALUES(1, 'w-one');
+INSERT INTO t6w VALUES(2, 'w-two');
+INSERT INTO t6w VALUES(9, 'w-nine');
+CREATE TABLE t6x(a, x);
+INSERT INTO t6x VALUES(1, 'x-one');
+INSERT INTO t6x VALUES(3, 'x-three');
+INSERT INTO t6x VALUES(9, 'x-nine');
+CREATE TABLE t6y(a, y);
+INSERT INTO t6y VALUES(1, 'y-one');
+INSERT INTO t6y VALUES(4, 'y-four');
+INSERT INTO t6y VALUES(9, 'y-nine');
+CREATE TABLE t6z(a, z);
+INSERT INTO t6z VALUES(1, 'z-one');
+INSERT INTO t6z VALUES(5, 'z-five');
+INSERT INTO t6z VALUES(9, 'z-nine');

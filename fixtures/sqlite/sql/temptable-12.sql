@@ -1,0 +1,1 @@
+SELECT y FROM t2 WHERE x=3

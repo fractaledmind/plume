@@ -1,0 +1,1 @@
+INSERT INTO t1_segments VALUES($left_child, NULL)

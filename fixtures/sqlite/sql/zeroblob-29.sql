@@ -1,0 +1,1 @@
+SELECT x'0000' IN (zeroblob(2))

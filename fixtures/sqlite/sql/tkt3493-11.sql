@@ -1,0 +1,1 @@
+SELECT count(*), +a=123 FROM t1

@@ -1,0 +1,1 @@
+SELECT SUBSTR('Supercalifragilisticexpialidocious', 2, 1)

@@ -1,0 +1,1 @@
+DELETE FROM "v w" ORDER BY "a b" LIMIT 3

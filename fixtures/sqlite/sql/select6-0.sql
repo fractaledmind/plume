@@ -1,0 +1,1 @@
+SELECT * FROM (SELECT x, y FROM t1 WHERE x<2)

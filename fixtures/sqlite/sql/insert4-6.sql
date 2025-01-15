@@ -1,0 +1,2 @@
+DROP TABLE dest;
+DROP TABLE src;

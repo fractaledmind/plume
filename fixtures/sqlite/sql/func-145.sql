@@ -1,0 +1,1 @@
+SELECT group_concat(CASE WHEN t1!='software' THEN '' ELSE t1 END) FROM tbl1

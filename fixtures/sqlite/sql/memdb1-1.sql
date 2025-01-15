@@ -1,0 +1,1 @@
+ATTACH ':memory:' AS aux1

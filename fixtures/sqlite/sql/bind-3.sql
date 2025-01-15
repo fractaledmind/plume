@@ -1,0 +1,1 @@
+SELECT hex(a), hex(b), hex(c) FROM t1
