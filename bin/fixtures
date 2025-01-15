@@ -52,7 +52,7 @@ end
 FileUtils.rm(zip_path)
 
 # extract the SQL statements from the test files
-snippets = Set[]
+snippets = {}
 paths = Dir.glob("#{extract_path}/**/*.{test,tcl}")
 pattern = /\s(?:execsql|db\s+eval)[^{\n]*\{([^}]+)\}/mi
 stmt_re = /\A(?:ALTER|ANALYZE|ATTACH|BEGIN|COMMIT|END|EXPLAIN|CREATE|DELETE|DETACH|DROP|INSERT|REPLACE|PRAGMA|REINDEX|RELEASE|ROLLBACK|SAVEPOINT|SELECT|UPDATE|VACU
@@ -70,14 +70,21 @@ paths.each do |path|
 		next unless result.match?(stmt_re)
 		next if ignored_snippets.any? { |it| result.include?(it) }
 
-		snippets << result
+		snippets[result] = File.basename(path, ".*")
 	end
 end
 
 # write each SQL statement to a new file
 FileUtils.mkdir_p(fixtures_path)
-snippets.each_with_index do |snippet, index|
-	File.write("#{fixtures_path}#{index}.sql", snippet)
+last_basename = nil
+counter = 0
+snippets.each do |snippet, basename|
+	if basename != last_basename
+		counter = 0
+		last_basename = basename
+	end
+	File.write("#{fixtures_path}#{basename}-#{counter}.sql", snippet)
+	counter += 1
 end
 
 # delete the extracted test files
