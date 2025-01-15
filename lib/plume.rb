@@ -22,7 +22,6 @@ module Plume
 	autoload :CastExpression, "plume/ast/cast_expression"
 	autoload :CheckColumnConstraint, "plume/ast/check_column_constraint"
 	autoload :CollateColumnConstraint, "plume/ast/collate_column_constraint"
-	autoload :CollationName, "plume/ast/collation_name"
 	autoload :ColumnConstraint, "plume/ast/column_constraint"
 	autoload :ColumnDefinition, "plume/ast/column_definition"
 	autoload :ColumnReference, "plume/ast/column_reference"

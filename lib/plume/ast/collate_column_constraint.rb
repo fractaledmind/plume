@@ -3,6 +3,6 @@
 module Plume
 	class CollateColumnConstraint < ColumnConstraint
 		prop :name, _Nilable(String)
-		prop :collation_name, CollationName
+		prop :collation_name, Symbol
 	end
 end
