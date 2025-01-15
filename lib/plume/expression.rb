@@ -357,7 +357,7 @@ module Plume
 				when LiteralFalse then false
 				else v
 				end
-			elsif (id = optional { identifier })
+			elsif (id = optional { identifier(except: [:RAISE]) })
 				case current_token
 				in :IN
 					ColumnReference.new(
