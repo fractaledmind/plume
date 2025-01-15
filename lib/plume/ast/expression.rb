@@ -13,6 +13,8 @@ module Plume
 				LikeExpression,
 				InExpression,
 				NotInExpression,
+				CollationExpression,
+				RaiseExpression
 			)
 		},
 	)
