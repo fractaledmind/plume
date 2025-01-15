@@ -342,7 +342,7 @@ module Plume
 			# │           └──────▶──────┘                                                 │
 			# └─▶{ DROP }─▶┬─▶{ COLUMN }─┬▶{ column-name }──────────────────────────────▶─┘
 			#              └──────▶──────┘
-			require :ALTER, :TABLE
+			require current_token until current_token.nil?
 
 			:alter_table_stmt
 		end
@@ -353,7 +353,7 @@ module Plume
 			#                 ├▶{ schema-name }──────────────────────────────────▶─┤
 			#                 ├▶{ index-or-table-name }──────────────────────────▶─┤
 			#                 └▶{ schema-name }─▶{ . }─▶{ table-or-index-name }──▶─┘
-			require :ANALYZE
+			require current_token until current_token.nil?
 
 			:analyze_stmt
 		end
@@ -362,7 +362,7 @@ module Plume
 		def attach_stmt
 			# ◯─▶{ ATTACH }─▶┬─▶{ DATABASE }┬▶[ expr ]─▶{ AS }─▶{ schema-name }─▶◯
 			#                └───────▶──────┘
-			require :ATTACH
+			require current_token until current_token.nil?
 
 			:attach_stmt
 		end
@@ -374,6 +374,8 @@ module Plume
 			#               ├▶{ IMMEDIATE }─▶─┤
 			#               └▶{ EXCLUSIVE }─▶─┘
 			require :BEGIN
+			either :DEFERRED, :IMMEDIATE, :EXCLUSIVE, nil
+			maybe :TRANSACTION
 
 			:begin_stmt
 		end
@@ -382,7 +384,7 @@ module Plume
 		def commit_stmt
 			# ◯─▶┬▶{ COMMIT }┬▶┬─{ TRANSACTION }┬─▶◯
 			#    └▶{ END }─▶─┘ └────────▶───────┘
-			maybe :COMMIT or maybe :END
+			either :COMMIT, :END
 			maybe :TRANSACTION
 
 			:commit_stmt
@@ -401,6 +403,7 @@ module Plume
 			#               ┌─────◀─────────────────┤
 			#               └─▶{ WHERE }─▶{ expr }──┴─▶─◯
 			require :CREATE
+			require current_token until current_token.nil?
 
 			:create_index_stmt
 		end
@@ -708,6 +711,9 @@ module Plume
 			#    └─▶{ DEFAULT }─▶{ VALUES }──────────────────────────────────▶┤
 			#                                         ┌────────────◀──────────┤
 			#                                         └─▶[ returning-clause ]─┴───▶◯
+			require current_token until current_token.nil?
+
+			:insert_stmt
 		end
 
 		# TODO
@@ -715,6 +721,9 @@ module Plume
 			# ◯─▶{ PRAGMA }┬▶{ schema-name }─▶{ . }┬▶{ pragma-name }┬─────────────────────────────────┬─▶◯
 			#              └───────────▶───────────┘                ├─▶{ = }─▶[ pragma-value ]──────▶─┤
 			#                                                       └─▶{ ( }─▶[ pragma-value ]─▶{ ) }─┘
+			require current_token until current_token.nil?
+
+			:pragma_stmt
 		end
 
 		# TODO
@@ -723,12 +732,18 @@ module Plume
 			#               ├─▶{ collation-name }────────────────────────────▶─┤
 			#               ├─▶{ schema-name }─▶{ . }┬▶┬▶{ table-name }──────▶─┤
 			#               └────────▶───────────────┘ └▶{ index-name }──────▶─┘
+			require current_token until current_token.nil?
+
+			:reindex_stmt
 		end
 
 		# TODO
 		def release_stmt
 			# ◯─▶{ RELEASE }┬▶{ SAVEPOINT }┬▶{ savepoint-name }─▶◯
 			#               └──────▶───────┘
+			require current_token until current_token.nil?
+
+			:release_stmt
 		end
 
 		# TODO
@@ -736,11 +751,17 @@ module Plume
 			#                                          ┌──────▶───────┐
 			# ◯─▶{ ROLLBACK }┬▶{ TRANSACTION }┬┬▶{ TO }┴▶{ SAVEPOINT }┴▶{ savepoint-name }┬─▶◯
 			#                └───────▶────────┘└─────────────────────▶────────────────────┘
+			require current_token until current_token.nil?
+
+			:rollback_stmt
 		end
 
 		# TODO
 		def savepoint_stmt
 			# ◯─▶{ SAVEPOINT }─▶{ savepoint-name }─▶◯
+			require current_token until current_token.nil?
+
+			:savepoint_stmt
 		end
 
 		# TODO
@@ -776,7 +797,7 @@ module Plume
 			#             │                       ├─▶{ OFFSET }─▶[ expr ]─▶─┤
 			#             │                       └─▶{ , }─▶[ expr ]──────▶─┤
 			#             └───────────────────────────────────────────────▶─┴───────▶◯
-			require :SELECT
+			require current_token until current_token.nil?
 
 			:select_stmt
 		end
@@ -811,12 +832,18 @@ module Plume
 			#    │                      ├─▶{ OFFSET }─▶[ expr ]─▶─┤
 			#    │                      └─▶{ , }─▶[ expr ]──────▶─┤
 			#    └─────────────────────▶──────────────────────────┴─▶───────────────▶◯
+			require current_token until current_token.nil?
+
+			:update_stmt
 		end
 
 		# TODO
 		def vacuum_stmt
 			# ◯─▶{ VACUUUM }┬─────────────────┬▶┬────────────────────────┬─▶◯
 			#               └▶{ schema-name }─┘ └▶{ INTO }─▶{ filename }─┘
+			require current_token until current_token.nil?
+
+			:vacuum_stmt
 		end
 
 		# TODO
@@ -828,8 +855,9 @@ module Plume
 			#  ├─▶[ insert-stmt ]───────────────▶─┤
 			#  ├─▶[ select-stmt ]───────────────▶─┤
 			#  └─▶[ update-stmt ]───────────────▶─┴──────────────────────▶─◯
-			require :WITH
-			recursive = maybe :RECURSIVE
+			require current_token until current_token.nil?
+
+			:with_stmt
 		end
 
 		# nm ::= ID|INDEXED|JOIN_KW
