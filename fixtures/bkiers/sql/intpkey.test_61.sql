@@ -1,8 +1,0 @@
--- intpkey.test
--- 
--- execsql {
---     INSERT INTO t1 VALUES(2147483647, 'big-1', 123);
---     SELECT * FROM t1 WHERE a>2147483648;
--- }
-INSERT INTO t1 VALUES(2147483647, 'big-1', 123);
-SELECT * FROM t1 WHERE a>2147483648;

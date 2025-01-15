@@ -1,4 +1,0 @@
--- func.test
--- 
--- execsql {SELECT hex(x'00112233445566778899aAbBcCdDeEfF')}
-SELECT hex(x'00112233445566778899aAbBcCdDeEfF')

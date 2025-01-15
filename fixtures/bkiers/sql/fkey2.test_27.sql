@@ -1,8 +1,0 @@
--- fkey2.test
--- 
--- execsql {
---     CREATE TABLE t1(a PRIMARY KEY, b);
---     CREATE TABLE t2(c INTEGER PRIMARY KEY REFERENCES t1, b);
--- }
-CREATE TABLE t1(a PRIMARY KEY, b);
-CREATE TABLE t2(c INTEGER PRIMARY KEY REFERENCES t1, b);

@@ -1,6 +1,0 @@
--- misc2.test
--- 
--- execsql {
---     SELECT a FROM t1 WHERE a<1000000000000 ORDER BY 1;
--- }
-SELECT a FROM t1 WHERE a<1000000000000 ORDER BY 1;

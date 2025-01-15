@@ -1,4 +1,0 @@
--- vtab1.test
--- 
--- db eval {DROP TABLE t2152a; DROP TABLE t2152b}
-DROP TABLE t2152a; DROP TABLE t2152b

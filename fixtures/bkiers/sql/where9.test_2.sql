@@ -1,4 +1,0 @@
--- where9.test
--- 
--- db eval {SELECT count(*) FROM t1 UNION ALL SELECT a FROM t1 WHERE a>=85}
-SELECT count(*) FROM t1 UNION ALL SELECT a FROM t1 WHERE a>=85

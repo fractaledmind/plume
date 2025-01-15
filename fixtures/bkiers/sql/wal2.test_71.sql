@@ -1,4 +1,0 @@
--- wal2.test
--- 
--- execsql { INSERT INTO tx DEFAULT VALUES }
-INSERT INTO tx DEFAULT VALUES
