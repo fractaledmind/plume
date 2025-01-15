@@ -1,0 +1,84 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "net/http"
+require "uri"
+require "fileutils"
+require "zip"
+require "time"
+
+uri = URI("https://codeload.github.com/sqlite/sqlite/zip/refs/heads/master")
+zip_path = "./fixtures/sqlite/repo.zip"
+extract_path = "./fixtures/sqlite/tests/"
+fixtures_path = "./fixtures/sqlite/sql/"
+
+# wipe the fixtures directory
+FileUtils.rm_rf(fixtures_path)
+
+# download the sqlite repo zip file for the master branch
+Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+	request = Net::HTTP::Get.new(uri)
+	response = http.request(request)
+
+	# Handle redirects
+	if response.is_a?(Net::HTTPRedirection)
+		uri = URI(response["location"])
+		response = Net::HTTP.get_response(uri)
+	end
+
+	if response.is_a?(Net::HTTPSuccess)
+		File.open(zip_path, "wb") do |file|
+			file.write(response.body)
+		end
+		puts "File downloaded successfully to #{zip_path}"
+	else
+		raise "Error: #{response.code} - #{response.message}"
+	end
+end
+
+# extract only the test files from the zip file
+FileUtils.mkdir_p(extract_path)
+Zip::File.open(zip_path) do |zip_file|
+	zip_file.each do |entry|
+		next unless entry.name.start_with?("sqlite-master/test/")
+
+		entry_path = File.join(extract_path, entry.name)
+		FileUtils.mkdir_p(File.dirname(entry_path))
+		zip_file.extract(entry, entry_path) unless File.exist?(entry_path)
+	end
+end
+
+# delete the zip file
+FileUtils.rm(zip_path)
+
+# extract the SQL statements from the test files
+snippets = Set[]
+paths = Dir.glob("#{extract_path}/**/*.{test,tcl}")
+pattern = /\s(?:execsql|db\s+eval)[^{\n]*\{([^}]+)\}/mi
+stmt_re = /\A(?:ALTER|ANALYZE|ATTACH|BEGIN|COMMIT|END|EXPLAIN|CREATE|DELETE|DETACH|DROP|INSERT|REPLACE|PRAGMA|REINDEX|RELEASE|ROLLBACK|SAVEPOINT|SELECT|UPDATE|VACU
+UM|WITH|--\s)\b/i
+ignored_snippets = Set[
+	"CREATE TABLE $tbl AS $select",
+	"CREATE TABLE %T%(x, y);",
+	"$::temp",
+]
+paths.each do |path|
+	contents = File.read(path)
+	matches = contents.scan(pattern)
+	matches.each do |match|
+		result = match[0].lines.map(&:strip).join("\n").strip
+		next unless result.match?(stmt_re)
+		next if ignored_snippets.any? { |it| result.include?(it) }
+
+		snippets << result
+	end
+end
+
+# write each SQL statement to a new file
+FileUtils.mkdir_p(fixtures_path)
+snippets.each_with_index do |snippet, index|
+	File.write("#{fixtures_path}#{index}.sql", snippet)
+end
+
+# delete the extracted test files
+FileUtils.rm_rf(extract_path)
