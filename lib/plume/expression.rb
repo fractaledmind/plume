@@ -357,14 +357,14 @@ module Plume
 				when LiteralFalse then false
 				else v
 				end
-			elsif :ID == current_token
-				case peek(2)
-				in [:IN, :LP]
+			elsif (id = optional { identifier })
+				case current_token
+				in :IN
 					ColumnReference.new(
-						column_name: identifier,
+						column_name: id,
 					)
-				in [:LP, _]
-					function_name = identifier.to_sym.upcase
+				in :LP
+					function_name = id.to_sym.upcase
 					require :LP
 					arguments = function_arguments
 					require :RP
@@ -377,8 +377,8 @@ module Plume
 						filter_clause: filter,
 						over_clause: over,
 					)
-				in [:DOT, _]
-					schema_or_table_name = identifier
+				in :DOT
+					schema_or_table_name = id
 					require :DOT
 					table_or_column_name = identifier
 					if maybe :DOT
@@ -396,7 +396,7 @@ module Plume
 					end
 				else
 					ColumnReference.new(
-						column_name: identifier,
+						column_name: id,
 					)
 				end
 			elsif :RAISE == current_token
