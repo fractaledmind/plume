@@ -192,13 +192,22 @@ module Plume
 				)
 			elsif maybe :DEFAULT
 				if maybe :LP
-					default = expr
+					value = expr
 					require :RP
-					{ DEFAULT: default }
+					DefaultColumnConstraint.new(
+						name:,
+						value:
+					)
 				elsif (number = optional { signed_number })
-					{ DEFAULT: number }
+					DefaultColumnConstraint.new(
+						name:,
+						value: number,
+					)
 				elsif (value = optional { literal_value })
-					{ DEFAULT: value }
+					DefaultColumnConstraint.new(
+						name:,
+						value:
+					)
 				else
 					expected!(:LP, "literal-value", "signed-number")
 				end
