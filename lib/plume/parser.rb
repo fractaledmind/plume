@@ -613,6 +613,9 @@ module Plume
 			#               ├▶[ insert-stmt ]─▶┤
 			#               ├▶[ delete-stmt ]─▶┤
 			#               └▶[ select-stmt ]─▶┘
+			require current_token until current_token.nil?
+
+			:create_trigger_stmt
 		end
 
 		# TODO
@@ -624,6 +627,9 @@ module Plume
 			# ├─▶{ schema-name }─▶{ . }─┬▶{ view-name }─┬──────────────────────────────────┬▶{ AS }─▶[ select-stmt ]─▶◯
 			# └────────▶────────────────┘               └─▶{ ( }─┬▶{ column-name }─┬▶{ ) }─┘
 			#                                                    └──────{ , }◀─────┘
+			require current_token until current_token.nil?
+
+			:create_view_stmt
 		end
 
 		# TODO
@@ -636,6 +642,9 @@ module Plume
 			# │                            ┌─────────────────◀────────────────┐
 			# └─▶{ USING }─▶{ module-name }┴▶{ ( }┬▶[ module-argument ]┬▶{ ) }┴────▶◯
 			#                                     └────────{ , }◀──────┘
+			require current_token until current_token.nil?
+
+			:create_virtual_table_stmt
 		end
 
 		# TODO
@@ -654,36 +663,54 @@ module Plume
 			#    └─▶{ LIMIT }─▶[ expr ]─┬────────────────────────┬▶─────┴─▶◯
 			#                           ├─▶{ OFFSET }─▶[ expr ]─▶┤
 			#                           └─▶{ , }─▶[ expr ]─▶─────┘
+			require current_token until current_token.nil?
+
+			:delete_stmt
 		end
 
 		# TODO
 		def detach_stmt
 			# ◯─▶{ DETACH }┬▶{ DATABASE }┬▶{ schema-name }─▶◯
 			#              └──────▶──────┘
+			require current_token until current_token.nil?
+
+			:detach_stmt
 		end
 
 		# TODO
 		def drop_index_stmt
 			# ◯─▶{ DROP }─▶{ INDEX }┬▶{ IF }─▶{ EXISTS }┬┬▶{ schema-name }─▶{ . }┬▶{ index-name }─▶◯
 			#                       └─────────▶─────────┘└───────────▶───────────┘
+			require current_token until current_token.nil?
+
+			:drop_index_stmt
 		end
 
 		# TODO
 		def drop_table_stmt
 			# ◯─▶{ DROP }─▶{ TABLE }┬▶{ IF }─▶{ EXISTS }┬┬▶{ schema-name }─▶{ . }┬▶{ table-name }─▶◯
 			#                       └─────────▶─────────┘└───────────▶───────────┘
+			require current_token until current_token.nil?
+
+			:drop_table_stmt
 		end
 
 		# TODO
 		def drop_trigger_stmt
 			# ◯─▶{ DROP }─▶{ TRIGGER }┬▶{ IF }─▶{ EXISTS }┬┬▶{ schema-name }─▶{ . }┬▶{ trigger-name }─▶◯
 			#                         └─────────▶─────────┘└───────────▶───────────┘
+			require current_token until current_token.nil?
+
+			:drop_trigger_stmt
 		end
 
 		# TODO
 		def drop_view_stmt
 			# ◯─▶{ DROP }─▶{ VIEW }┬▶{ IF }─▶{ EXISTS }┬┬▶{ schema-name }─▶{ . }┬▶{ view-name }─▶◯
 			#                      └─────────▶─────────┘└───────────▶───────────┘
+			require current_token until current_token.nil?
+
+			:drop_view_stmt
 		end
 
 		# TODO
