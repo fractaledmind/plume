@@ -169,6 +169,7 @@ module Plume
 			:SAVEPOINT,
 			:SELECT,
 			:SET,
+			:STORED,
 			:STRICT,
 			:TABLE,
 			:TEMP,
