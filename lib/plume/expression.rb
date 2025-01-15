@@ -494,27 +494,15 @@ module Plume
 			#                 └─────────▶──────┘
 			require :OVER
 			if maybe :LP
-				baseless_window = optional do
-					partition_by = maybe_all(:PARTITION, :BY) ? one_or_more { expr } : nil
-					order_by = maybe_all(:ORDER, :BY) ? one_or_more { ordering_term } : nil
-					frame = one_of?(:RANGE, :ROWS, :GROUPS) ? frame_spec : nil
-					require :RP
-
-					OverClause.new(
-						partition_by:,
-						order_by:,
-						frame:,
-					)
-				end
-				return baseless_window if baseless_window
-
-				base_window_name = optional { identifier }
+				base_window_name = optional { identifier(except: [:PARTITION, :ORDER, :RANGE, :ROWS, :GROUPS]) }
+				partition_by = maybe_all(:PARTITION, :BY) ? one_or_more { expr } : nil
 				order_by = maybe_all(:ORDER, :BY) ? one_or_more { ordering_term } : nil
 				frame = one_of?(:RANGE, :ROWS, :GROUPS) ? frame_spec : nil
 				require :RP
 
 				OverClause.new(
 					base_window_name:,
+					partition_by:,
 					order_by:,
 					frame:,
 				)
