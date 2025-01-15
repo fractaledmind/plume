@@ -224,11 +224,11 @@ module Plume
 				require :RP
 				type = either(:STORED, :VIRTUAL, nil)
 
-				if type
-					{ GENERATED_AS: [default, type] }
-				else
-					{ GENERATED_AS: default }
-				end
+				GeneratedAsColumnConstraint.new(
+					name:,
+					expression: default,
+					type:,
+				)
 			else
 				# TODO: error here
 			end
