@@ -255,7 +255,11 @@ module Plume
 					type:,
 				)
 			else
-				expected!(:PRIMARY, :NOT, :NULL, :UNIQUE, :CHECK, :DEFAULT, :COLLATE, :REFERENCES, :GENERATED)
+				if name
+					NoOpColumnConstraint.new(name:)
+				else
+					expected!(:PRIMARY, :NOT, :NULL, :UNIQUE, :CHECK, :DEFAULT, :COLLATE, :REFERENCES, :GENERATED)
+				end
 			end
 		end
 
