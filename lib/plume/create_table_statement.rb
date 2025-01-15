@@ -102,7 +102,7 @@ module Plume
 				end
 			elsif maybe_all :FOREIGN, :KEY
 				require :LP
-				columns = one_or_more { column_name }
+				columns = one_or_more { identifier }
 				require :RP
 				clause = foreign_key_clause
 				{ FOREIGN_KEY: [columns, clause] }
