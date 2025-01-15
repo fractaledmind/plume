@@ -129,14 +129,14 @@ module Plume
 								collection: []
 							)
 						# :nocov:
-						elsif (s = optional { select_stmt })
-							require :RP
+						# elsif (s = optional { select_stmt })
+						# 	require :RP
 
-							return expression_node.new(
-								member: left,
-								collection: s
-							)
-							# :nocov:
+						# 	return expression_node.new(
+						# 		member: left,
+						# 		collection: s
+						# 	)
+						# 	# :nocov:
 						elsif (e = optional { expression(op_precedence + 1) })
 							exprs = one_or_more(given: e) { expression(op_precedence + 1) }
 							require :RP
