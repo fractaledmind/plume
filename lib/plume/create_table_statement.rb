@@ -121,7 +121,7 @@ module Plume
 			#   └────◀─────┘├─▶{ ( }─▶[ signed-number ]─▶{ ) }─────────────────────────▶─┤
 			#               └─▶{ ( }─▶[ signed-number ]─▶{ , }─▶[ signed-number ]─▶{ ) }─┘
 
-			name = one_or_more(sep: nil) { identifier }.join(" ")
+			name = one_or_more(sep: nil) { identifier(except: [:PRIMARY, :NOT, :NULL, :UNIQUE, :CHECK, :DEFAULT, :COLLATE, :REFERENCES, :GENERATED, :AS]) }.join(" ")
 			if maybe :LP
 				constraints = one_or_more { signed_number }
 				require :RP
