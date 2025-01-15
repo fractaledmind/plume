@@ -212,7 +212,10 @@ module Plume
 					expected!(:LP, "literal-value", "signed-number")
 				end
 			elsif maybe :COLLATE
-				{ COLLATE: identifier }
+				CollateColumnConstraint.new(
+					name:,
+					collation_name: identifier.to_sym.upcase
+				)
 			elsif :REFERENCES == current_token
 				foreign_key_clause
 			elsif maybe_all(:GENERATED, :ALWAYS, :AS) or maybe(:AS)
