@@ -47,6 +47,7 @@ module Plume
 	autoload :Node, "plume/ast/node"
 	autoload :NotInExpression, "plume/ast/not_in_expression"
 	autoload :NotLikeExpression, "plume/ast/not_like_expression"
+	autoload :NullColumnConstraint, "plume/ast/null_column_constraint"
 	autoload :NotNullColumnConstraint, "plume/ast/not_null_column_constraint"
 	autoload :OrderingTerm, "plume/ast/ordering_term"
 	autoload :OverClause, "plume/ast/over_clause"

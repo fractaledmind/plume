@@ -148,8 +148,8 @@ module Plume
 			#    ├─────────────◀────────────┘
 			#    ├─▶{ PRIMARY }─▶{ KEY }──┬─────▶──────┬─▶[ conflict-clause ]┬──────────▶───────────┬─▶◯
 			#    │                        ├─▶{ ASC }──▶┤                     └─▶{ AUTOINCREMENT }─▶─┤
-			#    │                        └─▶{ DESC }─▶┘                                            │
-			#    ├─▶{ NOT }─▶{ NULL }─▶[ conflict-clause ]────────────────────────────────────────▶─┤
+			#    ├─────▶───┐              └─▶{ DESC }─▶┘                                            │
+			#    ├─▶{ NOT }┴▶{ NULL }─▶[ conflict-clause ]────────────────────────────────────────▶─┤
 			#    ├─▶{ UNIQUE }─▶[ conflict-clause ]───────────────────────────────────────────────▶─┤
 			#    ├─▶{ CHECK }─▶{ ( }─▶[ expr ]─▶{ ) }─────────────────────────────────────────────▶─┤
 			#    ├─▶{ DEFAULT }─▶┬▶{ ( }─▶[ expr ]─▶{ ) }──┬──────────────────────────────────────▶─┤
@@ -178,6 +178,13 @@ module Plume
 				on_conflict = conflict_clause
 
 				NotNullColumnConstraint.new(
+					name:,
+					conflict_clause: on_conflict
+				)
+			elsif maybe :NULL
+				on_conflict = conflict_clause
+
+				NullColumnConstraint.new(
 					name:,
 					conflict_clause: on_conflict
 				)
