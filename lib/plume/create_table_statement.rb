@@ -68,11 +68,11 @@ module Plume
 		def table_constraint
 			# ◯─▶┬▶{ CONSTRAINT }─▶{ name }─┐
 			#    ├─────────────◀────────────┘
-			#    ├─▶{ PRIMARY }─▶{ KEY }──┬▶{ ( }┬▶[ indexed-column ]┬▶{ ) }─▶[ conflict-clause ]───┬─▶◯
-			#    ├─▶{ UNIQUE }─────────▶──┘      └───────{ , }◀──────┘                              │
-			#    ├─▶{ CHECK }─▶{ ( }─▶[ expr ]─▶{ ) }─────────────────────────────────────────────▶─┤
-			#    ├─▶[ foreign-key-clause ]────────────────────────────────────────────────────────▶─┤
-			#    └─▶{ FOREIGN }─▶{ KEY }─▶{ ( }┬▶{ column-name }┬▶{ ) }─▶[ foreign-key-clause ]───▶─┘
+			#    ├─▶{ PRIMARY }─▶{ KEY }──┬▶{ ( }┬▶[ indexed-column ]┬┬▶{ AUTOINCREMENT }┬▶{ ) }─▶[ conflict-clause ]───┬─▶◯
+			#    ├─▶{ UNIQUE }─────────▶──┘      └───────{ , }◀──────┘└────────▶─────────┘                              │
+			#    ├─▶{ CHECK }─▶{ ( }─▶[ expr ]─▶{ ) }─────────────────────────────────────────────────────────────────▶─┤
+			#    ├─▶[ foreign-key-clause ]────────────────────────────────────────────────────────────────────────────▶─┤
+			#    └─▶{ FOREIGN }─▶{ KEY }─▶{ ( }┬▶{ column-name }┬▶{ ) }─▶[ foreign-key-clause ]───────────────────────▶─┘
 			#                                  └─────{ , }◀─────┘
 			name = identifier if maybe :CONSTRAINT
 			if maybe :UNIQUE
@@ -93,6 +93,7 @@ module Plume
 			elsif maybe_all :PRIMARY, :KEY
 				require :LP
 				columns = one_or_more { indexed_column }
+				autoincrement = maybe :AUTOINCREMENT
 				require :RP
 				on_conflict = conflict_clause
 				if on_conflict or name
@@ -222,6 +223,7 @@ module Plume
 						name:,
 						value:
 					)
+				elsif one_of? :ID, :INDEXED
 					DefaultColumnConstraint.new(
 						name:,
 						value: unwrap_id
