@@ -11,6 +11,8 @@ module Plume
 		:*,
 		Numeric,
 		String,
-		Blob
+		Blob,
+		LiteralNil,
+		LiteralFalse,
 	)
 end
