@@ -222,6 +222,10 @@ module Plume
 						name:,
 						value:
 					)
+					DefaultColumnConstraint.new(
+						name:,
+						value: unwrap_id
+					)
 				else
 					expected!(:LP, "literal-value", "signed-number")
 				end

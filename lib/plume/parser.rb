@@ -908,6 +908,18 @@ module Plume
 			end
 		end
 
+		def unwrap_id
+			val = current_value
+			require :ID
+			case val.getbyte(0)
+			when 96, 39, 34, 93 # "`", "'", '"', "]"
+				bytesize = val.bytesize
+				val.byteslice(1, bytesize - 2)
+			else
+				val
+			end
+		end
+
 		# ---
 
 		def require(token)
