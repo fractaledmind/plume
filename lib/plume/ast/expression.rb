@@ -14,7 +14,8 @@ module Plume
 				InExpression,
 				NotInExpression,
 				CollationExpression,
-				RaiseExpression
+				RaiseExpression,
+				FunctionReference,
 			)
 		},
 	)
