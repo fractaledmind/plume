@@ -600,6 +600,481 @@ test "parse basic create table with one column and a virtual as constraint" do
 	)
 end
 
+test "parse basic create table with one column and a foreign key constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1))
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a foreign key constraint with on delete set null" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) on delete set null)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								on_delete: :SET_NULL,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a foreign key constraint with on delete set default" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) on delete set default)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								on_delete: :SET_DEFAULT,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a foreign key constraint with on delete cascade" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) on delete cascade)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								on_delete: :CASCADE,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a foreign key constraint with on delete restrict" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) on delete restrict)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								on_delete: :RESTRICT,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a foreign key constraint with on delete no action" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) on delete no action)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								on_delete: :NO_ACTION,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a foreign key constraint with on update set null" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) on update set null)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								on_update: :SET_NULL,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a foreign key constraint with on update set default" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) on update set default)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								on_update: :SET_DEFAULT,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a foreign key constraint with on update cascade" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) on update cascade)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								on_update: :CASCADE,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a foreign key constraint with on update restrict" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) on update restrict)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								on_update: :RESTRICT,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a foreign key constraint with on update no action" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) on update no action)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								on_update: :NO_ACTION,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a foreign key constraint with on update no action and on delete no action" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) on update no action on delete no action)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								on_update: :NO_ACTION,
+								on_delete: :NO_ACTION,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a foreign key constraint with match" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) match full)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								match_name: "full",
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and a deferred foreign key constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) deferrable initially deferred)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								deferred: true,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and an immediate foreign key constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) deferrable)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								deferred: false,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and an immediate foreign key constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) not deferrable)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								deferred: false,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and an immediate foreign key constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) deferrable initially immediate)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								deferred: false,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and an immediate foreign key constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) not deferrable initially deferred)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								deferred: false,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
+test "parse basic create table with one column and an immediate foreign key constraint" do
+	assert_statement(
+		<<~SQL,
+			create table tb0 (c0 references tb1(c1) not deferrable initially immediate)
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+					constraints: [
+						Plume::ForeignKeyColumnConstraint.new(
+							foreign_key_clause: Plume::ForeignKeyClause.new(
+								foreign_table: "tb1",
+								columns: ["c1"],
+								deferred: false,
+							)
+						),
+					]
+				),
+			],
+		)
+	)
+end
+
 test "parse a basic create table with STRICT table option" do
 	assert_statement(
 		<<~SQL,
