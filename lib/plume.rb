@@ -14,9 +14,11 @@ module Plume
 	extend Literal::Types
 
 	autoload :AnyType, "plume/ast/any_type"
+	autoload :IndexedColumn, "plume/ast/indexed_column"
 	autoload :BinaryExpression, "plume/ast/binary_expression"
 	autoload :Blob, "plume/ast/blob"
 	autoload :BlobType, "plume/ast/blob_type"
+	autoload :NoOpColumnConstraint, "plume/ast/noop_column_constraint"
 	autoload :CaseCondition, "plume/ast/case_condition"
 	autoload :CaseExpression, "plume/ast/case_expression"
 	autoload :CastExpression, "plume/ast/cast_expression"
