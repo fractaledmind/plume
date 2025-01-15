@@ -2,25 +2,34 @@
 
 snippets = Set[]
 
-paths = Dir.glob("./fixtures/sqlite/test/**/*")
+paths = Dir.glob("./fixtures/sqlite/test/**/*.{test,tcl}")
 
-pattern = /\s(?:execsql|db\s+eval)[^}]*\{([^}]+)\}/m
+pattern = /\s(?:execsql|db\s+eval)[^{\n]*\{([^}]+)\}/mi
+stmt_re = /\A(?:ALTER|ANALYZE|ATTACH|BEGIN|COMMIT|END|EXPLAIN|CREATE|DELETE|DETACH|DROP|INSERT|REPLACE|PRAGMA|REINDEX|RELEASE|ROLLBACK|SAVEPOINT|SELECT|UPDATE|VACU
+UM|WITH|--\s)\b/i
+ignored_snippets = Set[
+	"CREATE TABLE $tbl AS $select",
+	"CREATE TABLE %T%(x, y);",
+	"$::temp",
+]
 
 paths.each do |path|
-	next if File.directory?(path)
-	next if path.end_with?(".db")
 	contents = File.read(path)
+	matches = contents.scan(pattern)
+	matches.each do |match|
+		result = match[0].lines.map(&:strip).join("\n").strip
+		next unless result.match?(stmt_re)
+		next if ignored_snippets.any? { |it| result.include?(it) }
 
-	pattern.match(contents) do |match|
-		result =  match[1].lines.map(&:strip).join("\n").strip
-		snippets << result unless result.start_with?("$")
+		snippets << result
 	end
 end
 
 snippets.each do |snippet|
 	test do
 		Plume::Parser.new(snippet).parse
-	rescue Plume::Parser::SyntaxError => e
+		success!
+	rescue => e
 		failure! { snippet }
 	end
 end
