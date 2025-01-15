@@ -6,14 +6,9 @@ require "timeout"
 
 Dir.glob("./fixtures/**/*.sql") do |file_path|
 	test file_path do
-		sql = File.read(file_path)
-
-		begin
-			Timeout.timeout(1) do
-				Plume::Parser.new(sql).parse
-			end
-		rescue Timeout::Error
-			puts file_path
+		refute_raises do
+			sql = File.read(file_path)
+			Plume::Parser.new(sql).parse
 		end
 	end
 end
