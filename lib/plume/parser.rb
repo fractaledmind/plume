@@ -68,6 +68,8 @@ module Plume
 			NOTNULL:				nil,
 			NE:							nil,
 			EQ:							nil,
+			ROWID:					:ID,
+			STRICT:					:ID,
 			GT:							nil,
 			LE:							nil,
 			LT:							nil,
