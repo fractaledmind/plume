@@ -369,13 +369,14 @@ module Plume
 
 		# TODO
 		def begin_stmt
-			# ◯─▶{ BEGIN }─▶┬─────────────────┬▶┬▶{ TRANSACTION }┬─▶◯
-			#               ├▶{ DEFERRED }──▶─┤ └────────▶───────┘
+			# ◯─▶{ BEGIN }─▶┬─────────────────┬▶┬▶{ TRANSACTION }┬┬▶{ name }┬─▶◯
+			#               ├▶{ DEFERRED }──▶─┤ └────────▶───────┘└────▶────┘
 			#               ├▶{ IMMEDIATE }─▶─┤
 			#               └▶{ EXCLUSIVE }─▶─┘
 			require :BEGIN
 			either :DEFERRED, :IMMEDIATE, :EXCLUSIVE, nil
 			maybe :TRANSACTION
+			name = optional { identifier }
 
 			:begin_stmt
 		end
