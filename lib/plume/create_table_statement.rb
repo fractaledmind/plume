@@ -20,25 +20,32 @@ module Plume
 			schema_name, table_name = table_ref
 
 			if maybe :AS
-			# TODO
+				as_select = select_stmt
+				CreateTableStatement.new(
+					schema_name:,
+					table_name:,
+					temporary: (true if temporary),
+					if_not_exists: (true if if_not_exists),
+					select_statement: as_select
+				)
 			elsif maybe :LP
 				columns = one_or_more { column_def }
 				constraints = zero_or_more { table_constraint }
 				require :RP
+				options = optional { table_options } # nil || [:STRICT, true] || [true] || [:STRICT]
+
+				CreateTableStatement.new(
+					schema_name:,
+					table_name:,
+					temporary: (true if temporary),
+					if_not_exists: (true if if_not_exists),
+					strict: (true if options&.include?(:STRICT)),
+					without_row_id: (true if options&.include?(true)),
+					columns:
+				)
 			else
 				expected!(:AS, :LP)
 			end
-			options = optional { table_options } # nil || [:STRICT, true] || [true] || [:STRICT]
-
-			CreateTableStatement.new(
-				schema_name:,
-				table_name:,
-				temporary: (true if temporary),
-				if_not_exists: (true if if_not_exists),
-				strict: (true if options&.include?(:STRICT)),
-				without_row_id: (true if options&.include?(true)),
-				columns:
-			)
 		end
 
 		# layer 1

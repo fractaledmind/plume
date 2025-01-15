@@ -31,8 +31,8 @@ module Plume
 	class CreateTableStatement < Node
 		prop :schema_name, _Nilable(String)
 		prop :table_name, String
-		# prop :select_statement, _Nilable(SelectStatement)
-		prop :columns, _Array(ColumnDefinition)
+		prop :select_statement, _Nilable(_Any)
+		prop :columns, _Nilable(_Array(ColumnDefinition))
 		prop :strict, _Nilable(_Boolean)
 		prop :temporary, _Nilable(_Boolean)
 		prop :if_not_exists, _Nilable(_Boolean)
@@ -40,7 +40,7 @@ module Plume
 		# prop :constraints, _Array(TableConstraint)
 
 		def after_initialize
-			raise ArgumentError unless (!!@select_statement ^ @columns.any?)
+			raise ArgumentError unless (!!@select_statement ^ @columns&.any?)
 			raise ArgumentError if @select_statement && (@strict || @without_row_id)
 		end
 	end
