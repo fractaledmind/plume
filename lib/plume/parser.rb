@@ -529,7 +529,7 @@ module Plume
 			#  │                             └─▶{ INITIALLY }─▶{ IMMEDIATE }─▶─┤
 			#  └───────────────────────────────────────────────────────────────┴──────▶◯
 			require :REFERENCES
-			foreign_table = identifier
+			foreign_table = identifier(except: [:ON, :MATCH, :DEFERRABLE, :NOT])
 			columns = nil
 			if maybe :LP
 				columns = one_or_more { identifier }
@@ -561,27 +561,30 @@ module Plume
 				end
 			end
 			while maybe :MATCH
-				meta[:MATCH] = identifier
+				meta[:MATCH] = identifier(except: [:ON, :MATCH, :DEFERRABLE, :NOT])
 			end
 			if maybe_all :DEFERRABLE, :INITIALLY, :DEFERRED
 				meta[:DEFERRED] = true
-			elsif maybe :DEFERRABLE
-				meta[:DEFERRED] = false
-			elsif maybe_all :NOT, :DEFERRABLE
-				meta[:DEFERRED] = false
 			elsif maybe_all :DEFERRABLE, :INITIALLY, :IMMEDIATE
 				meta[:DEFERRED] = false
 			elsif maybe_all :NOT, :DEFERRABLE, :INITIALLY, :IMMEDIATE
 				meta[:DEFERRED] = false
 			elsif maybe_all :NOT, :DEFERRABLE, :INITIALLY, :DEFERRED
 				meta[:DEFERRED] = false
+			elsif maybe :DEFERRABLE
+				meta[:DEFERRED] = false
+			elsif maybe_all :NOT, :DEFERRABLE
+				meta[:DEFERRED] = false
 			end
 
-			if meta.any?
-				{ REFERENCES: [ColumnRef[foreign_table, columns], meta] }
-			else
-				{ REFERENCES: ColumnRef[foreign_table, columns] }
-			end
+			ForeignKeyClause.new(
+				foreign_table:,
+				columns: columns,
+				on_delete: meta[:ON_DELETE],
+				on_update: meta[:ON_UPDATE],
+				match_name: meta[:MATCH],
+				deferred: meta[:DEFERRED]
+			)
 		end
 
 		# TODO

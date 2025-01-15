@@ -217,7 +217,12 @@ module Plume
 					collation_name: identifier.to_sym.upcase
 				)
 			elsif :REFERENCES == current_token
-				foreign_key_clause
+				clause = foreign_key_clause
+
+				ForeignKeyColumnConstraint.new(
+					name:,
+					foreign_key_clause: clause,
+				)
 			elsif maybe_all(:GENERATED, :ALWAYS, :AS) or maybe(:AS)
 				require :LP
 				default = expr
