@@ -230,7 +230,7 @@ module Plume
 					type:,
 				)
 			else
-				# TODO: error here
+				expected!(:PRIMARY, :NOT, :NULL, :UNIQUE, :CHECK, :DEFAULT, :COLLATE, :REFERENCES, :GENERATED)
 			end
 		end
 
