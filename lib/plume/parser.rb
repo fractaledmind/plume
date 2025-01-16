@@ -1023,18 +1023,22 @@ module Plume
 			end
 		end
 
-		def zero_or_more(sep: :COMMA)
+		def zero_or_more(sep: :COMMA, optional: false)
 			[].tap do |a|
 				first_val = optional { yield }
 
 				if first_val
 					a << first_val
 
-					if sep
-						while maybe sep
+					if sep && !optional
+						while maybe(sep)
 							a << yield
 						end
-					else
+					elsif sep && optional
+						while (maybe(sep) && x = yield) || (x = optional { yield })
+							a << x
+						end
+					else # sep == nil or false
 						while (x = optional { yield })
 							a << x
 						end
