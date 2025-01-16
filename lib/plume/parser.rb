@@ -537,7 +537,7 @@ module Plume
 						right:,
 						escape:,
 					)
-				elsif (mop = either :GLOB, :REGEXP, :MATCH, nil)
+				elsif (mop = maybe_one_of :GLOB, :REGEXP, :MATCH)
 					op = negated ? :"NOT#{mop}" : mop
 					right = expression(op_precedence + 1)
 					return BinaryExpression.new(
@@ -998,7 +998,7 @@ module Plume
 			#               ├▶{ IMMEDIATE }─▶─┤
 			#               └▶{ EXCLUSIVE }─▶─┘
 			require :BEGIN
-			either :DEFERRED, :IMMEDIATE, :EXCLUSIVE, nil
+			maybe_one_of :DEFERRED, :IMMEDIATE, :EXCLUSIVE
 			maybe :TRANSACTION
 			name = maybe { identifier }
 
@@ -1009,7 +1009,7 @@ module Plume
 		def commit_stmt
 			# ◯─▶┬▶{ COMMIT }┬▶┬─{ TRANSACTION }┬─▶◯
 			#    └▶{ END }─▶─┘ └────────▶───────┘
-			either :COMMIT, :END
+			require_one_of :COMMIT, :END
 			maybe :TRANSACTION
 
 			:commit_stmt
@@ -1045,7 +1045,7 @@ module Plume
 			#         └─────{ , }◀─────┘ └[ table-constraint ]◀─{ ,|<nil> }◀─┘
 
 			require :CREATE
-			temporary = either(:TEMP, :TEMPORARY, nil)
+			temporary = maybe_one_of :TEMP, :TEMPORARY
 			require :TABLE
 			if_not_exists = maybe_all(:IF, :NOT, :EXISTS)
 			schema_name, table_name = table_ref
@@ -1207,7 +1207,7 @@ module Plume
 			name = identifier if maybe :CONSTRAINT
 
 			if maybe_all :PRIMARY, :KEY
-				direction = either(:ASC, :DESC, nil)
+				direction = maybe_one_of :ASC, :DESC
 				on_conflict = conflict_clause
 				autoincrement = maybe(:AUTOINCREMENT)
 
@@ -1289,7 +1289,7 @@ module Plume
 				require :LP
 				default = expression
 				require :RP
-				type = either(:STORED, :VIRTUAL, nil)
+				type = maybe_one_of :STORED, :VIRTUAL
 
 				GeneratedAsColumnConstraint.new(
 					name:,
@@ -1320,7 +1320,7 @@ module Plume
 			if maybe :COLLATE
 				collation = identifier
 			end
-			direction = either :ASC, :DESC, nil
+			direction = maybe_one_of :ASC, :DESC
 
 			IndexedColumn.new(
 				column: name,
@@ -1927,18 +1927,30 @@ module Plume
 			require_all(*tokens) if advance
 		end
 
-		def either(*options)
-			i, len = 0, options.length
+		def maybe_one_of(*tokens)
+			i, len = 0, tokens.length
 			while i < len
-				option = options[i]
-				if (result = maybe option)
+				if (result = maybe tokens[i])
 					return result
 				else
 					i += 1
 				end
 			end
 
-			option.nil? ? option : expected!(*options)
+			nil
+		end
+
+		def require_one_of(*tokens)
+			i, len = 0, tokens.length
+			while i < len
+				if (result = maybe tokens[i])
+					return result
+				else
+					i += 1
+				end
+			end
+
+			expected!(*options)
 		end
 
 		def one_of?(*tokens)
