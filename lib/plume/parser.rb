@@ -291,8 +291,6 @@ module Plume
 			end
 		end
 
-		# private
-
 		def sql_stmt_list
 			#   ┌──────{ ; }◀─────┐
 			# ◯─┴┬─▶[ sql-stmt ]─┬┴─▶◯
@@ -394,6 +392,429 @@ module Plume
 			else
 				expected!(:ALTER, :ANALYZE, :ATTACH, :BEGIN, :COMMIT, :END, :CREATE, :DELETE, :DETACH, :DROP, :INSERT, :REPLACE, :PRAGMA, :REINDEX, :RELEASE, :ROLLBACK, :SAVEPOINT, :SELECT, :UPDATE, :VACUUM, :WITH)
 			end
+		end
+
+		# TODO
+		def alter_table_stmt
+			#                           ┌────────────────────────┐
+			# ◯─▶─{ ALTER }─▶{ TABLE }─▶┴▶{ schema-name }─▶{ . }─┴▶{ table-name }─┐
+			# ┌───────────────────────────────────────────────────────────────────┘
+			# ├─▶{ RENAME }─▶{ TO }─▶{ new-table-name }───────────────────────────────────┬─▶◯
+			# ├─▶{ RENAME }─▶┬─▶{ COLUMN }─┬▶{ column-name }─▶{ TO }─▶{ new-column-name }─▶─┤
+			# │            └──────▶──────┘                                                │
+			# ├─▶{ ADD }─▶┬─▶{ COLUMN }─┬▶{ column-def }────────────────────────────────▶─┤
+			# │           └──────▶──────┘                                                 │
+			# └─▶{ DROP }─▶┬─▶{ COLUMN }─┬▶{ column-name }──────────────────────────────▶─┘
+			#              └──────▶──────┘
+			require current_token until current_token.nil?
+
+			:alter_table_stmt
+		end
+
+		# TODO
+		def analyze_stmt
+			# ◯─▶{ ANALYZE }─▶┬────────────────────────▶───────────────────────────┬▶◯
+			#                 ├▶{ schema-name }──────────────────────────────────▶─┤
+			#                 ├▶{ index-or-table-name }──────────────────────────▶─┤
+			#                 └▶{ schema-name }─▶{ . }─▶{ table-or-index-name }──▶─┘
+			require current_token until current_token.nil?
+
+			:analyze_stmt
+		end
+
+		# TODO
+		def attach_stmt
+			# ◯─▶{ ATTACH }─▶┬─▶{ DATABASE }┬▶[ expr ]─▶{ AS }─▶{ schema-name }─▶◯
+			#                └───────▶──────┘
+			require current_token until current_token.nil?
+
+			:attach_stmt
+		end
+
+		# TODO
+		def begin_stmt
+			# ◯─▶{ BEGIN }─▶┬─────────────────┬▶┬▶{ TRANSACTION }┬┬▶{ name }┬─▶◯
+			#               ├▶{ DEFERRED }──▶─┤ └────────▶───────┘└────▶────┘
+			#               ├▶{ IMMEDIATE }─▶─┤
+			#               └▶{ EXCLUSIVE }─▶─┘
+			require :BEGIN
+			maybe_one_of :DEFERRED, :IMMEDIATE, :EXCLUSIVE
+			maybe :TRANSACTION
+			name = maybe { identifier }
+
+			:begin_stmt
+		end
+
+		# TODO
+		def commit_stmt
+			# ◯─▶┬▶{ COMMIT }┬▶┬─{ TRANSACTION }┬─▶◯
+			#    └▶{ END }─▶─┘ └────────▶───────┘
+			require_one_of :COMMIT, :END
+			maybe :TRANSACTION
+
+			:commit_stmt
+		end
+
+		# TODO
+		def create_index_stmt
+			# ◯─▶{ CREATE }┬─────▶─────┬▶{ INDEX }┬▶{ IF }─▶{ NOT }─▶{ EXISTS }─┐
+			#              └▶{ UNIQUE }┘          │                             │
+			# ┌───────────────────────────────────┴─────────────────────────────┘
+			# ├─▶{ schema-name }─▶{ . }─┬▶{ index-name }─▶{ ON }─▶{ table-name }─┐
+			# └─────────────────────────┘                                        │
+			# ┌──────────────────────────────────────────────────────────────────┘
+			# └─▶{ ( }─┬▶[ indexed-column ]─┬▶{ ) }─┐
+			#          └───────{ , }◀───────┘       │
+			#               ┌─────◀─────────────────┤
+			#               └─▶{ WHERE }─▶{ expression }──┴─▶─◯
+			require :CREATE
+			require current_token until current_token.nil?
+
+			:create_index_stmt
+		end
+
+		def create_table_stmt
+			# ◯─▶{ CREATE }┬───────▶──────┬▶{ TABLE }┬▶{ IF }─▶{ NOT }─▶{ EXISTS }─┐
+			#              ├▶{ TEMP }─────┤          │                             │
+			#              └▶{ TEMPORARY }┘          │                             │
+			# ┌─────────────────────◀────────────────┴──────────────────◀──────────┘
+			# ├─▶{ schema-name }─▶{ . }─┬▶{ table-name }┬───────▶{ AS }─▶[ select-stmt ]───▶─────┐
+			# └────────▶────────────────┘               │                                        │
+			# ┌────────────────────◀────────────────────┘                     ┌────────▶─────────┼─▶◯
+			# └▶{ ( }─┬▶[ column-def ]─┬▶┬─────────────────────────────┬▶{ ) }┴▶[ table-options ]┘
+			#         └─────{ , }◀─────┘ └[ table-constraint ]◀─{ ,|<nil> }◀─┘
+
+			require :CREATE
+			temporary = maybe_one_of :TEMP, :TEMPORARY
+			require :TABLE
+			if_not_exists = maybe_all_of(:IF, :NOT, :EXISTS)
+			schema_name, table_name = table_ref
+
+			if maybe :AS
+				as_select = select_stmt
+				CreateTableStatement.new(
+					schema_name:,
+					table_name:,
+					temporary: (true if temporary),
+					if_not_exists: (true if if_not_exists),
+					select_statement: as_select
+				)
+			elsif maybe :LP
+				columns = one_or_more { column_def }
+				constraints = zero_or_more(sep: :COMMA, optional: true) { table_constraint }
+				require :RP
+				options = maybe { table_options } # nil || [:STRICT, true] || [true] || [:STRICT]
+
+				CreateTableStatement.new(
+					schema_name:,
+					table_name:,
+					temporary: (true if temporary),
+					if_not_exists: (true if if_not_exists),
+					strict: (true if options&.include?(:STRICT)),
+					without_row_id: (true if options&.include?(true)),
+					columns:,
+					constraints: (constraints if constraints.any?),
+				)
+			else
+				expected!(:AS, :LP)
+			end
+		end
+
+		# TODO
+		def create_trigger_stmt
+			# ◯─▶{ CREATE }┬───────▶──────┬▶{ TRIGGER }┬▶{ IF }─▶{ NOT }─▶{ EXISTS }─┐
+			#              ├▶{ TEMP }─────┤            │                             │
+			#              └▶{ TEMPORARY }┘            │                             │
+			# ┌─────────────────────◀──────────────────┴──────────────────◀──────────┘
+			# ├─▶{ schema-name }─▶{ . }─┬▶{ trigger-name }┬▶{ BEFORE }──────────▶─┐
+			# └────────▶────────────────┘                 ├▶{ AFTER }───────────▶─┤
+			#                                             ├▶{ INSTEAD }─▶{ OF }─▶─┤
+			# ┌────────────────◀──────────────────────────┴───────◀───────────────┘
+			# ├▶{ DELETE }───────────────────────────────┬▶{ ON }▶{ table-name }─┐
+			# ├▶{ INSERT }─────────────────────────────▶─┤                       │
+			# └▶{ UPDATE }─┬───────────────────────────▶─┤                       │
+			#              └▶{ OF }─┬▶{ column-name }─┬▶─┘                       │
+			#                       └──────{ , }◀─────┘                          ▼
+			# ┌────────────────────────◀──────┬──────────────────────────────────┘
+			# └─▶{ FOR }─▶{ EACH }─▶{ ROW }─┬─┴▶{ WHEN }─▶[ expr ]─┐
+			# ┌───────────────────────────◀─┴──────────────────────┘
+			# │           ┌─────────────◀─────────────┐
+			# └─▶{ BEGIN }┴▶┬▶[ update-stmt ]──┬▶{ ; }┴▶{ END }─────────────────────────▶◯
+			#               ├▶[ insert-stmt ]─▶┤
+			#               ├▶[ delete-stmt ]─▶┤
+			#               └▶[ select-stmt ]─▶┘
+			require current_token until current_token.nil?
+
+			:create_trigger_stmt
+		end
+
+		# TODO
+		def create_view_stmt
+			# ◯─▶{ CREATE }┬───────▶──────┬▶{ VIEW }┬▶{ IF }─▶{ NOT }─▶{ EXISTS }─┐
+			#              ├▶{ TEMP }─────┤         │                             │
+			#              └▶{ TEMPORARY }┘         │                             │
+			# ┌─────────────────────◀───────────────┴──────────────────◀──────────┘
+			# ├─▶{ schema-name }─▶{ . }─┬▶{ view-name }─┬──────────────────────────────────┬▶{ AS }─▶[ select-stmt ]─▶◯
+			# └────────▶────────────────┘               └─▶{ ( }─┬▶{ column-name }─┬▶{ ) }─┘
+			#                                                    └──────{ , }◀─────┘
+			require current_token until current_token.nil?
+
+			:create_view_stmt
+		end
+
+		# TODO
+		def create_virtual_table_stmt
+			# ◯─▶{ CREATE }─▶{ VIRTUAL }─▶{ TABLE }┬▶{ IF }─▶{ NOT }─▶{ EXISTS }─┐
+			# ┌────────────────────◀───────────────┴───────────◀─────────────────┘
+			# ├─▶{ schema-name }─▶{ . }─┬▶{ table-name }─┐
+			# └────────▶────────────────┘                │
+			# ┌────────────────────◀─────────────────────┘
+			# │                            ┌─────────────────◀────────────────┐
+			# └─▶{ USING }─▶{ module-name }┴▶{ ( }┬▶[ module-argument ]┬▶{ ) }┴────▶◯
+			#                                     └────────{ , }◀──────┘
+			require current_token until current_token.nil?
+
+			:create_virtual_table_stmt
+		end
+
+		# TODO
+		def delete_stmt
+			# ◯─▶┬▶[ with-stmt ]─┐
+			#    ├───────◀───────┘
+			#    └─▶{ DELETE }─▶{ FROM }─▶[ qualified-table-name ]─┬──▶─┐
+			#    ┌─────────────────────────◀───────────────────────┘    │
+			#    ├─▶{ WHERE }─▶[ expr ]─┬─────────────────────────────▶─┤
+			#    ├──────────◀───────────┘                               │
+			#    ├─▶[ returning-clause ]─┬────────────────────────────▶─┤
+			#    ├──────────◀────────────┘                              │
+			#    ├─▶{ ORDER }─▶{ BY }┬▶[ ordering-term ]─┬────────────▶─┤
+			#    │                   └───────{ , }◀──────┤              │
+			#    ├────────────────◀──────────────────────┘              │
+			#    └─▶{ LIMIT }─▶[ expr ]─┬────────────────────────┬▶─────┴─▶◯
+			#                           ├─▶{ OFFSET }─▶[ expr ]─▶┤
+			#                           └─▶{ , }─▶[ expr ]─▶─────┘
+			require current_token until current_token.nil?
+
+			:delete_stmt
+		end
+
+		# TODO
+		def detach_stmt
+			# ◯─▶{ DETACH }┬▶{ DATABASE }┬▶{ schema-name }─▶◯
+			#              └──────▶──────┘
+			require current_token until current_token.nil?
+
+			:detach_stmt
+		end
+
+		# TODO
+		def drop_index_stmt
+			# ◯─▶{ DROP }─▶{ INDEX }┬▶{ IF }─▶{ EXISTS }┬┬▶{ schema-name }─▶{ . }┬▶{ index-name }─▶◯
+			#                       └─────────▶─────────┘└───────────▶───────────┘
+			require current_token until current_token.nil?
+
+			:drop_index_stmt
+		end
+
+		# TODO
+		def drop_table_stmt
+			# ◯─▶{ DROP }─▶{ TABLE }┬▶{ IF }─▶{ EXISTS }┬┬▶{ schema-name }─▶{ . }┬▶{ table-name }─▶◯
+			#                       └─────────▶─────────┘└───────────▶───────────┘
+			require current_token until current_token.nil?
+
+			:drop_table_stmt
+		end
+
+		# TODO
+		def drop_trigger_stmt
+			# ◯─▶{ DROP }─▶{ TRIGGER }┬▶{ IF }─▶{ EXISTS }┬┬▶{ schema-name }─▶{ . }┬▶{ trigger-name }─▶◯
+			#                         └─────────▶─────────┘└───────────▶───────────┘
+			require current_token until current_token.nil?
+
+			:drop_trigger_stmt
+		end
+
+		# TODO
+		def drop_view_stmt
+			# ◯─▶{ DROP }─▶{ VIEW }┬▶{ IF }─▶{ EXISTS }┬┬▶{ schema-name }─▶{ . }┬▶{ view-name }─▶◯
+			#                      └─────────▶─────────┘└───────────▶───────────┘
+			require current_token until current_token.nil?
+
+			:drop_view_stmt
+		end
+
+		# TODO
+		def insert_stmt
+			# ◯─▶┬▶[ with-stmt ]─┐
+			#    ├───────◀───────┘
+			#    ├─▶{ REPLACE }─────────────────────────┬─▶{ INTO }─┐
+			#    └─▶{ INSERT }─┬───────────────────────▶┤           │
+			#                  └▶{ OR }┬─▶{ ABORT }────▶┤           │
+			#                          ├─▶{ FAIL }─────▶┤           │
+			#                          ├─▶{ IGNORE }───▶┤           │
+			#                          ├─▶{ REPLACE }──▶┤           │
+			#                          └─▶{ ROLLBACK }─▶┘           │
+			#    ┌───────────────────◀─────┬────────────────────────┘
+			#    └─▶{ schema-name }─▶{ . }─┴▶{ table-name }─┬▶{ AS }─▶{ alias }─┐
+			#    ┌──────────────────────────────────────────┴───────◀───────────┘
+			#    ├─▶{ ( }─┬▶{ column-name }─┬─▶{ ) }─┐
+			#    │        └─────{ , }◀──────┘        │
+			#    ├──────────────────◀────────────────┘
+			#    ├─▶{ VALUES }┬▶{ ( }─┬▶[ expr ]─┬─▶{ ) }┬───────────────────▶┐
+			#    │            │       └──{ , }◀──┘       ├▶[ upsert-clause ]─▶┤
+			#    │            └──────────{ , }◀──────────┘                    │
+			#    ├─▶[ select-stmt ]──────────────────────┬───────────────────▶┤
+			#    │                                       ├▶[ upsert-clause ]─▶┤
+			#    └─▶{ DEFAULT }─▶{ VALUES }──────────────────────────────────▶┤
+			#                                         ┌────────────◀──────────┤
+			#                                         └─▶[ returning-clause ]─┴───▶◯
+			require current_token until current_token.nil?
+
+			:insert_stmt
+		end
+
+		# TODO
+		def pragma_stmt
+			# ◯─▶{ PRAGMA }┬▶{ schema-name }─▶{ . }┬▶{ pragma-name }┬─────────────────────────────────┬─▶◯
+			#              └───────────▶───────────┘                ├─▶{ = }─▶[ pragma-value ]──────▶─┤
+			#                                                       └─▶{ ( }─▶[ pragma-value ]─▶{ ) }─┘
+			require current_token until current_token.nil?
+
+			:pragma_stmt
+		end
+
+		# TODO
+		def reindex_stmt
+			# ◯─▶{ REINDEX }┬─────────────────────────▶────────────────────────┬─▶◯
+			#               ├─▶{ collation-name }────────────────────────────▶─┤
+			#               ├─▶{ schema-name }─▶{ . }┬▶┬▶{ table-name }──────▶─┤
+			#               └────────▶───────────────┘ └▶{ index-name }──────▶─┘
+			require current_token until current_token.nil?
+
+			:reindex_stmt
+		end
+
+		# TODO
+		def release_stmt
+			# ◯─▶{ RELEASE }┬▶{ SAVEPOINT }┬▶{ savepoint-name }─▶◯
+			#               └──────▶───────┘
+			require current_token until current_token.nil?
+
+			:release_stmt
+		end
+
+		# TODO
+		def rollback_stmt
+			#                                          ┌──────▶───────┐
+			# ◯─▶{ ROLLBACK }┬▶{ TRANSACTION }┬┬▶{ TO }┴▶{ SAVEPOINT }┴▶{ savepoint-name }┬─▶◯
+			#                └───────▶────────┘└─────────────────────▶────────────────────┘
+			require current_token until current_token.nil?
+
+			:rollback_stmt
+		end
+
+		# TODO
+		def savepoint_stmt
+			# ◯─▶{ SAVEPOINT }─▶{ savepoint-name }─▶◯
+			require current_token until current_token.nil?
+
+			:savepoint_stmt
+		end
+
+		# TODO
+		def select_stmt
+			# ◯─▶┬▶[ with-stmt ]─┐
+			#    ├───────◀───────┘
+			# ┌──┴▶┬─────▶{ SELECT }─┬───────▶──────┬─┬▶[ result-column ]─┐
+			# │    │                 ├▶{ DISTINCT }┤  └─────{ , }◀────────┤
+			# ▲    │                 └▶{ ALL }────▶┘                      │
+			# │    │    ┌──────────────────────────◀──────────────────────┘
+			# │    │    ├─▶{ FROM }┬─┬▶[ table-or-subquery ]─┬─┬─▶───┐
+			# │    │    │          │ └────────{ , }◀─────────┘ ▲     ▼
+			# │    │    │          └──▶[ join-clause ]─────────┘     │
+			# │    │    ├──────────────────────◀─────────────────────┘
+			# │    │    ├─▶{ WHERE }─▶[ expr ]─┐
+			# │    │    ├──────────◀───────────┘
+			# │    │    ├────────────▶─────────────────┐
+			# │    │    ├─▶{ GROUP }─▶{ BY }┬▶[ expr ]┬┴▶┬─▶{ HAVING }─▶[ expr ]─┬─┐
+			# │    │    ▼                   └──{ , }◀─┘  └────────▶──────────────┘ ▼
+			# │    │    ├─────────────────────────────◀────────────────────────────┘
+			# │    │    ├─▶{ WINDOW }┬▶{ window-name }─▶{ AS }─▶[ window-defn ]─┐
+			# ▲    │    │            └───────────────────{ , }◀─────────────────┤
+			# │    │    └──────────────────────▶─────────────────────────────▶──┤
+			# │    │                    ┌──{ , }◀─┐                             ▼
+			# │    └─▶{ VALUES }┬▶{ ( }─┴▶[ expr ]┴─▶{ ) }─┬─────────────────▶──┤
+			# │                 └──────────{ , }◀──────────┘                    │
+			# └────────────────────[ compound-operator ]◀───────────────────────┤
+			#             ┌──────────────────◀──────────────────────────────────┘
+			#             ├─▶{ ORDER }─▶{ BY }┬▶[ ordering-term ]─┬┐
+			#             ▼                   └───────{ , }◀──────┘│
+			#             ├────────────────◀───────────────────────┘
+			#             ├─▶{ LIMIT }─▶[ expr ]─▶┬───────────────────────▶─┐
+			#             │                       ├─▶{ OFFSET }─▶[ expr ]─▶─┤
+			#             │                       └─▶{ , }─▶[ expr ]──────▶─┤
+			#             └───────────────────────────────────────────────▶─┴───────▶◯
+			require current_token until current_token.nil?
+
+			:select_stmt
+		end
+
+		# TODO
+		def update_stmt
+			# ◯─▶┬▶[ with-stmt ]─┐
+			#    ├───────◀───────┘
+			#    └─▶{ UPDATE }─┬───────────────────────┬▶[ qualified-table-name ]─┐
+			#                  ├▶{ OR }─▶{ ABORT }────▶┤                          │
+			#                  ├▶{ OR }─▶{ FAIL }─────▶┤                          │
+			#                  ├▶{ OR }─▶{ IGNORE }───▶┤                          │
+			#                  ├▶{ OR }─▶{ REPLACE }──▶┤                          │
+			#                  └▶{ OR }─▶{ ROLLBACK }─▶┘                          │
+			#    ┌──────────────────────────◀─────────────────────────────────────┘
+			#    └─▶{ SET }┬┬▶{ column-name }─────┬─▶{ = }─▶[ expr ]──┐
+			#              │└▶[ column-name-list ]┘                   │
+			#              └─────────────────{ , }◀───────────────────┤
+			#    ┌──────────────────────────◀─────────────────────────┘
+			#    ├─▶{ FROM }┬─┬▶[ table-or-subquery ]─┬─┬─▶───┐
+			#    │          │ └────────{ , }◀─────────┘ │     │
+			#    │          └──▶[ join-clause ]─────────┘     │
+			#    ├──────────────────────◀─────────────────────┘
+			#    ├─▶{ WHERE }─▶[ expr ]─┐
+			#    ├──────────◀───────────┘
+			#    ├─▶[ returning-clause ]─┐
+			#    ├──────────◀────────────┘
+			#    ├─▶{ ORDER }─▶{ BY }┬▶[ ordering-term ]─┐
+			#    │                   └───────{ , }◀──────┤
+			#    ├─────────────────◀─────────────────────┘
+			#    ├─▶{ LIMIT }─▶[ expr ]─┬───────────────────────▶─┐
+			#    │                      ├─▶{ OFFSET }─▶[ expr ]─▶─┤
+			#    │                      └─▶{ , }─▶[ expr ]──────▶─┤
+			#    └─────────────────────▶──────────────────────────┴─▶───────────────▶◯
+			require current_token until current_token.nil?
+
+			:update_stmt
+		end
+
+		# TODO
+		def vacuum_stmt
+			# ◯─▶{ VACUUUM }┬─────────────────┬▶┬────────────────────────┬─▶◯
+			#               └▶{ schema-name }─┘ └▶{ INTO }─▶{ filename }─┘
+			require current_token until current_token.nil?
+
+			:vacuum_stmt
+		end
+
+		# TODO
+		def with_stmt
+			# ◯─▶{ WITH }┬───────▶──────┬─┬[ common-table-expression ]─┐
+			#            └▶{ RECURSIVE }┘ └───────────{ , }◀───────────┤
+			#  ┌───────────────────────────◀───────────────────────────┘
+			#  ├─▶[ delete-stmt ]───────────────▶─┐
+			#  ├─▶[ insert-stmt ]───────────────▶─┤
+			#  ├─▶[ select-stmt ]───────────────▶─┤
+			#  └─▶[ update-stmt ]───────────────▶─┴──────────────────────▶─◯
+			require current_token until current_token.nil?
+
+			:with_stmt
 		end
 
 		def expression(min_precedence = 0)
@@ -954,132 +1375,6 @@ module Plume
 			end
 		end
 
-		# TODO
-		def alter_table_stmt
-			#                           ┌────────────────────────┐
-			# ◯─▶─{ ALTER }─▶{ TABLE }─▶┴▶{ schema-name }─▶{ . }─┴▶{ table-name }─┐
-			# ┌───────────────────────────────────────────────────────────────────┘
-			# ├─▶{ RENAME }─▶{ TO }─▶{ new-table-name }───────────────────────────────────┬─▶◯
-			# ├─▶{ RENAME }─▶┬─▶{ COLUMN }─┬▶{ column-name }─▶{ TO }─▶{ new-column-name }─▶─┤
-			# │            └──────▶──────┘                                                │
-			# ├─▶{ ADD }─▶┬─▶{ COLUMN }─┬▶{ column-def }────────────────────────────────▶─┤
-			# │           └──────▶──────┘                                                 │
-			# └─▶{ DROP }─▶┬─▶{ COLUMN }─┬▶{ column-name }──────────────────────────────▶─┘
-			#              └──────▶──────┘
-			require current_token until current_token.nil?
-
-			:alter_table_stmt
-		end
-
-		# TODO
-		def analyze_stmt
-			# ◯─▶{ ANALYZE }─▶┬────────────────────────▶───────────────────────────┬▶◯
-			#                 ├▶{ schema-name }──────────────────────────────────▶─┤
-			#                 ├▶{ index-or-table-name }──────────────────────────▶─┤
-			#                 └▶{ schema-name }─▶{ . }─▶{ table-or-index-name }──▶─┘
-			require current_token until current_token.nil?
-
-			:analyze_stmt
-		end
-
-		# TODO
-		def attach_stmt
-			# ◯─▶{ ATTACH }─▶┬─▶{ DATABASE }┬▶[ expr ]─▶{ AS }─▶{ schema-name }─▶◯
-			#                └───────▶──────┘
-			require current_token until current_token.nil?
-
-			:attach_stmt
-		end
-
-		# TODO
-		def begin_stmt
-			# ◯─▶{ BEGIN }─▶┬─────────────────┬▶┬▶{ TRANSACTION }┬┬▶{ name }┬─▶◯
-			#               ├▶{ DEFERRED }──▶─┤ └────────▶───────┘└────▶────┘
-			#               ├▶{ IMMEDIATE }─▶─┤
-			#               └▶{ EXCLUSIVE }─▶─┘
-			require :BEGIN
-			maybe_one_of :DEFERRED, :IMMEDIATE, :EXCLUSIVE
-			maybe :TRANSACTION
-			name = maybe { identifier }
-
-			:begin_stmt
-		end
-
-		# TODO
-		def commit_stmt
-			# ◯─▶┬▶{ COMMIT }┬▶┬─{ TRANSACTION }┬─▶◯
-			#    └▶{ END }─▶─┘ └────────▶───────┘
-			require_one_of :COMMIT, :END
-			maybe :TRANSACTION
-
-			:commit_stmt
-		end
-
-		# TODO
-		def create_index_stmt
-			# ◯─▶{ CREATE }┬─────▶─────┬▶{ INDEX }┬▶{ IF }─▶{ NOT }─▶{ EXISTS }─┐
-			#              └▶{ UNIQUE }┘          │                             │
-			# ┌───────────────────────────────────┴─────────────────────────────┘
-			# ├─▶{ schema-name }─▶{ . }─┬▶{ index-name }─▶{ ON }─▶{ table-name }─┐
-			# └─────────────────────────┘                                        │
-			# ┌──────────────────────────────────────────────────────────────────┘
-			# └─▶{ ( }─┬▶[ indexed-column ]─┬▶{ ) }─┐
-			#          └───────{ , }◀───────┘       │
-			#               ┌─────◀─────────────────┤
-			#               └─▶{ WHERE }─▶{ expression }──┴─▶─◯
-			require :CREATE
-			require current_token until current_token.nil?
-
-			:create_index_stmt
-		end
-
-		def create_table_stmt
-			# ◯─▶{ CREATE }┬───────▶──────┬▶{ TABLE }┬▶{ IF }─▶{ NOT }─▶{ EXISTS }─┐
-			#              ├▶{ TEMP }─────┤          │                             │
-			#              └▶{ TEMPORARY }┘          │                             │
-			# ┌─────────────────────◀────────────────┴──────────────────◀──────────┘
-			# ├─▶{ schema-name }─▶{ . }─┬▶{ table-name }┬───────▶{ AS }─▶[ select-stmt ]───▶─────┐
-			# └────────▶────────────────┘               │                                        │
-			# ┌────────────────────◀────────────────────┘                     ┌────────▶─────────┼─▶◯
-			# └▶{ ( }─┬▶[ column-def ]─┬▶┬─────────────────────────────┬▶{ ) }┴▶[ table-options ]┘
-			#         └─────{ , }◀─────┘ └[ table-constraint ]◀─{ ,|<nil> }◀─┘
-
-			require :CREATE
-			temporary = maybe_one_of :TEMP, :TEMPORARY
-			require :TABLE
-			if_not_exists = maybe_all_of(:IF, :NOT, :EXISTS)
-			schema_name, table_name = table_ref
-
-			if maybe :AS
-				as_select = select_stmt
-				CreateTableStatement.new(
-					schema_name:,
-					table_name:,
-					temporary: (true if temporary),
-					if_not_exists: (true if if_not_exists),
-					select_statement: as_select
-				)
-			elsif maybe :LP
-				columns = one_or_more { column_def }
-				constraints = zero_or_more(sep: :COMMA, optional: true) { table_constraint }
-				require :RP
-				options = maybe { table_options } # nil || [:STRICT, true] || [true] || [:STRICT]
-
-				CreateTableStatement.new(
-					schema_name:,
-					table_name:,
-					temporary: (true if temporary),
-					if_not_exists: (true if if_not_exists),
-					strict: (true if options&.include?(:STRICT)),
-					without_row_id: (true if options&.include?(true)),
-					columns:,
-					constraints: (constraints if constraints.any?),
-				)
-			else
-				expected!(:AS, :LP)
-			end
-		end
-
 		def column_def
 			# ◯─▶{ column-name }─┬─▶[ type-name ]─┬▶┬─▶───────────────────▶──┬─▶◯
 			#                    └────────▶───────┘ └─[ column-constraint ]◀─┘
@@ -1163,8 +1458,6 @@ module Plume
 				maybe(:STRICT) || maybe_all_of(:WITHOUT, :ROWID) || expected!(:STRICT, :WITHOUT)
 			end
 		end
-
-		# layer 2
 
 		def type_name
 			# ◯─┬▶{ name }─┬┬──────────────────────────────▶─────────────────────────────┬─▶◯
@@ -1523,303 +1816,6 @@ module Plume
 				match_name: meta[:MATCH],
 				deferred: meta[:DEFERRED]
 			)
-		end
-
-		# TODO
-		def create_trigger_stmt
-			# ◯─▶{ CREATE }┬───────▶──────┬▶{ TRIGGER }┬▶{ IF }─▶{ NOT }─▶{ EXISTS }─┐
-			#              ├▶{ TEMP }─────┤            │                             │
-			#              └▶{ TEMPORARY }┘            │                             │
-			# ┌─────────────────────◀──────────────────┴──────────────────◀──────────┘
-			# ├─▶{ schema-name }─▶{ . }─┬▶{ trigger-name }┬▶{ BEFORE }──────────▶─┐
-			# └────────▶────────────────┘                 ├▶{ AFTER }───────────▶─┤
-			#                                             ├▶{ INSTEAD }─▶{ OF }─▶─┤
-			# ┌────────────────◀──────────────────────────┴───────◀───────────────┘
-			# ├▶{ DELETE }───────────────────────────────┬▶{ ON }▶{ table-name }─┐
-			# ├▶{ INSERT }─────────────────────────────▶─┤                       │
-			# └▶{ UPDATE }─┬───────────────────────────▶─┤                       │
-			#              └▶{ OF }─┬▶{ column-name }─┬▶─┘                       │
-			#                       └──────{ , }◀─────┘                          ▼
-			# ┌────────────────────────◀──────┬──────────────────────────────────┘
-			# └─▶{ FOR }─▶{ EACH }─▶{ ROW }─┬─┴▶{ WHEN }─▶[ expr ]─┐
-			# ┌───────────────────────────◀─┴──────────────────────┘
-			# │           ┌─────────────◀─────────────┐
-			# └─▶{ BEGIN }┴▶┬▶[ update-stmt ]──┬▶{ ; }┴▶{ END }─────────────────────────▶◯
-			#               ├▶[ insert-stmt ]─▶┤
-			#               ├▶[ delete-stmt ]─▶┤
-			#               └▶[ select-stmt ]─▶┘
-			require current_token until current_token.nil?
-
-			:create_trigger_stmt
-		end
-
-		# TODO
-		def create_view_stmt
-			# ◯─▶{ CREATE }┬───────▶──────┬▶{ VIEW }┬▶{ IF }─▶{ NOT }─▶{ EXISTS }─┐
-			#              ├▶{ TEMP }─────┤         │                             │
-			#              └▶{ TEMPORARY }┘         │                             │
-			# ┌─────────────────────◀───────────────┴──────────────────◀──────────┘
-			# ├─▶{ schema-name }─▶{ . }─┬▶{ view-name }─┬──────────────────────────────────┬▶{ AS }─▶[ select-stmt ]─▶◯
-			# └────────▶────────────────┘               └─▶{ ( }─┬▶{ column-name }─┬▶{ ) }─┘
-			#                                                    └──────{ , }◀─────┘
-			require current_token until current_token.nil?
-
-			:create_view_stmt
-		end
-
-		# TODO
-		def create_virtual_table_stmt
-			# ◯─▶{ CREATE }─▶{ VIRTUAL }─▶{ TABLE }┬▶{ IF }─▶{ NOT }─▶{ EXISTS }─┐
-			# ┌────────────────────◀───────────────┴───────────◀─────────────────┘
-			# ├─▶{ schema-name }─▶{ . }─┬▶{ table-name }─┐
-			# └────────▶────────────────┘                │
-			# ┌────────────────────◀─────────────────────┘
-			# │                            ┌─────────────────◀────────────────┐
-			# └─▶{ USING }─▶{ module-name }┴▶{ ( }┬▶[ module-argument ]┬▶{ ) }┴────▶◯
-			#                                     └────────{ , }◀──────┘
-			require current_token until current_token.nil?
-
-			:create_virtual_table_stmt
-		end
-
-		# TODO
-		def delete_stmt
-			# ◯─▶┬▶[ with-stmt ]─┐
-			#    ├───────◀───────┘
-			#    └─▶{ DELETE }─▶{ FROM }─▶[ qualified-table-name ]─┬──▶─┐
-			#    ┌─────────────────────────◀───────────────────────┘    │
-			#    ├─▶{ WHERE }─▶[ expr ]─┬─────────────────────────────▶─┤
-			#    ├──────────◀───────────┘                               │
-			#    ├─▶[ returning-clause ]─┬────────────────────────────▶─┤
-			#    ├──────────◀────────────┘                              │
-			#    ├─▶{ ORDER }─▶{ BY }┬▶[ ordering-term ]─┬────────────▶─┤
-			#    │                   └───────{ , }◀──────┤              │
-			#    ├────────────────◀──────────────────────┘              │
-			#    └─▶{ LIMIT }─▶[ expr ]─┬────────────────────────┬▶─────┴─▶◯
-			#                           ├─▶{ OFFSET }─▶[ expr ]─▶┤
-			#                           └─▶{ , }─▶[ expr ]─▶─────┘
-			require current_token until current_token.nil?
-
-			:delete_stmt
-		end
-
-		# TODO
-		def detach_stmt
-			# ◯─▶{ DETACH }┬▶{ DATABASE }┬▶{ schema-name }─▶◯
-			#              └──────▶──────┘
-			require current_token until current_token.nil?
-
-			:detach_stmt
-		end
-
-		# TODO
-		def drop_index_stmt
-			# ◯─▶{ DROP }─▶{ INDEX }┬▶{ IF }─▶{ EXISTS }┬┬▶{ schema-name }─▶{ . }┬▶{ index-name }─▶◯
-			#                       └─────────▶─────────┘└───────────▶───────────┘
-			require current_token until current_token.nil?
-
-			:drop_index_stmt
-		end
-
-		# TODO
-		def drop_table_stmt
-			# ◯─▶{ DROP }─▶{ TABLE }┬▶{ IF }─▶{ EXISTS }┬┬▶{ schema-name }─▶{ . }┬▶{ table-name }─▶◯
-			#                       └─────────▶─────────┘└───────────▶───────────┘
-			require current_token until current_token.nil?
-
-			:drop_table_stmt
-		end
-
-		# TODO
-		def drop_trigger_stmt
-			# ◯─▶{ DROP }─▶{ TRIGGER }┬▶{ IF }─▶{ EXISTS }┬┬▶{ schema-name }─▶{ . }┬▶{ trigger-name }─▶◯
-			#                         └─────────▶─────────┘└───────────▶───────────┘
-			require current_token until current_token.nil?
-
-			:drop_trigger_stmt
-		end
-
-		# TODO
-		def drop_view_stmt
-			# ◯─▶{ DROP }─▶{ VIEW }┬▶{ IF }─▶{ EXISTS }┬┬▶{ schema-name }─▶{ . }┬▶{ view-name }─▶◯
-			#                      └─────────▶─────────┘└───────────▶───────────┘
-			require current_token until current_token.nil?
-
-			:drop_view_stmt
-		end
-
-		# TODO
-		def insert_stmt
-			# ◯─▶┬▶[ with-stmt ]─┐
-			#    ├───────◀───────┘
-			#    ├─▶{ REPLACE }─────────────────────────┬─▶{ INTO }─┐
-			#    └─▶{ INSERT }─┬───────────────────────▶┤           │
-			#                  └▶{ OR }┬─▶{ ABORT }────▶┤           │
-			#                          ├─▶{ FAIL }─────▶┤           │
-			#                          ├─▶{ IGNORE }───▶┤           │
-			#                          ├─▶{ REPLACE }──▶┤           │
-			#                          └─▶{ ROLLBACK }─▶┘           │
-			#    ┌───────────────────◀─────┬────────────────────────┘
-			#    └─▶{ schema-name }─▶{ . }─┴▶{ table-name }─┬▶{ AS }─▶{ alias }─┐
-			#    ┌──────────────────────────────────────────┴───────◀───────────┘
-			#    ├─▶{ ( }─┬▶{ column-name }─┬─▶{ ) }─┐
-			#    │        └─────{ , }◀──────┘        │
-			#    ├──────────────────◀────────────────┘
-			#    ├─▶{ VALUES }┬▶{ ( }─┬▶[ expr ]─┬─▶{ ) }┬───────────────────▶┐
-			#    │            │       └──{ , }◀──┘       ├▶[ upsert-clause ]─▶┤
-			#    │            └──────────{ , }◀──────────┘                    │
-			#    ├─▶[ select-stmt ]──────────────────────┬───────────────────▶┤
-			#    │                                       ├▶[ upsert-clause ]─▶┤
-			#    └─▶{ DEFAULT }─▶{ VALUES }──────────────────────────────────▶┤
-			#                                         ┌────────────◀──────────┤
-			#                                         └─▶[ returning-clause ]─┴───▶◯
-			require current_token until current_token.nil?
-
-			:insert_stmt
-		end
-
-		# TODO
-		def pragma_stmt
-			# ◯─▶{ PRAGMA }┬▶{ schema-name }─▶{ . }┬▶{ pragma-name }┬─────────────────────────────────┬─▶◯
-			#              └───────────▶───────────┘                ├─▶{ = }─▶[ pragma-value ]──────▶─┤
-			#                                                       └─▶{ ( }─▶[ pragma-value ]─▶{ ) }─┘
-			require current_token until current_token.nil?
-
-			:pragma_stmt
-		end
-
-		# TODO
-		def reindex_stmt
-			# ◯─▶{ REINDEX }┬─────────────────────────▶────────────────────────┬─▶◯
-			#               ├─▶{ collation-name }────────────────────────────▶─┤
-			#               ├─▶{ schema-name }─▶{ . }┬▶┬▶{ table-name }──────▶─┤
-			#               └────────▶───────────────┘ └▶{ index-name }──────▶─┘
-			require current_token until current_token.nil?
-
-			:reindex_stmt
-		end
-
-		# TODO
-		def release_stmt
-			# ◯─▶{ RELEASE }┬▶{ SAVEPOINT }┬▶{ savepoint-name }─▶◯
-			#               └──────▶───────┘
-			require current_token until current_token.nil?
-
-			:release_stmt
-		end
-
-		# TODO
-		def rollback_stmt
-			#                                          ┌──────▶───────┐
-			# ◯─▶{ ROLLBACK }┬▶{ TRANSACTION }┬┬▶{ TO }┴▶{ SAVEPOINT }┴▶{ savepoint-name }┬─▶◯
-			#                └───────▶────────┘└─────────────────────▶────────────────────┘
-			require current_token until current_token.nil?
-
-			:rollback_stmt
-		end
-
-		# TODO
-		def savepoint_stmt
-			# ◯─▶{ SAVEPOINT }─▶{ savepoint-name }─▶◯
-			require current_token until current_token.nil?
-
-			:savepoint_stmt
-		end
-
-		# TODO
-		def select_stmt
-			# ◯─▶┬▶[ with-stmt ]─┐
-			#    ├───────◀───────┘
-			# ┌──┴▶┬─────▶{ SELECT }─┬───────▶──────┬─┬▶[ result-column ]─┐
-			# │    │                 ├▶{ DISTINCT }┤  └─────{ , }◀────────┤
-			# ▲    │                 └▶{ ALL }────▶┘                      │
-			# │    │    ┌──────────────────────────◀──────────────────────┘
-			# │    │    ├─▶{ FROM }┬─┬▶[ table-or-subquery ]─┬─┬─▶───┐
-			# │    │    │          │ └────────{ , }◀─────────┘ ▲     ▼
-			# │    │    │          └──▶[ join-clause ]─────────┘     │
-			# │    │    ├──────────────────────◀─────────────────────┘
-			# │    │    ├─▶{ WHERE }─▶[ expr ]─┐
-			# │    │    ├──────────◀───────────┘
-			# │    │    ├────────────▶─────────────────┐
-			# │    │    ├─▶{ GROUP }─▶{ BY }┬▶[ expr ]┬┴▶┬─▶{ HAVING }─▶[ expr ]─┬─┐
-			# │    │    ▼                   └──{ , }◀─┘  └────────▶──────────────┘ ▼
-			# │    │    ├─────────────────────────────◀────────────────────────────┘
-			# │    │    ├─▶{ WINDOW }┬▶{ window-name }─▶{ AS }─▶[ window-defn ]─┐
-			# ▲    │    │            └───────────────────{ , }◀─────────────────┤
-			# │    │    └──────────────────────▶─────────────────────────────▶──┤
-			# │    │                    ┌──{ , }◀─┐                             ▼
-			# │    └─▶{ VALUES }┬▶{ ( }─┴▶[ expr ]┴─▶{ ) }─┬─────────────────▶──┤
-			# │                 └──────────{ , }◀──────────┘                    │
-			# └────────────────────[ compound-operator ]◀───────────────────────┤
-			#             ┌──────────────────◀──────────────────────────────────┘
-			#             ├─▶{ ORDER }─▶{ BY }┬▶[ ordering-term ]─┬┐
-			#             ▼                   └───────{ , }◀──────┘│
-			#             ├────────────────◀───────────────────────┘
-			#             ├─▶{ LIMIT }─▶[ expr ]─▶┬───────────────────────▶─┐
-			#             │                       ├─▶{ OFFSET }─▶[ expr ]─▶─┤
-			#             │                       └─▶{ , }─▶[ expr ]──────▶─┤
-			#             └───────────────────────────────────────────────▶─┴───────▶◯
-			require current_token until current_token.nil?
-
-			:select_stmt
-		end
-
-		# TODO
-		def update_stmt
-			# ◯─▶┬▶[ with-stmt ]─┐
-			#    ├───────◀───────┘
-			#    └─▶{ UPDATE }─┬───────────────────────┬▶[ qualified-table-name ]─┐
-			#                  ├▶{ OR }─▶{ ABORT }────▶┤                          │
-			#                  ├▶{ OR }─▶{ FAIL }─────▶┤                          │
-			#                  ├▶{ OR }─▶{ IGNORE }───▶┤                          │
-			#                  ├▶{ OR }─▶{ REPLACE }──▶┤                          │
-			#                  └▶{ OR }─▶{ ROLLBACK }─▶┘                          │
-			#    ┌──────────────────────────◀─────────────────────────────────────┘
-			#    └─▶{ SET }┬┬▶{ column-name }─────┬─▶{ = }─▶[ expr ]──┐
-			#              │└▶[ column-name-list ]┘                   │
-			#              └─────────────────{ , }◀───────────────────┤
-			#    ┌──────────────────────────◀─────────────────────────┘
-			#    ├─▶{ FROM }┬─┬▶[ table-or-subquery ]─┬─┬─▶───┐
-			#    │          │ └────────{ , }◀─────────┘ │     │
-			#    │          └──▶[ join-clause ]─────────┘     │
-			#    ├──────────────────────◀─────────────────────┘
-			#    ├─▶{ WHERE }─▶[ expr ]─┐
-			#    ├──────────◀───────────┘
-			#    ├─▶[ returning-clause ]─┐
-			#    ├──────────◀────────────┘
-			#    ├─▶{ ORDER }─▶{ BY }┬▶[ ordering-term ]─┐
-			#    │                   └───────{ , }◀──────┤
-			#    ├─────────────────◀─────────────────────┘
-			#    ├─▶{ LIMIT }─▶[ expr ]─┬───────────────────────▶─┐
-			#    │                      ├─▶{ OFFSET }─▶[ expr ]─▶─┤
-			#    │                      └─▶{ , }─▶[ expr ]──────▶─┤
-			#    └─────────────────────▶──────────────────────────┴─▶───────────────▶◯
-			require current_token until current_token.nil?
-
-			:update_stmt
-		end
-
-		# TODO
-		def vacuum_stmt
-			# ◯─▶{ VACUUUM }┬─────────────────┬▶┬────────────────────────┬─▶◯
-			#               └▶{ schema-name }─┘ └▶{ INTO }─▶{ filename }─┘
-			require current_token until current_token.nil?
-
-			:vacuum_stmt
-		end
-
-		# TODO
-		def with_stmt
-			# ◯─▶{ WITH }┬───────▶──────┬─┬[ common-table-expression ]─┐
-			#            └▶{ RECURSIVE }┘ └───────────{ , }◀───────────┤
-			#  ┌───────────────────────────◀───────────────────────────┘
-			#  ├─▶[ delete-stmt ]───────────────▶─┐
-			#  ├─▶[ insert-stmt ]───────────────▶─┤
-			#  ├─▶[ select-stmt ]───────────────▶─┤
-			#  └─▶[ update-stmt ]───────────────▶─┴──────────────────────▶─◯
-			require current_token until current_token.nil?
-
-			:with_stmt
 		end
 
 		# nm ::= ID|INDEXED|JOIN_KW
