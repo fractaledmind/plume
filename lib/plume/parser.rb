@@ -816,7 +816,7 @@ module Plume
 				base_window_name = maybe { identifier(except: [:PARTITION, :ORDER, :RANGE, :ROWS, :GROUPS]) }
 				partition_by = maybe_all_of(:PARTITION, :BY) ? one_or_more { expression } : nil
 				order_by = maybe_all_of(:ORDER, :BY) ? one_or_more { ordering_term } : nil
-				frame = one_of?(:RANGE, :ROWS, :GROUPS) ? frame_spec : nil
+				frame = frame_spec if current_token in :RANGE | :ROWS | :GROUPS
 				require :RP
 
 				OverClause.new(
@@ -844,7 +844,7 @@ module Plume
 			#                                         ├─▶{ EXCLUDE }─▶{ GROUP }────────────▶─┤
 			#                                         ├─▶{ EXCLUDE }─▶{ TIES }─────────────▶─┤
 			#                                         └──────────────────────────────────────┴─────────▶◯
-			if one_of? :RANGE, :ROWS, :GROUPS
+			if current_token in :RANGE | :ROWS | :GROUPS
 				type = require current_token
 				if maybe :BETWEEN
 					if maybe_all_of :UNBOUNDED, :PRECEDING
@@ -1265,7 +1265,7 @@ module Plume
 						name:,
 						value:
 					)
-				elsif one_of? :ID, :INDEXED
+				elsif current_token in :ID | :INDEXED
 					DefaultColumnConstraint.new(
 						name:,
 						value: unwrap_id
@@ -1353,8 +1353,8 @@ module Plume
 			#                                               └▶{ DESC }─▶─┘ └▶{ NULLS }─▶{ LAST }──▶─┘
 			e = expression
 			collation = maybe(:COLLATE) ? identifier : nil
-			direction = one_of?(:ASC, :DESC) ? require(current_token) : nil
-			nulls = maybe(:NULLS) ? require(current_token) : nil
+			direction = require(current_token) if current_token in :ASC | :DESC
+			nulls = require(current_token) if maybe(:NULLS)
 
 			OrderingTerm.new(
 				expression: e,
@@ -1827,9 +1827,9 @@ module Plume
 		def identifier(except: [])
 			if :STRING == current_token
 				string_literal
-			elsif one_of? :ID
+			elsif :ID == current_token
 				unwrap_id
-			elsif one_of? :INDEXED, :CROSS, :FULL, :INNER, :LEFT, :NATURAL, :OUTER, :RIGHT
+			elsif current_token in :INDEXED | :CROSS | :FULL | :INNER | :LEFT | :NATURAL | :OUTER | :RIGHT
 				value = current_value
 				require current_token
 				value
@@ -1951,10 +1951,6 @@ module Plume
 			end
 
 			expected!(*options)
-		end
-
-		def one_of?(*tokens)
-			tokens.any?(current_token)
 		end
 
 		def one_or_more(sep: :COMMA, given: nil)
