@@ -359,10 +359,10 @@ module Plume
 					when [:TEMPORARY, :TRIGGER]	then create_trigger_stmt
 					when [:TEMPORARY, :VIEW]		then create_view_stmt
 					else
-						error!(peek(2).last, values(3).last, [:TABLE, :TRIGGER, :VIEW])
+						expected! :TABLE, :TRIGGER, :VIEW
 					end
 				else
-					error!(peek, values(2).last, [:INDEX, :TABLE, :TRIGGER, :VIEW, :VIRTUAL, :UNIQUE, :TEMP, :TEMPORARY])
+					expected! :INDEX, :TABLE, :TRIGGER, :VIEW, :VIRTUAL, :UNIQUE, :TEMP, :TEMPORARY
 				end
 			when :DELETE						then delete_stmt
 			when :DETACH						then detach_stmt
@@ -2030,12 +2030,6 @@ module Plume
 			ensure_buffer(n)
 			(n*3).times { @peek_buffer.shift }
 			current_token
-		end
-
-		# TODO: fix
-		def values(n = 1)
-			ensure_buffer(n)
-			(0...n).map { |i| @lexer.value_at(@token_index + i) }
 		end
 
 		# Ensure that the `@peek_buffer` has at least `size` tokens.
