@@ -31,6 +31,22 @@ test "parse a basic create table with one column" do
 	)
 end
 
+test "parse a basic create table with one column and double-quoted identifiers" do
+	assert_statement(
+		<<~SQL,
+			create table "tb0" ("c0")
+		SQL
+		Plume::CreateTableStatement.new(
+			table_name: "tb0",
+			columns: [
+				Plume::ColumnDefinition.new(
+					name: "c0",
+				),
+			]
+		)
+	)
+end
+
 test "parse a basic create temp table with one column" do
 	assert_statement(
 		<<~SQL,

@@ -895,7 +895,9 @@ module Plume
 		def identifier(except: [])
 			if :STRING == current_token
 				string_literal
-			elsif one_of? :ID, :INDEXED, :CROSS, :FULL, :INNER, :LEFT, :NATURAL, :OUTER, :RIGHT
+			elsif one_of? :ID
+				unwrap_id
+			elsif one_of? :INDEXED, :CROSS, :FULL, :INNER, :LEFT, :NATURAL, :OUTER, :RIGHT
 				value = current_value
 				require current_token
 				value
