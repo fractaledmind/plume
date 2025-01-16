@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/joeldrapper/literal.git
-  revision: 3589dea4fcd8ac12a71ecfb0d2feb5e99f469745
+  revision: 70c02c5465d7cfb3c4a1c95a23badd3bb2eed196
   specs:
     literal (1.4.0)
 
@@ -33,7 +33,7 @@ GEM
     kramdown-parser-gfm (1.1.0)
       kramdown (~> 2.0)
     language_server-protocol (3.17.0.3)
-    logger (1.6.4)
+    logger (1.6.5)
     mini_portile2 (2.8.8)
     nokogiri (1.18.1)
       mini_portile2 (~> 2.8.2)
@@ -41,7 +41,7 @@ GEM
     nokogiri (1.18.1-arm64-darwin)
       racc (~> 1.4)
     parallel (1.26.3)
-    parser (3.3.6.0)
+    parser (3.3.7.0)
       ast (~> 2.4.1)
       racc
     prism (1.3.0)
@@ -54,7 +54,7 @@ GEM
     reverse_markdown (2.1.1)
       nokogiri
     rexml (3.4.0)
-    rubocop (1.69.2)
+    rubocop (1.70.0)
       json (~> 2.3)
       language_server-protocol (>= 3.17.0)
       parallel (~> 1.10)
@@ -66,7 +66,7 @@ GEM
       unicode-display_width (>= 2.4.0, < 4.0)
     rubocop-ast (1.37.0)
       parser (>= 3.3.1.0)
-    ruby-lsp (0.23.1)
+    ruby-lsp (0.23.5)
       language_server-protocol (~> 3.17.0)
       prism (>= 1.2, < 2.0)
       rbs (>= 3, < 4)
@@ -93,10 +93,10 @@ GEM
       thor (~> 1.0)
       tilt (~> 2.0)
       yard (~> 0.9, >= 0.9.24)
-    sorbet-runtime (0.5.11734)
+    sorbet-runtime (0.5.11761)
     thor (1.3.2)
-    tilt (2.5.0)
-    unicode-display_width (3.1.3)
+    tilt (2.6.0)
+    unicode-display_width (3.1.4)
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
     yard (0.9.37)
