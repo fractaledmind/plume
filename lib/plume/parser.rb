@@ -448,7 +448,7 @@ module Plume
 								collection: []
 							)
 						# :nocov:
-						# elsif (s = optional { select_stmt })
+						# elsif (s = maybe { select_stmt })
 						# 	require :RP
 
 						# 	return expression_node.new(
@@ -456,7 +456,7 @@ module Plume
 						# 		collection: s
 						# 	)
 						# 	# :nocov:
-						elsif (e = optional { expression(op_precedence + 1) })
+						elsif (e = maybe { expression(op_precedence + 1) })
 							exprs = one_or_more(given: e) { expression(op_precedence + 1) }
 							require :RP
 
@@ -467,7 +467,7 @@ module Plume
 						else
 							expected!(:RP, "select-stmt", "expr")
 						end
-					elsif (ref = optional { identifier })
+					elsif (ref = maybe { identifier })
 						if maybe :DOT
 							schema_name = ref
 							name = identifier
@@ -670,13 +670,13 @@ module Plume
 				end
 			elsif maybe :EXISTS
 				# is EXISTS expression
-			elsif (v = optional { literal_value })
+			elsif (v = maybe { literal_value })
 				case v
 				when LiteralNil then nil
 				when LiteralFalse then false
 				else v
 				end
-			elsif (id = optional { identifier(except: [:RAISE]) })
+			elsif (id = maybe { identifier(except: [:RAISE]) })
 				case current_token
 				in :IN
 					ColumnReference.new(
@@ -687,8 +687,8 @@ module Plume
 					require :LP
 					arguments = function_arguments
 					require :RP
-					filter = optional { filter_clause }
-					over = optional { over_clause }
+					filter = maybe { filter_clause }
+					over = maybe { over_clause }
 
 					FunctionReference.new(
 						function_name:,
@@ -774,7 +774,7 @@ module Plume
 				)
 			elsif maybe :STAR
 				StarFunctionArgument.new
-			elsif (e = optional { expression })
+			elsif (e = maybe { expression })
 				expressions = one_or_more(given: e) { expression }
 				order_by = maybe_all(:ORDER, :BY) ? one_or_more { ordering_term } : nil
 
@@ -813,7 +813,7 @@ module Plume
 			#                 └─────────▶──────┘
 			require :OVER
 			if maybe :LP
-				base_window_name = optional { identifier(except: [:PARTITION, :ORDER, :RANGE, :ROWS, :GROUPS]) }
+				base_window_name = maybe { identifier(except: [:PARTITION, :ORDER, :RANGE, :ROWS, :GROUPS]) }
 				partition_by = maybe_all(:PARTITION, :BY) ? one_or_more { expression } : nil
 				order_by = maybe_all(:ORDER, :BY) ? one_or_more { ordering_term } : nil
 				frame = one_of?(:RANGE, :ROWS, :GROUPS) ? frame_spec : nil
@@ -858,7 +858,7 @@ module Plume
 						starting_boundary = FrameBoundary.new(
 							type: :CURRENT_ROW
 						)
-					elsif (e = optional { expression })
+					elsif (e = maybe { expression })
 						if maybe :PRECEDING
 							precedence = 2
 							starting_boundary = FrameBoundary.new(
@@ -888,7 +888,7 @@ module Plume
 							type: :FOLLOWING,
 							value: :UNBOUNDED
 						)
-					elsif (e = optional { expression })
+					elsif (e = maybe { expression })
 						if maybe :PRECEDING
 							expected!("CURRENT ROW", "UNBOUNDED FOLLOWING", "expr") if 2 < precedence
 							ending_boundary = FrameBoundary.new(
@@ -918,7 +918,7 @@ module Plume
 						type: :CURRENT_ROW
 					)
 					ending_boundary = nil
-				elsif (e = optional { expression })
+				elsif (e = maybe { expression })
 					require :PRECEDING
 					starting_boundary = FrameBoundary.new(
 						type: :PRECEDING,
@@ -1000,7 +1000,7 @@ module Plume
 			require :BEGIN
 			either :DEFERRED, :IMMEDIATE, :EXCLUSIVE, nil
 			maybe :TRANSACTION
-			name = optional { identifier }
+			name = maybe { identifier }
 
 			:begin_stmt
 		end
@@ -1063,7 +1063,7 @@ module Plume
 				columns = one_or_more { column_def }
 				constraints = zero_or_more(sep: :COMMA, optional: true) { table_constraint }
 				require :RP
-				options = optional { table_options } # nil || [:STRICT, true] || [true] || [:STRICT]
+				options = maybe { table_options } # nil || [:STRICT, true] || [true] || [:STRICT]
 
 				CreateTableStatement.new(
 					schema_name:,
@@ -1085,7 +1085,7 @@ module Plume
 			#                    └────────▶───────┘ └─[ column-constraint ]◀─┘
 
 			column_name = identifier
-			type = optional { type_name }
+			type = maybe { type_name }
 			constraints = zero_or_more(sep: nil) { column_constraint }
 
 			ColumnDefinition.new(
@@ -1255,12 +1255,12 @@ module Plume
 						name:,
 						value:
 					)
-				elsif (number = optional { signed_number })
+				elsif (number = maybe { signed_number })
 					DefaultColumnConstraint.new(
 						name:,
 						value: number,
 					)
-				elsif (value = optional { literal_value })
+				elsif (value = maybe { literal_value })
 					DefaultColumnConstraint.new(
 						name:,
 						value:
@@ -1311,7 +1311,7 @@ module Plume
 			#                                                          └─▶{ DESC }──┘
 			if :ID == current_token
 				name = ColumnReference.new(column_name: identifier)
-			elsif (e = optional { expression })
+			elsif (e = maybe { expression })
 				name = (ColumnReference === e) ? e : ColumnReference.new(column_name: e)
 			else
 				expected! :ID, "expr"
@@ -1441,11 +1441,11 @@ module Plume
 			return :CURRENT_DATE if maybe :CURRENT_DATE
 			return :CURRENT_TIMESTAMP if maybe :CURRENT_TIMESTAMP
 
-			if (number = optional { numeric_literal })
+			if (number = maybe { numeric_literal })
 				return number
-			elsif (string = optional { string_literal })
+			elsif (string = maybe { string_literal })
 				return string
-			elsif (blob = optional { blob_literal })
+			elsif (blob = maybe { blob_literal })
 				return blob
 			end
 
@@ -1875,8 +1875,23 @@ module Plume
 			end
 		end
 
-		def maybe(token)
-			if token == current_token
+		def maybe(token = nil) # &block
+			if block_given?
+				start_buffer = @peek_buffer.dup
+				start_lexer_cursor = @lexer.cursor
+				start_lexer_pos = @lexer.anchor
+
+				result = catch(:ERROR) { yield }
+
+				if ErrorMessage === result
+					@peek_buffer = start_buffer
+					@lexer.cursor = start_lexer_cursor
+					@lexer.anchor = start_lexer_pos
+					nil
+				else
+					result
+				end
+			elsif token == current_token
 				advance
 				token
 			end
@@ -1930,37 +1945,20 @@ module Plume
 			tokens.any?(current_token)
 		end
 
-		def optional
-			start_buffer = @peek_buffer.dup
-			start_lexer_cursor = @lexer.cursor
-			start_lexer_pos = @lexer.anchor
-
-			result = catch(:ERROR) { yield }
-
-			if ErrorMessage === result
-				@peek_buffer = start_buffer
-				@lexer.cursor = start_lexer_cursor
-				@lexer.anchor = start_lexer_pos
-				nil
-			else
-				result
-			end
-		end
-
 		def one_or_more(sep: :COMMA, given: nil)
 			[].tap do |a|
 				a << (given || yield)
 
 				if sep
 					while maybe sep
-						if (val = optional { yield })
+						if (val = maybe { yield })
 							a << val
 						else
 							break
 						end
 					end
 				else
-					while (x = optional { yield })
+					while (x = maybe { yield })
 						a << x
 					end
 				end
@@ -1969,7 +1967,7 @@ module Plume
 
 		def zero_or_more(sep: :COMMA, optional: false)
 			[].tap do |a|
-				first_val = optional { yield }
+				first_val = maybe { yield }
 
 				if first_val
 					a << first_val
@@ -1979,11 +1977,11 @@ module Plume
 							a << yield
 						end
 					elsif sep && optional
-						while (maybe(sep) && (x = yield)) || (x = optional { yield })
+						while (maybe(sep) && (x = yield)) || (x = maybe { yield })
 							a << x
 						end
 					else # sep == nil or false
-						while (x = optional { yield })
+						while (x = maybe { yield })
 							a << x
 						end
 					end
