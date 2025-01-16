@@ -1953,21 +1953,25 @@ module Plume
 			expected!(*options)
 		end
 
-		def one_or_more(sep: :COMMA, given: nil)
+		def one_or_more(sep: :COMMA, given: nil, optional: false)
 			[].tap do |a|
 				a << (given || yield)
 
-				if sep
-					while maybe sep
+				if sep && !optional
+					while maybe(sep)
 						if (val = maybe { yield })
 							a << val
 						else
 							break
 						end
 					end
-				else
-					while (x = maybe { yield })
-						a << x
+				elsif sep && optional
+					while (maybe(sep) && (val = maybe { yield })) || (val = maybe { yield })
+						a << val
+					end
+				else # sep == nil or false
+					while (val = maybe { yield })
+						a << val
 					end
 				end
 			end
@@ -1982,15 +1986,19 @@ module Plume
 
 					if sep && !optional
 						while maybe(sep)
-							a << yield
+							if (val = maybe { yield })
+								a << val
+							else
+								break
+							end
 						end
 					elsif sep && optional
-						while (maybe(sep) && (x = yield)) || (x = maybe { yield })
-							a << x
+						while (maybe(sep) && (val = maybe { yield })) || (val = maybe { yield })
+							a << val
 						end
 					else # sep == nil or false
-						while (x = maybe { yield })
-							a << x
+						while (val = maybe { yield })
+							a << val
 						end
 					end
 				end
