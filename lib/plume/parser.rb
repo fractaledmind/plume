@@ -562,7 +562,7 @@ module Plume
 				elsif maybe :IS
 					negated = maybe :NOT
 					op = :"#{op}NOT" if negated
-					maybe_all :DISTINCT, :FROM
+					maybe_all_of :DISTINCT, :FROM
 					right = expression(op_precedence + 1)
 					left = BinaryExpression.new(
 						operator: TOKEN_TO_OPERATOR[op],
@@ -730,7 +730,7 @@ module Plume
 			#                    ├─▶{ ROLLBACK }─┬▶{ , }─▶{ error-message }─┘
 			#                    ├─▶{ ABORT }──▶─┤
 			#                    └─▶{ FAIL }───▶─┘
-			require_all :RAISE, :LP
+			require_all_of :RAISE, :LP
 			if maybe :IGNORE
 				require :RP
 				RaiseExpression.new(type: :IGNORE)
@@ -765,7 +765,7 @@ module Plume
 			if maybe :DISTINCT
 				distinct = true
 				expressions = one_or_more { expression }
-				order_by = maybe_all(:ORDER, :BY) ? one_or_more { ordering_term } : nil
+				order_by = maybe_all_of(:ORDER, :BY) ? one_or_more { ordering_term } : nil
 
 				FunctionArguments.new(
 					distinct:,
@@ -776,7 +776,7 @@ module Plume
 				StarFunctionArgument.new
 			elsif (e = maybe { expression })
 				expressions = one_or_more(given: e) { expression }
-				order_by = maybe_all(:ORDER, :BY) ? one_or_more { ordering_term } : nil
+				order_by = maybe_all_of(:ORDER, :BY) ? one_or_more { ordering_term } : nil
 
 				FunctionArguments.new(
 					expressions:,
@@ -791,7 +791,7 @@ module Plume
 
 		def filter_clause
 			# ◯─▶{ FILTER }─▶{ ( }─▶{ WHERE }─▶[ expr ]─▶{ ) }─▶◯
-			require_all :FILTER, :LP, :WHERE
+			require_all_of :FILTER, :LP, :WHERE
 			condition = expression
 			require :RP
 
@@ -814,8 +814,8 @@ module Plume
 			require :OVER
 			if maybe :LP
 				base_window_name = maybe { identifier(except: [:PARTITION, :ORDER, :RANGE, :ROWS, :GROUPS]) }
-				partition_by = maybe_all(:PARTITION, :BY) ? one_or_more { expression } : nil
-				order_by = maybe_all(:ORDER, :BY) ? one_or_more { ordering_term } : nil
+				partition_by = maybe_all_of(:PARTITION, :BY) ? one_or_more { expression } : nil
+				order_by = maybe_all_of(:ORDER, :BY) ? one_or_more { ordering_term } : nil
 				frame = one_of?(:RANGE, :ROWS, :GROUPS) ? frame_spec : nil
 				require :RP
 
@@ -847,13 +847,13 @@ module Plume
 			if one_of? :RANGE, :ROWS, :GROUPS
 				type = require current_token
 				if maybe :BETWEEN
-					if maybe_all :UNBOUNDED, :PRECEDING
+					if maybe_all_of :UNBOUNDED, :PRECEDING
 						precedence = 1
 						starting_boundary = FrameBoundary.new(
 							type: :PRECEDING,
 							value: :UNBOUNDED
 						)
-					elsif maybe_all :CURRENT, :ROW
+					elsif maybe_all_of :CURRENT, :ROW
 						precedence = 3
 						starting_boundary = FrameBoundary.new(
 							type: :CURRENT_ROW
@@ -878,12 +878,12 @@ module Plume
 						expected!("UNBOUNDED PRECEDING", "CURRENT ROW", "expr")
 					end
 					require :AND
-					if maybe_all :CURRENT, :ROW
+					if maybe_all_of :CURRENT, :ROW
 						expected!("UNBOUNDED FOLLOWING", "expr") if 3 < precedence
 						ending_boundary = FrameBoundary.new(
 							type: :CURRENT_ROW,
 						)
-					elsif maybe_all :UNBOUNDED, :FOLLOWING
+					elsif maybe_all_of :UNBOUNDED, :FOLLOWING
 						ending_boundary = FrameBoundary.new(
 							type: :FOLLOWING,
 							value: :UNBOUNDED
@@ -907,13 +907,13 @@ module Plume
 					else
 						expected!("CURRENT ROW", "UNBOUNDED FOLLOWING", "expr")
 					end
-				elsif maybe_all :UNBOUNDED, :PRECEDING
+				elsif maybe_all_of :UNBOUNDED, :PRECEDING
 					starting_boundary = FrameBoundary.new(
 						type: :PRECEDING,
 						value: :UNBOUNDED
 					)
 					ending_boundary = nil
-				elsif maybe_all :CURRENT, :ROW
+				elsif maybe_all_of :CURRENT, :ROW
 					starting_boundary = FrameBoundary.new(
 						type: :CURRENT_ROW
 					)
@@ -934,9 +934,9 @@ module Plume
 						exclude = :GROUP
 					elsif maybe :TIES
 						exclude = :TIES
-					elsif maybe_all :NO, :OTHERS
+					elsif maybe_all_of :NO, :OTHERS
 						exclude = :NO_OTHERS
-					elsif maybe_all :CURRENT, :ROW
+					elsif maybe_all_of :CURRENT, :ROW
 						exclude = :CURRENT_ROW
 					else
 						expected!(:GROUP, :TIES, "NO OTHERS", "CURRENT ROW")
@@ -1047,7 +1047,7 @@ module Plume
 			require :CREATE
 			temporary = maybe_one_of :TEMP, :TEMPORARY
 			require :TABLE
-			if_not_exists = maybe_all(:IF, :NOT, :EXISTS)
+			if_not_exists = maybe_all_of(:IF, :NOT, :EXISTS)
 			schema_name, table_name = table_ref
 
 			if maybe :AS
@@ -1124,7 +1124,7 @@ module Plume
 					name:,
 					expression: check,
 				)
-			elsif maybe_all :PRIMARY, :KEY
+			elsif maybe_all_of :PRIMARY, :KEY
 				require :LP
 				columns = one_or_more { indexed_column }
 				autoincrement = maybe :AUTOINCREMENT
@@ -1136,7 +1136,7 @@ module Plume
 					autoincrement: (true if autoincrement),
 					conflict_clause: on_conflict
 				)
-			elsif maybe_all :FOREIGN, :KEY
+			elsif maybe_all_of :FOREIGN, :KEY
 				require :LP
 				columns = one_or_more { indexed_column }
 				require :RP
@@ -1160,7 +1160,7 @@ module Plume
 			#   │ └─▶{ STRICT }─────────────┘ │
 			#   └──────◀───────────────{ , }◀─┘
 			one_or_more do
-				maybe(:STRICT) || maybe_all(:WITHOUT, :ROWID) || expected!(:STRICT, :WITHOUT)
+				maybe(:STRICT) || maybe_all_of(:WITHOUT, :ROWID) || expected!(:STRICT, :WITHOUT)
 			end
 		end
 
@@ -1206,7 +1206,7 @@ module Plume
 
 			name = identifier if maybe :CONSTRAINT
 
-			if maybe_all :PRIMARY, :KEY
+			if maybe_all_of :PRIMARY, :KEY
 				direction = maybe_one_of :ASC, :DESC
 				on_conflict = conflict_clause
 				autoincrement = maybe(:AUTOINCREMENT)
@@ -1217,7 +1217,7 @@ module Plume
 					autoincrement: (true if autoincrement),
 					conflict_clause: on_conflict
 				)
-			elsif maybe_all :NOT, :NULL
+			elsif maybe_all_of :NOT, :NULL
 				on_conflict = conflict_clause
 
 				NotNullColumnConstraint.new(
@@ -1285,7 +1285,7 @@ module Plume
 					name:,
 					foreign_key_clause: clause,
 				)
-			elsif maybe_all(:GENERATED, :ALWAYS, :AS) or maybe(:AS)
+			elsif maybe_all_of(:GENERATED, :ALWAYS, :AS) or maybe(:AS)
 				require :LP
 				default = expression
 				require :RP
@@ -1337,7 +1337,7 @@ module Plume
 			#                           ├─▶{ FAIL }─────▶─┤
 			#                           ├─▶{ IGNORE }───▶─┤
 			#                           └─▶{ REPLACE }──▶─┘
-			if maybe_all :ON, :CONFLICT
+			if maybe_all_of :ON, :CONFLICT
 				case current_token
 				when :ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE
 					require current_token
@@ -1488,11 +1488,11 @@ module Plume
 					meta[key] = :CASCADE
 				elsif maybe :RESTRICT
 					meta[key] = :RESTRICT
-				elsif maybe_all :SET, :NULL
+				elsif maybe_all_of :SET, :NULL
 					meta[key] = :SET_NULL
-				elsif maybe_all :SET, :DEFAULT
+				elsif maybe_all_of :SET, :DEFAULT
 					meta[key] = :SET_DEFAULT
-				elsif maybe_all :NO, :ACTION
+				elsif maybe_all_of :NO, :ACTION
 					meta[key] = :NO_ACTION
 				else
 					expected!(:SET, :CASCADE, :RESTRICT, :NO)
@@ -1501,17 +1501,17 @@ module Plume
 			while maybe :MATCH
 				meta[:MATCH] = identifier(except: [:ON, :MATCH, :DEFERRABLE, :NOT])
 			end
-			if maybe_all :DEFERRABLE, :INITIALLY, :DEFERRED
+			if maybe_all_of :DEFERRABLE, :INITIALLY, :DEFERRED
 				meta[:DEFERRED] = true
-			elsif maybe_all :DEFERRABLE, :INITIALLY, :IMMEDIATE
+			elsif maybe_all_of :DEFERRABLE, :INITIALLY, :IMMEDIATE
 				meta[:DEFERRED] = false
-			elsif maybe_all :NOT, :DEFERRABLE, :INITIALLY, :IMMEDIATE
+			elsif maybe_all_of :NOT, :DEFERRABLE, :INITIALLY, :IMMEDIATE
 				meta[:DEFERRED] = false
-			elsif maybe_all :NOT, :DEFERRABLE, :INITIALLY, :DEFERRED
+			elsif maybe_all_of :NOT, :DEFERRABLE, :INITIALLY, :DEFERRED
 				meta[:DEFERRED] = false
 			elsif maybe :DEFERRABLE
 				meta[:DEFERRED] = false
-			elsif maybe_all :NOT, :DEFERRABLE
+			elsif maybe_all_of :NOT, :DEFERRABLE
 				meta[:DEFERRED] = false
 			end
 
@@ -1897,7 +1897,7 @@ module Plume
 			end
 		end
 
-		def require_all(*tokens)
+		def require_all_of(*tokens)
 			# save one allocation as `Array#each` (at least up to Ruby 3.3) actually allocates one object
 			i, len = 0, tokens.length
 			while i < len
@@ -1912,7 +1912,7 @@ module Plume
 			true
 		end
 
-		def maybe_all(*tokens)
+		def maybe_all_of(*tokens)
 			advance = true
 			i, len = 0, tokens.length
 			buf = ensure_buffer(len)
@@ -1924,7 +1924,7 @@ module Plume
 				i += 1
 			end
 
-			require_all(*tokens) if advance
+			require_all_of(*tokens) if advance
 		end
 
 		def maybe_one_of(*tokens)
