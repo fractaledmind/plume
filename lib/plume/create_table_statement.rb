@@ -11,7 +11,7 @@ module Plume
 			# └────────▶────────────────┘               │                                        │
 			# ┌────────────────────◀────────────────────┘                     ┌────────▶─────────┼─▶◯
 			# └▶{ ( }─┬▶[ column-def ]─┬▶┬─────────────────────────────┬▶{ ) }┴▶[ table-options ]┘
-			#         └─────{ , }◀─────┘ └[ table-constraint ]◀─{ , }◀─┘
+			#         └─────{ , }◀─────┘ └[ table-constraint ]◀─{ ,|<nil> }◀─┘
 
 			require :CREATE
 			temporary = either(:TEMP, :TEMPORARY, nil)
@@ -30,7 +30,7 @@ module Plume
 				)
 			elsif maybe :LP
 				columns = one_or_more { column_def }
-				constraints = zero_or_more { table_constraint }
+				constraints = zero_or_more(sep: :COMMA, optional: true) { table_constraint }
 				require :RP
 				options = optional { table_options } # nil || [:STRICT, true] || [true] || [:STRICT]
 
@@ -41,7 +41,8 @@ module Plume
 					if_not_exists: (true if if_not_exists),
 					strict: (true if options&.include?(:STRICT)),
 					without_row_id: (true if options&.include?(true)),
-					columns:
+					columns:,
+					constraints: (constraints if constraints.any?),
 				)
 			else
 				expected!(:AS, :LP)
@@ -68,47 +69,59 @@ module Plume
 		def table_constraint
 			# ◯─▶┬▶{ CONSTRAINT }─▶{ name }─┐
 			#    ├─────────────◀────────────┘
-			#    ├─▶{ PRIMARY }─▶{ KEY }──┬▶{ ( }┬▶[ indexed-column ]┬┬▶{ AUTOINCREMENT }┬▶{ ) }─▶[ conflict-clause ]───┬─▶◯
-			#    ├─▶{ UNIQUE }─────────▶──┘      └───────{ , }◀──────┘└────────▶─────────┘                              │
+			#    ├─▶{ PRIMARY }─▶{ KEY }───▶{ ( }┬▶[ indexed-column ]┬┬▶{ AUTOINCREMENT }┬▶{ ) }─▶[ conflict-clause ]───┬─▶◯
+			#    │                               └───────{ , }◀──────┘└────────▶─────────┘                              │
+			#    ├─▶{ UNIQUE }──▶{ ( }┬▶[ indexed-column ]┬▶{ ) }─▶[ conflict-clause ]────────────────────────────────▶─┤
+			#    │                    └───────{ , }◀──────┘                                                             │
 			#    ├─▶{ CHECK }─▶{ ( }─▶[ expr ]─▶{ ) }─────────────────────────────────────────────────────────────────▶─┤
-			#    ├─▶[ foreign-key-clause ]────────────────────────────────────────────────────────────────────────────▶─┤
-			#    └─▶{ FOREIGN }─▶{ KEY }─▶{ ( }┬▶{ column-name }┬▶{ ) }─▶[ foreign-key-clause ]───────────────────────▶─┘
-			#                                  └─────{ , }◀─────┘
+			#    └─▶{ FOREIGN }─▶{ KEY }─▶{ ( }┬▶[ indexed-column ]┬▶{ ) }─▶[ foreign-key-clause ]────────────────────▶─┘
+			#                                  └──────{ , }◀───────┘
 			name = identifier if maybe :CONSTRAINT
 			if maybe :UNIQUE
 				require :LP
 				columns = one_or_more { indexed_column }
 				require :RP
 				on_conflict = conflict_clause
-				if on_conflict or name
-					{ UNIQUE: [columns, on_conflict, ({ NAME: name } if name)].compact! }
-				else
-					{ UNIQUE: columns }
-				end
+				UniqueTableConstraint.new(
+					name:,
+					columns:,
+					conflict_clause: on_conflict
+				)
 			elsif maybe :CHECK
 				require :LP
 				check = expr
 				require :RP
-				{ CHECK: check }
+				CheckTableConstraint.new(
+					name:,
+					expression: check,
+				)
 			elsif maybe_all :PRIMARY, :KEY
 				require :LP
 				columns = one_or_more { indexed_column }
 				autoincrement = maybe :AUTOINCREMENT
 				require :RP
 				on_conflict = conflict_clause
-				if on_conflict or name
-					{ PRIMARY_KEY: [columns, on_conflict, ({ NAME: name } if name)].compact! }
-				else
-					{ PRIMARY_KEY: columns }
-				end
+				PrimaryKeyTableConstraint.new(
+					name:,
+					columns:,
+					autoincrement: (true if autoincrement),
+					conflict_clause: on_conflict
+				)
 			elsif maybe_all :FOREIGN, :KEY
 				require :LP
-				columns = one_or_more { identifier }
+				columns = one_or_more { indexed_column }
 				require :RP
 				clause = foreign_key_clause
-				{ FOREIGN_KEY: [columns, clause] }
+				ForeignKeyTableConstraint.new(
+					columns:,
+					foreign_key_clause: clause,
+				)
 			else
-				expected!(:CONSTRAINT, :PRIMARY, :UNIQUE, :CHECK, :FOREIGN)
+				if name
+					NoOpTableConstraint.new(name:)
+				else
+					expected!(:CONSTRAINT, :PRIMARY, :UNIQUE, :CHECK, :FOREIGN)
+				end
 			end
 		end
 
@@ -145,9 +158,9 @@ module Plume
 		end
 
 		def column_constraint
-			# ◯─▶┬▶{ CONSTRAINT }─▶{ name }─┐
-			#    ├─────────────◀────────────┘
-			#    ├─▶{ PRIMARY }─▶{ KEY }──┬─────▶──────┬─▶[ conflict-clause ]┬──────────▶───────────┬─▶◯
+			# ◯─▶┬▶{ CONSTRAINT }─▶{ name }─┬───────────────────────────────▶───────────────────────┐
+			#    ├─────────────◀────────────┘                                                       │
+			#    ├─▶{ PRIMARY }─▶{ KEY }──┬─────▶──────┬─▶[ conflict-clause ]┬──────────▶───────────┼─▶◯
 			#    │                        ├─▶{ ASC }──▶┤                     └─▶{ AUTOINCREMENT }─▶─┤
 			#    ├─────▶───┐              └─▶{ DESC }─▶┘                                            │
 			#    ├─▶{ NOT }┴▶{ NULL }─▶[ conflict-clause ]────────────────────────────────────────▶─┤
@@ -268,9 +281,9 @@ module Plume
 			#    └▶[ expr ]─────▶──┘└─▶{ COLLATE }─▶{ collation-name }┘├─▶{ ASC }─▶─┤
 			#                                                          └─▶{ DESC }──┘
 			if :ID == current_token
-				name = identifier
+				name = ColumnReference.new(column_name: identifier)
 			elsif (e = optional { expr })
-				# no-op
+				name = (ColumnReference === e) ? e : ColumnReference.new(column_name: e)
 			else
 				expected!(:ID, "expr")
 			end
@@ -280,25 +293,12 @@ module Plume
 			end
 			direction = either(:ASC, :DESC, nil)
 
-			if name && collation && direction
-				{ ColumnRef[name] => [collation, direction] }
-			elsif name && collation
-				{ ColumnRef[name] => collation }
-			elsif name && direction
-				{ ColumnRef[name] => direction }
-			elsif name
-				ColumnRef[name]
-			elsif e && collation && direction
-				{ e => [collation, direction] }
-			elsif e && collation
-				{ e => collation }
-			elsif e && direction
-				{ e => direction }
-			elsif e
-				e
-			else
-				expected!(:ID, "expr")
-			end
+			IndexedColumn.new(
+				column: name,
+				expression: e,
+				collation: collation,
+				direction: direction
+			)
 		end
 
 		def conflict_clause
