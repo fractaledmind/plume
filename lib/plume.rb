@@ -1,17 +1,14 @@
 # frozen_string_literal: true
 
-require "set"
 require "plume/version"
-require "plume/lexer"
-require "plume/ref"
-require "plume/parser"
+require "set"
 require "literal"
-require "plume/create_table_statement"
-require "plume/expression"
-require "plume/generator"
 
 module Plume
 	extend Literal::Types
+
+	autoload :Lexer, "plume/lexer"
+	autoload :Parser, "plume/parser"
 
 	autoload :AnyType, "plume/ast/any_type"
 	autoload :BinaryExpression, "plume/ast/binary_expression"
@@ -73,6 +70,8 @@ module Plume
 	autoload :UniqueColumnConstraint, "plume/ast/unique_column_constraint"
 	autoload :UniqueTableConstraint, "plume/ast/unique_table_constraint"
 	autoload :Variable, "plume/ast/variable"
+
+	SyntaxError = Class.new(StandardError)
 
 	def self.tokenize(str)
 		Lexer.new(str).tokenize

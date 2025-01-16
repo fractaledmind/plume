@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 test "error when parsing a create table with no columns" do
-	error = assert_raises(Plume::Parser::SyntaxError) do
+	error = assert_raises(Plume::SyntaxError) do
 		parse(<<~SQL)
 			create table tb0 ()
 		SQL
