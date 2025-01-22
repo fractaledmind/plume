@@ -1872,7 +1872,6 @@ module Plume
 		def require(token)
 			if token == current_token
 				advance
-				token
 			else
 				expected!(token)
 			end
@@ -1903,16 +1902,19 @@ module Plume
 		def require_all_of(*tokens)
 			# save one allocation as `Array#each` (at least up to Ruby 3.3) actually allocates one object
 			i, len = 0, tokens.length
+			start_pos, end_pos = nil
 			while i < len
 				if tokens[i] == current_token
-					advance
+					beg, fin = advance
+					start_pos = beg if i == 0 # first iteration
+					end_pos = fin if i == (len - 1) # last iteration
 					i += 1
 				else
 					expected!(tokens)
 				end
 			end
 
-			true
+			[start_pos, end_pos].freeze
 		end
 
 		def maybe_all_of(*tokens)
@@ -2047,8 +2049,16 @@ module Plume
 		# Note: to shift a "token" from the buffer, we need to shift 3 elements (token, start_pos, end_pos).
 		def advance(n = 1)
 			ensure_buffer(n)
-			(n*3).times { @peek_buffer.shift }
-			current_token
+			i = 0
+			start_pos, end_pos = nil
+			while i < n
+				_tok, beg, fin = @peek_buffer.shift
+				start_pos = beg if i == 0 # first iteration
+				end_pos = fin if i == (n - 1) # last iteration
+				i += 1
+			end
+
+			[start_pos, end_pos].freeze
 		end
 
 		# Ensure that the `@peek_buffer` has at least `size` tokens.
