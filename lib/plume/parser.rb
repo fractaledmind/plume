@@ -292,10 +292,15 @@ module Plume
 		end
 
 		def sql_stmt_list
+			# input ::= cmdlist.
+			# cmdlist ::= cmdlist ecmd.
+			# cmdlist ::= ecmd.
+			# ecmd ::= SEMI.
+			# ecmd ::= cmdx SEMI.
+			#
 			#   ┌──────{ ; }◀─────┐
 			# ◯─┴┬─▶[ sql-stmt ]─┬┴─▶◯
 			#    └───────▶───────┘
-
 			[].tap do |stmts|
 				until current_token.nil?
 					maybe :SEMI
@@ -306,6 +311,11 @@ module Plume
 		end
 
 		def sql_stmt
+			# ecmd ::= explain cmdx SEMI.
+			# explain ::= EXPLAIN.
+			# explain ::= EXPLAIN QUERY PLAN.
+			# cmdx ::= cmd.
+			#
 			# ◯─┬─────────────┬▶─────────────────────┬─┬─▶[ alter-table-stmt ]──────────▶─┬─▶◯
 			#   └─{ EXPLAIN }─┴─▶{ QUERY }─▶{ PLAN }─┘ ├─▶[ analyze-stmt ]──────────────▶─┤
 			#                                          ├─▶[ attach-stmt ]───────────────▶─┤
@@ -433,6 +443,15 @@ module Plume
 
 		# TODO
 		def begin_stmt
+			# cmd ::= BEGIN transtype trans_opt.
+			# transtype ::= .
+			# transtype ::= DEFERRED.
+			# transtype ::= IMMEDIATE.
+			# transtype ::= EXCLUSIVE.
+			# trans_opt ::= .
+			# trans_opt ::= TRANSACTION.
+			# trans_opt ::= TRANSACTION nm.
+			#
 			# ◯─▶{ BEGIN }─▶┬─────────────────┬▶┬▶{ TRANSACTION }┬┬▶{ name }┬─▶◯
 			#               ├▶{ DEFERRED }──▶─┤ └────────▶───────┘└────▶────┘
 			#               ├▶{ IMMEDIATE }─▶─┤
@@ -447,8 +466,12 @@ module Plume
 
 		# TODO
 		def commit_stmt
-			# ◯─▶┬▶{ COMMIT }┬▶┬─{ TRANSACTION }┬─▶◯
-			#    └▶{ END }─▶─┘ └────────▶───────┘
+			# cmd ::= COMMIT|END trans_opt.
+			# trans_opt ::= TRANSACTION.
+			# trans_opt ::= TRANSACTION nm.
+			#
+			# ◯─▶┬▶{ COMMIT }┬▶┬▶{ TRANSACTION }┬┬▶{ name }┬─▶◯
+			#    └▶{ END }─▶─┘ └────────▶───────┘└────▶────┘
 			require_one_of :COMMIT, :END
 			maybe :TRANSACTION
 
@@ -474,6 +497,24 @@ module Plume
 		end
 
 		def create_table_stmt
+			# cmd ::= create_table create_table_args.
+			# create_table ::= createkw temp TABLE ifnotexists nm dbnm.
+			# create_table_args ::= LP columnlist conslist_opt RP table_option_set.
+			# create_table_args ::= AS select.
+			# createkw ::= CREATE.
+			# temp ::= TEMP.
+			# temp ::= .
+			# ifnotexists ::= .
+			# ifnotexists ::= IF NOT EXISTS.
+			# columnlist ::= columnlist COMMA columnname carglist.
+			# nm ::= idj.
+			# nm ::= STRING.
+			# %token_class idj  ID|INDEXED|JOIN_KW.
+			# dbnm ::= .
+			# dbnm ::= DOT nm.
+			# conslist_opt ::= .
+			# conslist_opt ::= COMMA conslist.
+			#
 			# ◯─▶{ CREATE }┬───────▶──────┬▶{ TABLE }┬▶{ IF }─▶{ NOT }─▶{ EXISTS }─┐
 			#              ├▶{ TEMP }─────┤          │                             │
 			#              └▶{ TEMPORARY }┘          │                             │
@@ -697,6 +738,13 @@ module Plume
 
 		# TODO
 		def release_stmt
+			# cmd ::= RELEASE savepoint_opt nm.
+			# savepoint_opt ::= SAVEPOINT.
+			# savepoint_opt ::= .
+			# nm ::= idj.
+			# nm ::= STRING.
+			# %token_class idj  ID|INDEXED|JOIN_KW.
+			#
 			# ◯─▶{ RELEASE }┬▶{ SAVEPOINT }┬▶{ savepoint-name }─▶◯
 			#               └──────▶───────┘
 			require current_token until current_token.nil?
@@ -706,9 +754,18 @@ module Plume
 
 		# TODO
 		def rollback_stmt
-			#                                          ┌──────▶───────┐
-			# ◯─▶{ ROLLBACK }┬▶{ TRANSACTION }┬┬▶{ TO }┴▶{ SAVEPOINT }┴▶{ savepoint-name }┬─▶◯
-			#                └───────▶────────┘└─────────────────────▶────────────────────┘
+			# cmd ::= ROLLBACK trans_opt.
+			# cmd ::= ROLLBACK trans_opt TO savepoint_opt nm.
+			# trans_opt ::= TRANSACTION.
+			# trans_opt ::= TRANSACTION nm.
+			# savepoint_opt ::= SAVEPOINT.
+			# savepoint_opt ::= .
+			# nm ::= idj.
+			# nm ::= STRING.
+			# %token_class idj  ID|INDEXED|JOIN_KW.
+			#                                                     ┌──────▶───────┐
+			# ◯─▶{ ROLLBACK }┬▶{ TRANSACTION }┬┬▶{ name }┬┬▶{ TO }┴▶{ SAVEPOINT }┴▶{ savepoint-name }┬─▶◯
+			#                └───────▶────────┘└────▶────┘└─────────────────────▶────────────────────┘
 			require current_token until current_token.nil?
 
 			:rollback_stmt
@@ -716,6 +773,11 @@ module Plume
 
 		# TODO
 		def savepoint_stmt
+			# cmd ::= SAVEPOINT nm.
+			# nm ::= idj.
+			# nm ::= STRING.
+			# %token_class idj  ID|INDEXED|JOIN_KW.
+			#
 			# ◯─▶{ SAVEPOINT }─▶{ savepoint-name }─▶◯
 			require current_token until current_token.nil?
 
@@ -1378,6 +1440,11 @@ module Plume
 		end
 
 		def column_def
+			# columnlist ::= columnname carglist.
+			# columnname ::= nm typetoken.
+			# carglist ::= carglist ccons.
+			# carglist ::= .
+			#
 			# ◯─▶{ column-name }─┬─▶[ type-name ]─┬▶┬─▶───────────────────▶──┬─▶◯
 			#                    └────────▶───────┘ └─[ column-constraint ]◀─┘
 
@@ -1393,6 +1460,17 @@ module Plume
 		end
 
 		def table_constraint
+			# conslist ::= conslist tconscomma tcons.
+			# conslist ::= tcons.
+			# tconscomma ::= COMMA.
+			# tconscomma ::= .
+			# tcons ::= CONSTRAINT nm.
+			# tcons ::= PRIMARY KEY LP sortlist autoinc RP onconf.
+			# tcons ::= UNIQUE LP sortlist RP onconf.
+			# tcons ::= CHECK LP expr RP(B) onconf.
+			# tcons ::= FOREIGN KEY LP eidlist(FA) RP
+			#           REFERENCES nm eidlist_opt(TA) refargs defer_subclause_opt(D).
+			#
 			# ◯─▶┬▶{ CONSTRAINT }─▶{ name }─┐
 			#    ├─────────────◀────────────┘
 			#    ├─▶{ PRIMARY }─▶{ KEY }───▶{ ( }┬▶[ indexed-column ]┬┬▶{ AUTOINCREMENT }┬▶{ ) }─▶[ conflict-clause ]───┬─▶◯
@@ -1452,6 +1530,12 @@ module Plume
 		end
 
 		def table_options
+			# table_option_set ::= .
+			# table_option_set ::= table_option.
+			# table_option_set ::= table_option_set COMMA table_option.
+			# table_option ::= WITHOUT nm. // nm must be "ROWID"
+			# table_option ::= nm. // nm must be "STRICT"
+			#
 			#     ┌─▶{ WITHOUT }─▶{ ROWID }─┐
 			# ◯─┬─┤                         ├─┬─▶◯
 			#   │ └─▶{ STRICT }─────────────┘ │
@@ -1468,6 +1552,14 @@ module Plume
 		end
 
 		def type_name
+			# typetoken ::= .
+			# typetoken ::= typename.
+			# typetoken ::= typename LP signed RP.
+			# typetoken ::= typename LP signed COMMA signed RP.
+			# typename ::= ids.
+			# typename ::= typename ids.
+			# %token_class ids  ID|STRING.
+			#
 			# ◯─┬▶{ name }─┬┬──────────────────────────────▶─────────────────────────────┬─▶◯
 			#   └────◀─────┘├─▶{ ( }─▶[ signed-number ]─▶{ ) }─────────────────────────▶─┤
 			#               └─▶{ ( }─▶[ signed-number ]─▶{ , }─▶[ signed-number ]─▶{ ) }─┘
@@ -1488,6 +1580,27 @@ module Plume
 		end
 
 		def column_constraint
+			# ccons ::= CONSTRAINT nm.
+			# ccons ::= DEFAULT scantok term.
+			# ccons ::= DEFAULT LP expr RP.
+			# ccons ::= DEFAULT PLUS scantok term.
+			# ccons ::= DEFAULT MINUS scantok term.
+			# ccons ::= DEFAULT scantok id.
+			# ccons ::= NULL onconf.
+			# ccons ::= NOT NULL onconf.
+			# ccons ::= PRIMARY KEY sortorder onconf autoinc.
+			# ccons ::= UNIQUE onconf.
+			# ccons ::= CHECK LP expr RP(B).
+			# ccons ::= REFERENCES nm eidlist_opt(TA) refargs.
+			# ccons ::= defer_subclause(D).
+			# ccons ::= COLLATE ids(C).
+			# ccons ::= GENERATED ALWAYS AS generated.
+			# ccons ::= AS generated.
+			# generated ::= LP expr RP.
+			# generated ::= LP expr RP ID(TYPE).
+			# autoinc ::= .
+			# autoinc ::= AUTOINCR.
+			#
 			# ◯─▶┬▶{ CONSTRAINT }─▶{ name }─┬───────────────────────────────▶───────────────────────┐
 			#    ├─────────────◀────────────┘                                                       │
 			#    ├─▶{ PRIMARY }─▶{ KEY }──┬─────▶──────┬─▶[ conflict-clause ]┬──────────▶───────────┼─▶◯
@@ -1632,6 +1745,17 @@ module Plume
 		end
 
 		def conflict_clause
+			# onconf ::= .
+			# onconf ::= ON CONFLICT resolvetype.
+			# orconf ::= .
+			# orconf ::= OR resolvetype.
+			# resolvetype ::= raisetype.
+			# resolvetype ::= IGNORE.
+			# resolvetype ::= REPLACE.
+			# raisetype ::= ROLLBACK.
+			# raisetype ::= ABORT.
+			# raisetype ::= FAIL.
+			#
 			# ◯─▶┬────────────────────────────────────────┬─────▶◯
 			#    └─▶{ ON }─▶{ CONFLICT }┬─▶{ ROLLBACK }─▶─┤
 			#                           ├─▶{ ABORT }────▶─┤
@@ -1674,6 +1798,9 @@ module Plume
 		end
 
 		def signed_number
+			# signed ::= plus_num.
+			# signed ::= minus_num.
+			#
 			# ◯─┬───▶────┬─▶{ numeric-literal }─▶◯
 			#   ├─▶{ + }─┤
 			#   └─▶{ - }─┘
@@ -1762,6 +1889,25 @@ module Plume
 		end
 
 		def foreign_key_clause
+			# ccons ::= REFERENCES nm eidlist_opt(TA) refargs.
+			# refargs ::= .
+			# refargs ::= refargs refarg.
+			# refarg ::= MATCH nm.
+			# refarg ::= ON INSERT refact.
+			# refarg ::= ON DELETE refact.
+			# refarg ::= ON UPDATE refact.
+			# refact ::= SET NULL.
+			# refact ::= SET DEFAULT.
+			# refact ::= CASCADE.
+			# refact ::= RESTRICT.
+			# refact ::= NO ACTION.
+			# defer_subclause_opt ::= .
+			# defer_subclause_opt ::= defer_subclause.
+			# defer_subclause ::= NOT DEFERRABLE init_deferred_pred_opt.
+			# defer_subclause ::= DEFERRABLE init_deferred_pred_opt.
+			# init_deferred_pred_opt ::= .
+			# init_deferred_pred_opt ::= INITIALLY DEFERRED.
+			# init_deferred_pred_opt ::= INITIALLY IMMEDIATE.
 			#                                              ┌─────{ , }◀─────┐
 			# ◯─▶{ REFERENCES }─▶{ foreign-table }─┬─▶{ ( }┴▶{ column-name }┴▶{ ) }──┐
 			#  ┌───────────────────────────────────┴──────────◀──┬───────────────────┘
