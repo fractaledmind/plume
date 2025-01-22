@@ -1640,7 +1640,9 @@ module Plume
 			if maybe_all_of :ON, :CONFLICT
 				case current_token
 				when :ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE
+					tok = current_token
 					require current_token
+					tok
 				else
 					expected! :ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE
 				end
