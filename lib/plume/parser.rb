@@ -1920,7 +1920,8 @@ module Plume
 			i, len = 0, tokens.length
 			buf = ensure_buffer(len)
 			while i < len
-				if tokens[i] != buf[i*3]
+				tok, * = buf[i]
+				if tokens[i] != tok
 					advance = false
 					break
 				end
@@ -2012,29 +2013,30 @@ module Plume
 		# Reads but doesn't consume the token at the head of the buffer.
 		def current_token
 			buf = ensure_buffer
-			buf[0]
+			buf[0][0]
 		end
 
 		# Access the string value for the current token.
 		# Reads but doesn't consume the start_pos and end_pos values at the head of the buffer.
 		def current_value
 			buf = ensure_buffer
-			beg = buf[1]
-			fin = buf[2]
+			sql = @lexer.sql
+			_tk, beg, fin = buf[0]
 
-			@lexer.sql.byteslice(beg...fin)
+			sql.byteslice(beg, (fin - beg))
 		end
 
 		# Peek at the next `n` tokens in the lexer stream.
 		# Does not advance the lexer cursor and does not consider the current token.
 		def peek(n = 1)
 			buf = ensure_buffer(n + 1)
-			return buf[3] if n == 1 # symbol element of the 2nd token
+			return buf[1][0] if n == 1 # symbol element of the 2nd token
 
 			[].tap do |a|
 				i, len = 1, buf.length
 				while i <= n
-					a << buf[i*3]
+					tok, * = buf[i]
+					a << tok
 					i += 1
 				end
 			end
@@ -2050,12 +2052,12 @@ module Plume
 		end
 
 		# Ensure that the `@peek_buffer` has at least `size` tokens.
-		# Note: the buffer is a flat array of `[token, start_pos, end_pos]` triples,
-		# so, a buffer of `size` 2 will have 6 elements (2 * 3).
+		# Note: the buffer is a nested array of `[token, start_pos, end_pos]` triples,
 		def ensure_buffer(size = 1)
+			lexer = @lexer
 			@peek_buffer.tap do |buf|
-				while buf.size < (size * 3)
-					buf << @lexer.next_token << @lexer.anchor << @lexer.cursor
+				while buf.size < size
+					buf << [lexer.next_token, lexer.anchor, lexer.cursor].freeze
 				end
 			end
 		end
