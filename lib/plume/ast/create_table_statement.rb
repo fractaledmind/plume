@@ -38,6 +38,7 @@ module Plume
 		prop :if_not_exists, _Nilable(_Boolean)
 		prop :without_row_id, _Nilable(_Boolean)
 		prop :constraints, _Nilable(_Array(TableConstraint))
+		prop :options, _Nilable(_Array(TableOption))
 
 		def after_initialize
 			raise ArgumentError unless (!!@select_statement ^ @columns&.any?)

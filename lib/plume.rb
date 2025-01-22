@@ -61,7 +61,9 @@ module Plume
 	autoload :SelectStatement, "plume/ast/select_statement"
 	autoload :SignedNumber, "plume/ast/signed_number"
 	autoload :StarFunctionArgument, "plume/ast/star_function_argument"
+	autoload :StrictTableOption, "plume/ast/strict_table_option"
 	autoload :TableConstraint, "plume/ast/table_constraint"
+	autoload :TableOption, "plume/ast/table_option"
 	autoload :TableReference, "plume/ast/table_reference"
 	autoload :TernaryExpression, "plume/ast/ternary_expression"
 	autoload :TextType, "plume/ast/text_type"
@@ -70,6 +72,7 @@ module Plume
 	autoload :UniqueColumnConstraint, "plume/ast/unique_column_constraint"
 	autoload :UniqueTableConstraint, "plume/ast/unique_table_constraint"
 	autoload :Variable, "plume/ast/variable"
+	autoload :WithoutRowidTableOption, "plume/ast/without_rowid_table_option"
 
 	SyntaxError = Class.new(StandardError)
 

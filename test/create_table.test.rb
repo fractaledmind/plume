@@ -1538,6 +1538,9 @@ test "parse a basic create table with STRICT table option" do
 				),
 			],
 			strict: true,
+			options: [
+				Plume::StrictTableOption.new,
+			]
 		)
 	)
 end
@@ -1555,6 +1558,9 @@ test "parse a basic create table with WITHOUT ROWID table option" do
 				),
 			],
 			without_row_id: true,
+			options: [
+				Plume::WithoutRowidTableOption.new,
+			]
 		)
 	)
 end
@@ -1573,6 +1579,10 @@ test "parse a basic create table with STRICT and WITHOUT ROWID table options" do
 			],
 			strict: true,
 			without_row_id: true,
+			options: [
+				Plume::StrictTableOption.new,
+				Plume::WithoutRowidTableOption.new,
+			]
 		)
 	)
 end

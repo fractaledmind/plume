@@ -503,16 +503,17 @@ module Plume
 				columns = one_or_more { column_def }
 				constraints = zero_or_more(sep: :COMMA, optional: true) { table_constraint }
 				require :RP
-				options = maybe { table_options } # nil || [:STRICT, true] || [true] || [:STRICT]
+				options = maybe { table_options }
 
 				CreateTableStatement.new(
 					schema_name:,
 					table_name:,
 					temporary: (true if temporary),
 					if_not_exists: (true if if_not_exists),
-					strict: (true if options&.include?(:STRICT)),
-					without_row_id: (true if options&.include?(true)),
+					strict: (true if options&.any?(StrictTableOption)),
+					without_row_id: (true if options&.any?(WithoutRowidTableOption)),
 					columns:,
+					options:,
 					constraints: (constraints if constraints.any?),
 				)
 			else
@@ -1455,7 +1456,13 @@ module Plume
 			#   │ └─▶{ STRICT }─────────────┘ │
 			#   └──────◀───────────────{ , }◀─┘
 			one_or_more do
-				maybe(:STRICT) || maybe_all_of(:WITHOUT, :ROWID) || expected!(:STRICT, :WITHOUT)
+				if maybe(:STRICT)
+					StrictTableOption.new
+				elsif maybe_all_of(:WITHOUT, :ROWID)
+					WithoutRowidTableOption.new
+				else
+					expected!(:STRICT, :WITHOUT)
+				end
 			end
 		end
 
