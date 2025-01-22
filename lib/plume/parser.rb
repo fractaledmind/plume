@@ -1267,7 +1267,8 @@ module Plume
 			#                                         ├─▶{ EXCLUDE }─▶{ TIES }─────────────▶─┤
 			#                                         └──────────────────────────────────────┴─────────▶◯
 			if current_token in :RANGE | :ROWS | :GROUPS
-				type = require current_token
+				type = current_token
+				require current_token
 				if maybe :BETWEEN
 					if maybe_all_of :UNBOUNDED, :PRECEDING
 						precedence = 1
@@ -1655,8 +1656,14 @@ module Plume
 			#                                               └▶{ DESC }─▶─┘ └▶{ NULLS }─▶{ LAST }──▶─┘
 			e = expression
 			collation = maybe(:COLLATE) ? identifier : nil
-			direction = require(current_token) if current_token in :ASC | :DESC
-			nulls = require(current_token) if maybe(:NULLS)
+			if current_token in :ASC | :DESC
+				direction = current_token
+				require current_token
+			end
+			if maybe(:NULLS)
+				nulls = current_token
+				require current_token
+			end
 
 			OrderingTerm.new(
 				expression: e,
