@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
-# test "error when parsing a create table with no columns" do
-# 	error = assert_raises(Plume::SyntaxError) do
-# 		parse(<<~SQL)
-# 			create table tb0 ()
-# 		SQL
-# 	end
+test "error when parsing a create table with no columns" do
+	error = assert_raises(Plume::SyntaxError) do
+		parse_stmt(<<~SQL)
+			create table tb0 ()
+		SQL
+	end
 
-# 	assert_equal error.message.split("\n"), [
-# 		'Unexpected token RP[")"] at:',
-# 		"  create table tb0 ()",
-# 		"                    ^",
-# 		"  Expected one of: STRING, ID, INDEXED, CROSS, FULL, INNER, LEFT, NATURAL, OUTER, RIGHT",
-# 	]
-# end
+	assert_equal error.message.split("\n"), [
+		'Unexpected token RP[")"] at:',
+		"  create table tb0 ()",
+		"                    ^",
+		"  Expected one of: STRING, ID, INDEXED, CROSS, FULL, INNER, LEFT, NATURAL, OUTER, RIGHT",
+	]
+end
 
 test "parse a basic create table with one column" do
 	node = parse_stmt(<<~SQL)
