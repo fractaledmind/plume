@@ -3,6 +3,7 @@ inherit_from:
 
 AllCops:
   TargetRubyVersion: 3.1
+  SuggestExtensions: false
 
 Layout/HashAlignment:
   Enabled: false
