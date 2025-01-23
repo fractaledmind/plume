@@ -2231,22 +2231,9 @@ module Plume
 
 		# Advance the implicit cursor pointing to the first token in the buffer by `n` tokens.
 		# Returns the new token at the head of the buffer.
-		def advance(n = 1)
+		def advance
 			ensure_buffer(n)
-			return @peek_buffer.shift if n == 1
-
-			i = 0
-			start_pos, end_pos = nil
-			tokens = []
-			while i < n
-				tok, beg, fin = @peek_buffer.shift
-				tokens << tok
-				start_pos = beg if i == 0 # first iteration
-				end_pos = fin if i == (n - 1) # last iteration
-				i += 1
-			end
-
-			[tokens, start_pos, end_pos].freeze
+			@peek_buffer.shift
 		end
 
 		# Ensure that the `@peek_buffer` has at least `size` tokens.
