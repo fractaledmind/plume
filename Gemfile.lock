@@ -1,14 +1,15 @@
 GIT
   remote: https://github.com/joeldrapper/literal.git
-  revision: 70c02c5465d7cfb3c4a1c95a23badd3bb2eed196
+  revision: bd242e057b28c6d293cfb6a084e62c8b07f335fc
   specs:
-    literal (1.4.0)
+    literal (1.5.0)
 
 GIT
   remote: https://github.com/joeldrapper/quickdraw.git
-  revision: e5c5c55afbcbf4b99aa1355e0e19ad3067272f3c
+  revision: 6e349a33bf17a57229c9fa14b82a565403438871
   specs:
     quickdraw (0.1.0)
+      difftastic (~> 0.1)
       io-watch (~> 0.6)
 
 PATH
@@ -23,6 +24,8 @@ GEM
     backport (1.2.0)
     benchmark (0.4.0)
     diff-lcs (1.5.1)
+    difftastic (0.1.0)
+    difftastic (0.1.0-arm64-darwin)
     docile (1.4.1)
     e2mmap (0.1.0)
     io-watch (0.6.3)
