@@ -6,15 +6,28 @@ module Plume
 		# prop :loc, Location
 
 		def self.inspect_props(*props)
-			define_method :inspect do
-				prop_values = props.map { |prop| "#{prop}=#{__send__(prop).inspect}" }
-				"#<#{self.class.name}:#{object_id} #{prop_values.join(", ")}>"
-			end
+			@inspectable_props ||= Set.new
+			@inspectable_props.merge(props)
 		end
 
-		def self.token(name, required:)
+		def inspect
+			return super unless self.class.instance_variable_defined?(:@inspectable_props)
+
+			inspectable_props = self.class.instance_variable_get(:@inspectable_props)
+			prop_values = inspectable_props.map do |prop|
+				val = __send__(prop)
+				next if val.nil?
+
+				"#{prop}=#{val.inspect}"
+			end.compact!
+
+			"#<#{self.class.name}:#{object_id} #{prop_values.join(", ")}>"
+		end
+
+		def self.token(name, required:, inspect: false)
 			prop_type = required ? Token : _Nilable(Token)
 			prop :"#{name}", prop_type, reader: false
+			inspect_props(name) if inspect
 
 			class_eval <<-RUBY, __FILE__, __LINE__ + 1
 				# frozen_string_literal: true
@@ -34,10 +47,11 @@ module Plume
 			RUBY
 		end
 
-		def self.node(name, type, required:, collection: false)
+		def self.node(name, type, required:, collection: false, inspect: true)
 			prop_type = collection ? _Array(type) : type
 			prop_type = _Nilable(prop_type) unless required
 			prop :"#{name}", prop_type
+			inspect_props(name) if inspect
 		end
 	end
 end

@@ -33,17 +33,15 @@ module Plume
 		token :temp_kw, required: false
 		token :table_kw, required: true
 		token :if_not_exists_kw, required: false
-		token :schema_name, required: false
-		token :table_name, required: true
+		token :schema_name, required: false, inspect: true
+		token :table_name, required: true, inspect: true
 		token :as_kw, required: false
-		node :select_statement, _Any, required: false
 		token :columns_lp, required: false
-		node :columns, ColumnDefinition, required: false, collection: true
 		token :columns_rp, required: false
+		node :select_statement, _Any, required: false
+		node :columns, ColumnDefinition, required: false, collection: true
 		node :constraints, TableConstraint, required: false, collection: true
 		node :options, TableOption, required: false, collection: true
-
-		inspect_props :temporary, :if_not_exists, :columns
 
 		def temporary = !!@temp_kw
 		def if_not_exists = !!@if_not_exists_kw
