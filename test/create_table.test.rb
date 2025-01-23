@@ -1233,7 +1233,6 @@ test "parse fully complex statement" do
 	assert_equal node.columns[8].constraints[0].foreign_key_clause.on_update, :CASCADE
 	assert_equal node.columns[8].constraints[0].foreign_key_clause.on_delete, :SET_NULL
 
-
 	assert_operator Plume::PrimaryKeyTableConstraint, :===, node.constraints[0]
 	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
 	assert_equal node.constraints[0].columns[1].column.column_name, "c1"
