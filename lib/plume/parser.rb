@@ -955,7 +955,7 @@ module Plume
 						# 		member: left,
 						# 		collection: s
 						# 	)
-						# 	# :nocov:
+						# :nocov:
 						elsif (e = maybe { expression(op_precedence + 1) })
 							exprs = one_or_more(given: e) { expression(op_precedence + 1) }
 							require :RP
