@@ -13,15 +13,33 @@ if ENV["COVERAGE"] == "true"
 end
 
 require "plume"
-require_relative "../test/helpers"
 
 class Quickdraw::Test
-	def assert_statement(sql, structure)
-		parsed = parse(sql)
-		assert_equal parsed, [structure]
+	def lex(str, with_values: false)
+		lex = Plume::Lexer.new(str)
+		lex.tokens(with_values).to_a
 	end
 
-	def parse(sql)
-		Plume::Parser.new(sql).parse
+	def parse_stmt(sql)
+		Plume::Parser.new(sql).parse.first
+	end
+
+	def assert_statement(sql, structure)
+		parsed = parse_stmt(sql)
+		assert_equal parsed, structure
+	end
+
+	def assert_token(str, tk)
+		lex = Plume::Lexer.new(str)
+
+		token = lex.next_token
+		assert(tk == token) do
+			"expected #{tk.inspect} to == #{token.inspect}"
+		end
+
+		final = lex.next_token
+		assert(final == nil) do
+			"expected #{final.inspect} to be nil"
+		end
 	end
 end
