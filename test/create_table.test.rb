@@ -24,9 +24,46 @@ test "parse a basic create table with one column" do
 	assert_equal node.columns[0].name, "c0"
 end
 
+test "parse a basic create table with schema and one column" do
+	node = parse_stmt(<<~SQL)
+		create table schema0.tb0 (c0)
+	SQL
+
+	assert_equal node.schema_name, "schema0"
+	assert_equal node.table_name, "tb0"
+	assert_equal node.columns[0].name, "c0"
+end
+
 test "parse a basic create table with one column and double-quoted identifiers" do
 	node = parse_stmt(<<~SQL)
 		create table "tb0" ("c0")
+	SQL
+
+	assert_equal node.table_name, "tb0"
+	assert_equal node.columns[0].name, "c0"
+end
+
+test "parse a basic create table with one column and single-quoted identifiers" do
+	node = parse_stmt(<<~SQL)
+		create table 'tb0' ('c0')
+	SQL
+
+	assert_equal node.table_name, "tb0"
+	assert_equal node.columns[0].name, "c0"
+end
+
+test "parse a basic create table with one column and tick-quoted identifiers" do
+	node = parse_stmt(<<~SQL)
+		create table `tb0` (`c0`)
+	SQL
+
+	assert_equal node.table_name, "tb0"
+	assert_equal node.columns[0].name, "c0"
+end
+
+test "parse a basic create table with one column and bracket-quoted identifiers" do
+	node = parse_stmt(<<~SQL)
+		create table [tb0] ([c0])
 	SQL
 
 	assert_equal node.table_name, "tb0"
