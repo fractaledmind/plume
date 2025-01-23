@@ -2103,19 +2103,19 @@ module Plume
 		end
 
 		def maybe_all_of(*tokens)
-			advance = true
+			advancing = true
 			i, len = 0, tokens.length
 			buf = ensure_buffer(len)
 			while i < len
 				tok, * = buf[i]
 				if tokens[i] != tok
-					advance = false
+					advancing = false
 					break
 				end
 				i += 1
 			end
 
-			require_all_of(*tokens) if advance
+			require_all_of(*tokens) if advancing
 		end
 
 		def maybe_one_of(*tokens)
