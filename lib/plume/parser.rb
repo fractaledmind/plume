@@ -523,37 +523,53 @@ module Plume
 			# └────────▶────────────────┘               │                                        │
 			# ┌────────────────────◀────────────────────┘                     ┌────────▶─────────┼─▶◯
 			# └▶{ ( }─┬▶[ column-def ]─┬▶┬─────────────────────────────┬▶{ ) }┴▶[ table-options ]┘
-			#         └─────{ , }◀─────┘ └[ table-constraint ]◀─{ ,|<nil> }◀─┘
+			#         └─────{ , }◀─────┘ └[ table-constraint ]◀─{ , }◀─┘
 
-			require :CREATE
-			temporary = maybe_one_of :TEMP, :TEMPORARY
-			require :TABLE
-			if_not_exists = maybe_all_of(:IF, :NOT, :EXISTS)
-			schema_name, table_name = table_ref
+			create_kw = require :CREATE
+			temp_kw = maybe_one_of :TEMP, :TEMPORARY
+			table_kw = require :TABLE
+			if_not_exists_kw = maybe_all_of(:IF, :NOT, :EXISTS)
+
+			schema_or_table = identifier_token
+			if maybe :DOT
+				table = identifier_token
+
+				schema_tok = schema_or_table
+				table_tok = table
+			else
+				schema_tok = nil
+				table_tok = schema_or_table
+			end
 
 			if maybe :AS
 				as_select = select_stmt
 				CreateTableStatement.new(
-					schema_name:,
-					table_name:,
-					temporary: (true if temporary),
-					if_not_exists: (true if if_not_exists),
+					full_source: @lexer.sql,
+					create_kw: Token::Keyword(*create_kw),
+					temp_kw: (Token::Keyword(*temp_kw) if temp_kw),
+					table_kw: Token::Keyword(*table_kw),
+					if_not_exists_kw: (Token::Keyword(*if_not_exists_kw) if if_not_exists_kw),
+					schema_name: (Token::Identifier(*schema_tok) if schema_tok),
+					table_name: Token::Identifier(*table_tok),
 					select_statement: as_select
 				)
-			elsif maybe :LP
+			elsif (columns_lp = maybe :LP)
 				columns = one_or_more { column_def }
 				constraints = zero_or_more(sep: :COMMA, optional: true) { table_constraint }
-				require :RP
+				columns_rp = require :RP
 				options = maybe { table_options }
 
 				CreateTableStatement.new(
-					schema_name:,
-					table_name:,
-					temporary: (true if temporary),
-					if_not_exists: (true if if_not_exists),
-					strict: (true if options&.any?(StrictTableOption)),
-					without_row_id: (true if options&.any?(WithoutRowidTableOption)),
+					full_source: @lexer.sql,
+					create_kw: Token::Keyword(*create_kw),
+					temp_kw: (Token::Keyword(*temp_kw) if temp_kw),
+					table_kw: Token::Keyword(*table_kw),
+					if_not_exists_kw: (Token::Keyword(*if_not_exists_kw) if if_not_exists_kw),
+					schema_name: (Token::Identifier(*schema_tok) if schema_tok),
+					table_name: Token::Identifier(*table_tok),
+					columns_lp: Token::Punctuation(*columns_lp),
 					columns:,
+					columns_rp: Token::Punctuation(*columns_rp),
 					options:,
 					constraints: (constraints if constraints.any?),
 				)
@@ -1980,9 +1996,25 @@ module Plume
 			)
 		end
 
-		# nm ::= ID|INDEXED|JOIN_KW
-		# nm ::= STRING
+		def identifier_token(except: [])
+			# nm ::= ID|INDEXED|JOIN_KW
+			# nm ::= STRING
+
+			if current_token in :STRING | :ID
+				require current_token
+			elsif current_token in :INDEXED | :CROSS | :FULL | :INNER | :LEFT | :NATURAL | :OUTER | :RIGHT
+				require current_token
+			elsif !except.include?(current_token) && TOKEN_FALLBACKS[current_token]
+				require current_token
+			else
+				expected!(:STRING, :ID, :INDEXED, :CROSS, :FULL, :INNER, :LEFT, :NATURAL, :OUTER, :RIGHT)
+			end
+		end
+
 		def identifier(except: [])
+			# nm ::= ID|INDEXED|JOIN_KW
+			# nm ::= STRING
+
 			if :STRING == current_token
 				string_literal
 			elsif :ID == current_token

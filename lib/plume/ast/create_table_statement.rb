@@ -16,11 +16,11 @@ module Plume
 	#              ├▶{ TEMP }─────┤          │                             │
 	#              └▶{ TEMPORARY }┘          │                             │
 	# ┌─────────────────────◀────────────────┴──────────────────◀──────────┘
-	# ├─▶{ schema-name }─▶{ . }─┬▶{ table-name }┬───────▶{ AS }─▶[ select-stmt ]───▶─────┐
-	# └────────▶────────────────┘               │                                        │
-	# ┌────────────────────◀────────────────────┘                     ┌────────▶─────────┼─▶◯
-	# └▶{ ( }─┬▶[ column-def ]─┬▶┬─────────────────────────────┬▶{ ) }┴▶[ table-options ]┘
-	#         └─────{ , }◀─────┘ └[ table-constraint ]◀─{ , }◀─┘
+	# ├─▶{ schema-name }─▶{ . }─┬▶{ table-name }┬───────▶{ AS }─▶[ select-stmt ]───▶──────┐
+	# └────────▶────────────────┘               │                                         │
+	# ┌────────────────────◀────────────────────┘                      ┌────────▶─────────┼─▶◯
+	# └▶{ ( }─┬▶[ column-def ]─┬▶┬──────────────────────────────┬▶{ ) }┴▶[ table-options ]┘
+	#         └─────{ , }◀─────┘ └[ table-constraint ]◀─{ ,* }◀─┘
 	# ```
 	#
 	# **[SQLite Docs](https://www.sqlite.org/lang_createtable.html)**
@@ -29,16 +29,26 @@ module Plume
 	# create table tb0 (c0 primary key desc on conflict abort autoincrement)
 	# ```
 	class CreateTableStatement < Node
-		prop :schema_name, _Nilable(String)
-		prop :table_name, String
-		prop :select_statement, _Nilable(_Any)
-		prop :columns, _Nilable(_Array(ColumnDefinition))
-		prop :strict, _Nilable(_Boolean)
-		prop :temporary, _Nilable(_Boolean)
-		prop :if_not_exists, _Nilable(_Boolean)
-		prop :without_row_id, _Nilable(_Boolean)
-		prop :constraints, _Nilable(_Array(TableConstraint))
-		prop :options, _Nilable(_Array(TableOption))
+		token :create_kw, required: true
+		token :temp_kw, required: false
+		token :table_kw, required: true
+		token :if_not_exists_kw, required: false
+		token :schema_name, required: false
+		token :table_name, required: true
+		token :as_kw, required: false
+		node :select_statement, _Any, required: false
+		token :columns_lp, required: false
+		node :columns, ColumnDefinition, required: false, collection: true
+		token :columns_rp, required: false
+		node :constraints, TableConstraint, required: false, collection: true
+		node :options, TableOption, required: false, collection: true
+
+		inspect_props :temporary, :if_not_exists, :columns
+
+		def temporary = !!@temp_kw
+		def if_not_exists = !!@if_not_exists_kw
+		def strict = @options&.any?(StrictTableOption)
+		def without_row_id = @options&.any?(WithoutRowidTableOption)
 
 		def after_initialize
 			raise ArgumentError unless (!!@select_statement ^ @columns&.any?)
