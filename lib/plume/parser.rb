@@ -1734,7 +1734,7 @@ module Plume
 			if maybe :COLLATE
 				collation = identifier
 			end
-			direction = maybe_one_of :ASC, :DESC
+			direction, * = maybe_one_of :ASC, :DESC
 
 			IndexedColumn.new(
 				column: name,
