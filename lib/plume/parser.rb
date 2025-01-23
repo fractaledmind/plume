@@ -1021,7 +1021,7 @@ module Plume
 						right:,
 						escape:,
 					)
-				elsif (mop = maybe_one_of :GLOB, :REGEXP, :MATCH)
+				elsif (mop, * = maybe_one_of :GLOB, :REGEXP, :MATCH)
 					op = negated ? :"NOT#{mop}" : mop
 					right = expression(op_precedence + 1)
 					return BinaryExpression.new(
