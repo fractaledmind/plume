@@ -2,13 +2,13 @@
 
 module Plume
 	class Node < Literal::Data
-		prop :full_source, _Nilable(String)#, inspect: false
+		prop :full_source, _Nilable(String) # , inspect: false
 		# prop :loc, Location
 
 		def self.inspect_props(*props)
 			define_method :inspect do
-				prop_values = props.map { |prop| "#{prop}=#{send(prop).inspect}" }
-				"#<#{self.class.name}:#{object_id} #{prop_values.join(', ')}>"
+				prop_values = props.map { |prop| "#{prop}=#{__send__(prop).inspect}" }
+				"#<#{self.class.name}:#{object_id} #{prop_values.join(", ")}>"
 			end
 		end
 
@@ -36,7 +36,7 @@ module Plume
 
 		def self.node(name, type, required:, collection: false)
 			prop_type = collection ? _Array(type) : type
-			prop_type = required ? prop_type : _Nilable(prop_type)
+			prop_type = _Nilable(prop_type) unless required
 			prop :"#{name}", prop_type
 		end
 	end

@@ -32,7 +32,7 @@ module Plume
 		def Current(tok, beg, fin)     = [tok, beg, fin, :current].freeze
 
 		def source(str, tup)
-			_, beg, fin, _ = tup
+			_, beg, fin, = tup
 
 			str.byteslice(beg, (fin - beg))
 		end
@@ -55,7 +55,7 @@ module Plume
 		end
 
 		def location(tup)
-			_, beg, fin, _ = tup
+			_, beg, fin, = tup
 
 			[beg, fin].freeze
 		end
@@ -77,7 +77,7 @@ module Plume
 				src.to_f
 			when :QNUMBER
 				value = src.to_f
-				value % 1 == 0 ? value.to_i : value
+				(value % 1 == 0) ? value.to_i : value
 			end
 		end
 
