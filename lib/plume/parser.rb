@@ -1621,7 +1621,7 @@ module Plume
 			name = identifier if maybe :CONSTRAINT
 
 			if maybe_all_of :PRIMARY, :KEY
-				direction = maybe_one_of :ASC, :DESC
+				direction, * = maybe_one_of :ASC, :DESC
 				on_conflict = conflict_clause
 				autoincrement = maybe(:AUTOINCREMENT)
 
@@ -1703,7 +1703,7 @@ module Plume
 				require :LP
 				default = expression
 				require :RP
-				type = maybe_one_of :STORED, :VIRTUAL
+				type, * = maybe_one_of :STORED, :VIRTUAL
 
 				GeneratedAsColumnConstraint.new(
 					name:,
@@ -2050,17 +2050,15 @@ module Plume
 				end
 			elsif token == current_token
 				advance
-				token
 			end
 		end
 
 		def require_all_of(*tokens)
-			# save one allocation as `Array#each` (at least up to Ruby 3.3) actually allocates one object
 			i, len = 0, tokens.length
 			start_pos, end_pos = nil
 			while i < len
 				if tokens[i] == current_token
-					beg, fin = advance
+					_tok, beg, fin = advance
 					start_pos = beg if i == 0 # first iteration
 					end_pos = fin if i == (len - 1) # last iteration
 					i += 1
@@ -2069,7 +2067,7 @@ module Plume
 				end
 			end
 
-			[start_pos, end_pos].freeze
+			[tokens, start_pos, end_pos].freeze
 		end
 
 		def maybe_all_of(*tokens)
@@ -2201,19 +2199,22 @@ module Plume
 
 		# Advance the implicit cursor pointing to the first token in the buffer by `n` tokens.
 		# Returns the new token at the head of the buffer.
-		# Note: to shift a "token" from the buffer, we need to shift 3 elements (token, start_pos, end_pos).
 		def advance(n = 1)
 			ensure_buffer(n)
+			return @peek_buffer.shift if n == 1
+
 			i = 0
 			start_pos, end_pos = nil
+			tokens = []
 			while i < n
-				_tok, beg, fin = @peek_buffer.shift
+				tok, beg, fin = @peek_buffer.shift
+				tokens << tok
 				start_pos = beg if i == 0 # first iteration
 				end_pos = fin if i == (n - 1) # last iteration
 				i += 1
 			end
 
-			[start_pos, end_pos].freeze
+			[tokens, start_pos, end_pos].freeze
 		end
 
 		# Ensure that the `@peek_buffer` has at least `size` tokens.
