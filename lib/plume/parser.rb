@@ -2046,7 +2046,7 @@ module Plume
 			val = current_value
 			require :ID
 			case val.getbyte(0)
-			when 96, 39, 34, 93 # "`", "'", '"', "]"
+			when 96, 39, 34, 91 # "`", "'", '"', "["
 				bytesize = val.bytesize
 				val.byteslice(1, bytesize - 2)
 			else

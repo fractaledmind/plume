@@ -105,7 +105,7 @@ module Plume
 			return src if tok != :ID
 
 			case src.getbyte(0)
-			when 96, 39, 34, 93 # "`", "'", '"', "]"
+			when 96, 39, 34, 91 # "`", "'", '"', "["
 				bytesize = src.bytesize
 				src.byteslice(1, bytesize - 2)
 			else
