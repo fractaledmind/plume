@@ -2,7 +2,7 @@
 
 module Plume
 	class PrimaryKeyColumnConstraint < ColumnConstraint
-		prop :name, _Nilable(String)
+		optional_token :name, inspect: true
 		prop :direction, _Nilable(Direction)
 		prop :conflict_clause, _Nilable(ConflictClause)
 		prop :autoincrement, _Nilable(_Boolean)

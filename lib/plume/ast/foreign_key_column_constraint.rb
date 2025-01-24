@@ -2,7 +2,7 @@
 
 module Plume
 	class ForeignKeyColumnConstraint < ColumnConstraint
-		prop :name, _Nilable(String)
+		optional_token :name, inspect: true
 		prop :foreign_key_clause, ForeignKeyClause
 	end
 end

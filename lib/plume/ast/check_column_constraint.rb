@@ -2,7 +2,7 @@
 
 module Plume
 	class CheckColumnConstraint < ColumnConstraint
-		prop :name, _Nilable(String)
+		optional_token :name, inspect: true
 		prop :expression, Expression
 	end
 end

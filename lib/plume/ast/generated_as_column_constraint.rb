@@ -4,7 +4,7 @@ module Plume
 	class GeneratedAsColumnConstraint < ColumnConstraint
 		Type = _Union(:STORED, :VIRTUAL)
 
-		prop :name, _Nilable(String)
+		optional_token :name, inspect: true
 		prop :expression, Expression
 		prop :type, _Nilable(Type)
 	end

@@ -2,7 +2,7 @@
 
 module Plume
 	class DefaultColumnConstraint < ColumnConstraint
-		prop :name, _Nilable(String)
+		optional_token :name, inspect: true
 		prop :value, _Union(LiteralValue, SignedNumber, Expression)
 	end
 end

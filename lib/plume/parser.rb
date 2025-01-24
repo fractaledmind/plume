@@ -1644,7 +1644,7 @@ module Plume
 			#    └──────────────▶────────────┘                               ├─▶{ STORED }────────▶─┤
 			#                                                                └─▶{ VIRTUAL }───────▶─┘
 
-			name = identifier if maybe :CONSTRAINT
+			name = identifier_token if maybe :CONSTRAINT
 
 			if maybe_all_of :PRIMARY, :KEY
 				direction, * = maybe_one_of :ASC, :DESC
@@ -1652,7 +1652,8 @@ module Plume
 				autoincrement = maybe(:AUTOINCREMENT)
 
 				PrimaryKeyColumnConstraint.new(
-					name:,
+					full_source: @lexer.sql,
+					name: (Token::Identifier(*name) if name),
 					direction:,
 					autoincrement: (true if autoincrement),
 					conflict_clause: on_conflict
@@ -1661,21 +1662,24 @@ module Plume
 				on_conflict = conflict_clause
 
 				NotNullColumnConstraint.new(
-					name:,
+					full_source: @lexer.sql,
+					name: (Token::Identifier(*name) if name),
 					conflict_clause: on_conflict
 				)
 			elsif maybe :NULL
 				on_conflict = conflict_clause
 
 				NullColumnConstraint.new(
-					name:,
+					full_source: @lexer.sql,
+					name: (Token::Identifier(*name) if name),
 					conflict_clause: on_conflict
 				)
 			elsif maybe :UNIQUE
 				on_conflict = conflict_clause
 
 				UniqueColumnConstraint.new(
-					name:,
+					full_source: @lexer.sql,
+					name: (Token::Identifier(*name) if name),
 					conflict_clause: on_conflict
 				)
 			elsif maybe :CHECK
@@ -1684,7 +1688,8 @@ module Plume
 				require :RP
 
 				CheckColumnConstraint.new(
-					name:,
+					full_source: @lexer.sql,
+					name: (Token::Identifier(*name) if name),
 					expression: check
 				)
 			elsif maybe :DEFAULT
@@ -1692,22 +1697,26 @@ module Plume
 					value = expression
 					require :RP
 					DefaultColumnConstraint.new(
-						name:,
+						full_source: @lexer.sql,
+						name: (Token::Identifier(*name) if name),
 						value:
 					)
 				elsif (number = maybe { signed_number })
 					DefaultColumnConstraint.new(
-						name:,
+						full_source: @lexer.sql,
+						name: (Token::Identifier(*name) if name),
 						value: number,
 					)
 				elsif (value = maybe { literal_value })
 					DefaultColumnConstraint.new(
-						name:,
+						full_source: @lexer.sql,
+						name: (Token::Identifier(*name) if name),
 						value:
 					)
 				elsif current_token in :ID | :INDEXED
 					DefaultColumnConstraint.new(
-						name:,
+						full_source: @lexer.sql,
+						name: (Token::Identifier(*name) if name),
 						value: unwrap_id
 					)
 				else
@@ -1715,14 +1724,16 @@ module Plume
 				end
 			elsif maybe :COLLATE
 				CollateColumnConstraint.new(
-					name:,
+					full_source: @lexer.sql,
+					name: (Token::Identifier(*name) if name),
 					collation_name: identifier.to_sym.upcase
 				)
 			elsif :REFERENCES == current_token
 				clause = foreign_key_clause
 
 				ForeignKeyColumnConstraint.new(
-					name:,
+					full_source: @lexer.sql,
+					name: (Token::Identifier(*name) if name),
 					foreign_key_clause: clause,
 				)
 			elsif maybe_all_of(:GENERATED, :ALWAYS, :AS) or maybe(:AS)
@@ -1732,7 +1743,8 @@ module Plume
 				type, * = maybe_one_of :STORED, :VIRTUAL
 
 				GeneratedAsColumnConstraint.new(
-					name:,
+					full_source: @lexer.sql,
+					name: (Token::Identifier(*name) if name),
 					expression: default,
 					type:,
 				)

@@ -2,7 +2,7 @@
 
 module Plume
 	class UniqueColumnConstraint < ColumnConstraint
-		prop :name, _Nilable(String)
+		optional_token :name, inspect: true
 		prop :conflict_clause, _Nilable(ConflictClause)
 	end
 end
