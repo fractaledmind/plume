@@ -2,9 +2,10 @@
 
 module Plume
 	class IndexedColumn < Node
-		prop :column, ColumnReference
-		prop :expression, _Nilable(Expression)
-		prop :collation, _Nilable(String)
-		prop :direction, _Nilable(Direction)
+		required_node :column, ColumnReference
+
+		optional_node :expression, Expression
+		optional_node :collation, String
+		optional_node :direction, Direction
 	end
 end
