@@ -24,6 +24,22 @@ module Plume
 			"#<#{self.class.name}:#{object_id} #{prop_values.join(", ")}>"
 		end
 
+		def self.required_token(name, **)
+			token(name, required: true, **)
+		end
+
+		def self.optional_token(name, **)
+			token(name, required: false, **)
+		end
+
+		def self.required_node(name, type)
+			node(name, type, required: true)
+		end
+
+		def self.optional_node(name, type)
+			node(name, type, required: false)
+		end
+
 		def self.token(name, required:, inspect: false)
 			prop_type = required ? Token : _Nilable(Token)
 			prop :"#{name}", prop_type, reader: false
