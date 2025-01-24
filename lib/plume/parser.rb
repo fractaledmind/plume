@@ -1649,13 +1649,13 @@ module Plume
 			if maybe_all_of :PRIMARY, :KEY
 				direction, * = maybe_one_of :ASC, :DESC
 				on_conflict = conflict_clause
-				autoincrement = maybe(:AUTOINCREMENT)
+				autoincrement_kw = maybe :AUTOINCREMENT
 
 				PrimaryKeyColumnConstraint.new(
 					full_source: @lexer.sql,
 					name: (Token::Identifier(*name) if name),
 					direction:,
-					autoincrement: (true if autoincrement),
+					autoincrement_kw: (Token::Keyword(*autoincrement_kw) if autoincrement_kw),
 					conflict_clause: on_conflict
 				)
 			elsif maybe_all_of :NOT, :NULL

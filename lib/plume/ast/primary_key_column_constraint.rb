@@ -2,9 +2,12 @@
 
 module Plume
 	class PrimaryKeyColumnConstraint < ColumnConstraint
+		optional_node :direction, Direction
+		optional_node :conflict_clause, ConflictClause
+
 		optional_token :name, inspect: true
-		prop :direction, _Nilable(Direction)
-		prop :conflict_clause, _Nilable(ConflictClause)
-		prop :autoincrement, _Nilable(_Boolean)
+		optional_token :autoincrement_kw
+
+		inspectable def autoincrement = !!@autoincrement_kw
 	end
 end

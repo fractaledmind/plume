@@ -2,7 +2,8 @@
 
 module Plume
 	class CheckColumnConstraint < ColumnConstraint
+		required_node :expression, Expression
+
 		optional_token :name, inspect: true
-		prop :expression, Expression
 	end
 end
