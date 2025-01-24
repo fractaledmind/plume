@@ -47,7 +47,7 @@ module Plume
 			RUBY
 		end
 
-		def self.node(name, type, required:, collection: false, inspect: true)
+		def self.node(name, type, required: true, collection: false, inspect: true)
 			prop_type = collection ? _Array(type) : type
 			prop_type = _Nilable(prop_type) unless required
 			prop :"#{name}", prop_type
