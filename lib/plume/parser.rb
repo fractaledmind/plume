@@ -1508,7 +1508,7 @@ module Plume
 					full_source: @lexer.sql,
 					name: (Token::Identifier(*name) if name),
 					columns:,
-					conflict_clause: on_conflict
+					conflict_clause: (Token::Keyword(*on_conflict) if on_conflict),
 				)
 			elsif maybe :CHECK
 				require :LP
@@ -1530,7 +1530,7 @@ module Plume
 					name: (Token::Identifier(*name) if name),
 					columns:,
 					autoincrement_kw: (Token::Keyword(*autoincrement_kw) if autoincrement_kw),
-					conflict_clause: on_conflict
+					conflict_clause: (Token::Keyword(*on_conflict) if on_conflict),
 				)
 			elsif maybe_all_of :FOREIGN, :KEY
 				require :LP
@@ -1656,7 +1656,7 @@ module Plume
 					name: (Token::Identifier(*name) if name),
 					direction:,
 					autoincrement_kw: (Token::Keyword(*autoincrement_kw) if autoincrement_kw),
-					conflict_clause: on_conflict
+					conflict_clause: (Token::Keyword(*on_conflict) if on_conflict),
 				)
 			elsif maybe_all_of :NOT, :NULL
 				on_conflict = conflict_clause
@@ -1664,7 +1664,7 @@ module Plume
 				NotNullColumnConstraint.new(
 					full_source: @lexer.sql,
 					name: (Token::Identifier(*name) if name),
-					conflict_clause: on_conflict
+					conflict_clause: (Token::Keyword(*on_conflict) if on_conflict),
 				)
 			elsif maybe :NULL
 				on_conflict = conflict_clause
@@ -1672,7 +1672,7 @@ module Plume
 				NullColumnConstraint.new(
 					full_source: @lexer.sql,
 					name: (Token::Identifier(*name) if name),
-					conflict_clause: on_conflict
+					conflict_clause: (Token::Keyword(*on_conflict) if on_conflict),
 				)
 			elsif maybe :UNIQUE
 				on_conflict = conflict_clause
@@ -1680,7 +1680,7 @@ module Plume
 				UniqueColumnConstraint.new(
 					full_source: @lexer.sql,
 					name: (Token::Identifier(*name) if name),
-					conflict_clause: on_conflict
+					conflict_clause: (Token::Keyword(*on_conflict) if on_conflict),
 				)
 			elsif maybe :CHECK
 				require :LP
@@ -1800,12 +1800,12 @@ module Plume
 			#                           ├─▶{ FAIL }─────▶─┤
 			#                           ├─▶{ IGNORE }───▶─┤
 			#                           └─▶{ REPLACE }──▶─┘
-			if maybe_all_of :ON, :CONFLICT
+			if (tok1, beg, _fin = maybe_all_of :ON, :CONFLICT)
 				case current_token
 				when :ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE
-					tok = current_token
-					require current_token
-					tok
+					tok2, _beg, fin = require current_token
+
+					[[*tok1, *tok2].freeze, beg, fin].freeze
 				else
 					expected! :ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE
 				end
@@ -2117,6 +2117,7 @@ module Plume
 					end_pos = fin if i == (len - 1) # last iteration
 					i += 1
 				else
+					# TODO: only show the tokens from `i` onwards
 					expected!(tokens)
 				end
 			end

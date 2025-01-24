@@ -212,7 +212,7 @@ test "parse basic create table with one column and a primary key constraint with
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::PrimaryKeyColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].direction, :DESC
-	assert_equal node.columns[0].constraints[0].conflict_clause, :ABORT
+	assert_equal node.columns[0].constraints[0].conflict_clause, "on conflict abort"
 	assert_equal node.columns[0].constraints[0].autoincrement, true
 end
 
@@ -226,7 +226,7 @@ test "parse basic create table with one column and a named primary key constrain
 	assert_operator Plume::PrimaryKeyColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].name, "name"
 	assert_equal node.columns[0].constraints[0].direction, :DESC
-	assert_equal node.columns[0].constraints[0].conflict_clause, :ABORT
+	assert_equal node.columns[0].constraints[0].conflict_clause, "on conflict abort"
 	assert_equal node.columns[0].constraints[0].autoincrement, true
 end
 
@@ -259,7 +259,7 @@ test "parse basic create table with one column and a not null constraint with op
 	assert_equal node.table_name, "tb0"
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::NotNullColumnConstraint, :===, node.columns[0].constraints[0]
-	assert_equal node.columns[0].constraints[0].conflict_clause, :ABORT
+	assert_equal node.columns[0].constraints[0].conflict_clause, "on conflict abort"
 end
 
 test "parse basic create table with one column and a named not null constraint with options" do
@@ -271,7 +271,7 @@ test "parse basic create table with one column and a named not null constraint w
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::NotNullColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].name, "name"
-	assert_equal node.columns[0].constraints[0].conflict_clause, :ABORT
+	assert_equal node.columns[0].constraints[0].conflict_clause, "on conflict abort"
 end
 
 test "parse basic create table with one column and a unique constraint" do
@@ -303,7 +303,7 @@ test "parse basic create table with one column and a unique constraint with opti
 	assert_equal node.table_name, "tb0"
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::UniqueColumnConstraint, :===, node.columns[0].constraints[0]
-	assert_equal node.columns[0].constraints[0].conflict_clause, :ABORT
+	assert_equal node.columns[0].constraints[0].conflict_clause, "on conflict abort"
 end
 
 test "parse basic create table with one column and a named unique constraint with options" do
@@ -315,7 +315,7 @@ test "parse basic create table with one column and a named unique constraint wit
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::UniqueColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].name, "name"
-	assert_equal node.columns[0].constraints[0].conflict_clause, :ABORT
+	assert_equal node.columns[0].constraints[0].conflict_clause, "on conflict abort"
 end
 
 test "parse basic create table with one column and a check constraint" do
@@ -953,7 +953,7 @@ test "parse a basic create table with a primary key table constraint with a conf
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::PrimaryKeyTableConstraint, :===, node.constraints[0]
 	assert_equal node.constraints[0].columns[0].column.name, "c0"
-	assert_equal node.constraints[0].conflict_clause, :ABORT
+	assert_equal node.constraints[0].conflict_clause, "on conflict abort"
 end
 
 test "parse a basic create table with an autoincrement composite primary key table constraint with a conflict clause" do
@@ -968,7 +968,7 @@ test "parse a basic create table with an autoincrement composite primary key tab
 	assert_equal node.constraints[0].columns[0].column.name, "c0"
 	assert_equal node.constraints[0].columns[1].column.name, "c1"
 	assert_equal node.constraints[0].autoincrement, true
-	assert_equal node.constraints[0].conflict_clause, :ABORT
+	assert_equal node.constraints[0].conflict_clause, "on conflict abort"
 end
 
 test "parse a basic create table with a unique table constraint" do
@@ -1004,7 +1004,7 @@ test "parse a basic create table with a unique table constraint with a conflict 
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::UniqueTableConstraint, :===, node.constraints[0]
 	assert_equal node.constraints[0].columns[0].column.name, "c0"
-	assert_equal node.constraints[0].conflict_clause, :ROLLBACK
+	assert_equal node.constraints[0].conflict_clause, "on conflict rollback"
 end
 
 test "parse a basic create table with a composite unique table constraint with a conflict clause" do
@@ -1018,7 +1018,7 @@ test "parse a basic create table with a composite unique table constraint with a
 	assert_operator Plume::UniqueTableConstraint, :===, node.constraints[0]
 	assert_equal node.constraints[0].columns[0].column.name, "c0"
 	assert_equal node.constraints[0].columns[1].column.name, "c1"
-	assert_equal node.constraints[0].conflict_clause, :ROLLBACK
+	assert_equal node.constraints[0].conflict_clause, "on conflict rollback"
 end
 
 test "parse a basic create table with a check table constraint" do
@@ -1168,7 +1168,7 @@ test "parse fully complex statement" do
 	assert_operator Plume::PrimaryKeyColumnConstraint, :===, node.columns[1].constraints[0]
 	assert_equal node.columns[1].constraints[0].name, "pk0"
 	assert_equal node.columns[1].constraints[0].direction, :DESC
-	assert_equal node.columns[1].constraints[0].conflict_clause, :ABORT
+	assert_equal node.columns[1].constraints[0].conflict_clause, "on conflict abort"
 	assert_equal node.columns[1].constraints[0].autoincrement, true
 
 	assert_equal node.columns[2].name, "c1"
@@ -1176,14 +1176,14 @@ test "parse fully complex statement" do
 	assert_equal node.columns[2].type.name, "int"
 	assert_operator Plume::NotNullColumnConstraint, :===, node.columns[2].constraints[0]
 	assert_equal node.columns[2].constraints[0].name, "nonnull"
-	assert_equal node.columns[2].constraints[0].conflict_clause, :ROLLBACK
+	assert_equal node.columns[2].constraints[0].conflict_clause, "on conflict rollback"
 
 	assert_equal node.columns[3].name, "c2"
 	assert_operator Plume::TextType, :===, node.columns[3].type
 	assert_equal node.columns[3].type.name, "text"
 	assert_operator Plume::UniqueColumnConstraint, :===, node.columns[3].constraints[0]
 	assert_equal node.columns[3].constraints[0].name, "uniqued"
-	assert_equal node.columns[3].constraints[0].conflict_clause, :IGNORE
+	assert_equal node.columns[3].constraints[0].conflict_clause, "on conflict ignore"
 
 	assert_equal node.columns[4].name, "c3"
 	assert_operator Plume::BlobType, :===, node.columns[4].type
@@ -1237,12 +1237,12 @@ test "parse fully complex statement" do
 	assert_equal node.constraints[0].columns[0].column.name, "c0"
 	assert_equal node.constraints[0].columns[1].column.name, "c1"
 	assert_equal node.constraints[0].autoincrement, true
-	assert_equal node.constraints[0].conflict_clause, :ABORT
+	assert_equal node.constraints[0].conflict_clause, "on conflict abort"
 
 	assert_operator Plume::UniqueTableConstraint, :===, node.constraints[1]
 	assert_equal node.constraints[1].columns[0].column.name, "c0"
 	assert_equal node.constraints[1].columns[1].column.name, "c1"
-	assert_equal node.constraints[1].conflict_clause, :ROLLBACK
+	assert_equal node.constraints[1].conflict_clause, "on conflict rollback"
 
 	assert_operator Plume::CheckTableConstraint, :===, node.constraints[2]
 	assert_equal node.constraints[2].expression.operator, :ABOVE
