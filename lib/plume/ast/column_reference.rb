@@ -4,6 +4,6 @@ module Plume
 	class ColumnReference < Node
 		prop :schema_name, _Nilable(String)
 		prop :table_name, _Nilable(String)
-		prop :column_name, String
+		prop :name, String
 	end
 end
