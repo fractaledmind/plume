@@ -5,6 +5,8 @@ module Plume
 		required_nodes :columns, IndexedColumn
 
 		optional_token :name, inspect: true
-		optional_token :conflict_clause, inspect: true
+		optional_token :conflict_clause
+
+		inspectable def on_conflict = conflict_clause_src&.sub(/ON CONFLICT /i, "")&.to_sym&.upcase
 	end
 end
