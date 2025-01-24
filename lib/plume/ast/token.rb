@@ -32,12 +32,16 @@ module Plume
 		def Current(tok, beg, fin)     = [tok, beg, fin, :current].freeze
 
 		def source(str, tup)
+			return unless tup
+
 			_, beg, fin, = tup
 
 			str.byteslice(beg, (fin - beg))
 		end
 
 		def value(str, tup)
+			return unless tup
+
 			*, type = tup
 
 			case type
@@ -55,6 +59,8 @@ module Plume
 		end
 
 		def location(tup)
+			return unless tup
+
 			_, beg, fin, = tup
 
 			[beg, fin].freeze
