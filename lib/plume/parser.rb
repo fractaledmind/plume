@@ -1497,14 +1497,14 @@ module Plume
 			#    ├─▶{ CHECK }─▶{ ( }─▶[ expr ]─▶{ ) }─────────────────────────────────────────────────────────────────▶─┤
 			#    └─▶{ FOREIGN }─▶{ KEY }─▶{ ( }┬▶[ indexed-column ]┬▶{ ) }─▶[ foreign-key-clause ]────────────────────▶─┘
 			#                                  └──────{ , }◀───────┘
-			name = identifier if maybe :CONSTRAINT
+			name = identifier_token if maybe :CONSTRAINT
 			if maybe :UNIQUE
 				require :LP
 				columns = one_or_more { indexed_column }
 				require :RP
 				on_conflict = conflict_clause
 				UniqueTableConstraint.new(
-					name:,
+					name: (Token::Identifier(*name) if name),
 					columns:,
 					conflict_clause: on_conflict
 				)
@@ -1513,7 +1513,7 @@ module Plume
 				check = expression
 				require :RP
 				CheckTableConstraint.new(
-					name:,
+					name: (Token::Identifier(*name) if name),
 					expression: check,
 				)
 			elsif maybe_all_of :PRIMARY, :KEY
@@ -1523,7 +1523,7 @@ module Plume
 				require :RP
 				on_conflict = conflict_clause
 				PrimaryKeyTableConstraint.new(
-					name:,
+					name: (Token::Identifier(*name) if name),
 					columns:,
 					autoincrement: (true if autoincrement),
 					conflict_clause: on_conflict
@@ -1534,12 +1534,13 @@ module Plume
 				require :RP
 				clause = foreign_key_clause
 				ForeignKeyTableConstraint.new(
+					name: (Token::Identifier(*name) if name),
 					columns:,
 					foreign_key_clause: clause,
 				)
 			else
 				if name
-					NoOpTableConstraint.new(name:)
+					NoOpTableConstraint.new(name: Token::Identifier(*name),)
 				else
 					expected!(:CONSTRAINT, :PRIMARY, :UNIQUE, :CHECK, :FOREIGN)
 				end

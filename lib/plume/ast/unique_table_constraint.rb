@@ -2,8 +2,8 @@
 
 module Plume
 	class UniqueTableConstraint < TableConstraint
-		prop :name, _Nilable(String)
-		prop :columns, _Array(IndexedColumn)
-		prop :conflict_clause, _Nilable(ConflictClause)
+		token :name, required: false, inspect: true
+		node :columns, IndexedColumn, required: true, collection: true
+		node :conflict_clause, ConflictClause, required: false
 	end
 end

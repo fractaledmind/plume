@@ -2,7 +2,7 @@
 
 module Plume
 	class CheckTableConstraint < TableConstraint
-		prop :name, _Nilable(String)
+		token :name, required: false, inspect: true
 		prop :expression, Expression
 	end
 end

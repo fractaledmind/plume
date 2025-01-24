@@ -2,6 +2,6 @@
 
 module Plume
 	class NoOpTableConstraint < TableConstraint
-		prop :name, _Nilable(String)
+		token :name, required: false, inspect: true
 	end
 end
