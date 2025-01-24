@@ -17,19 +17,21 @@ module Plume
 	# create table tb0 (c0 primary key desc on conflict abort autoincrement)
 	# ```
 	class CreateTableStatement < Node
-		token :create_kw, required: true
-		token :temp_kw, required: false
-		token :table_kw, required: true
-		token :if_not_exists_kw, required: false
-		token :schema_name, required: false, inspect: true
-		token :table_name, required: true, inspect: true
-		token :as_kw, required: false
-		token :columns_lp, required: false
-		token :columns_rp, required: false
-		node :select_statement, _Any, required: false
-		node :columns, ColumnDefinition, required: false, collection: true
-		node :constraints, TableConstraint, required: false, collection: true
-		node :options, TableOption, required: false, collection: true
+		optional_node :select_statement, _Any
+		optional_nodes :columns, ColumnDefinition
+		optional_nodes :constraints, TableConstraint
+		optional_nodes :options, TableOption
+
+		required_token :table_name, inspect: true
+		required_token :create_kw
+		required_token :table_kw
+
+		optional_token :schema_name, inspect: true
+		optional_token :as_kw
+		optional_token :columns_lp
+		optional_token :columns_rp
+		optional_token :if_not_exists_kw
+		optional_token :temp_kw
 
 		inspectable def temporary = !!@temp_kw
 		inspectable def if_not_exists = !!@if_not_exists_kw
