@@ -32,12 +32,20 @@ module Plume
 			token(name, required: false, **)
 		end
 
-		def self.required_node(name, type)
-			node(name, type, required: true)
+		def self.required_node(name, type, **)
+			node(name, type, required: true, **)
 		end
 
-		def self.optional_node(name, type)
-			node(name, type, required: false)
+		def self.optional_node(name, type, **)
+			node(name, type, required: false, **)
+		end
+
+		def self.required_nodes(name, type, **)
+			node(name, type, required: true, collection: true, **)
+		end
+
+		def self.optional_nodes(name, type, **)
+			node(name, type, required: false, collection: true, **)
 		end
 
 		def self.token(name, required:, inspect: false)
