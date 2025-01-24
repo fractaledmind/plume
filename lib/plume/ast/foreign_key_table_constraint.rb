@@ -2,8 +2,9 @@
 
 module Plume
 	class ForeignKeyTableConstraint < TableConstraint
-		token :name, required: false, inspect: true
-		prop :columns, _Array(IndexedColumn)
-		prop :foreign_key_clause, ForeignKeyClause
+		required_nodes :columns, IndexedColumn
+		required_node :foreign_key_clause, ForeignKeyClause
+
+		optional_token :name, inspect: true
 	end
 end

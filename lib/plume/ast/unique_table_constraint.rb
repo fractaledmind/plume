@@ -2,8 +2,10 @@
 
 module Plume
 	class UniqueTableConstraint < TableConstraint
-		token :name, required: false, inspect: true
-		node :columns, IndexedColumn, required: true, collection: true
-		node :conflict_clause, ConflictClause, required: false
+		required_nodes :columns, IndexedColumn
+
+		optional_node :conflict_clause, ConflictClause
+
+		optional_token :name, inspect: true
 	end
 end

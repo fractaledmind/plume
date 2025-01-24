@@ -2,6 +2,6 @@
 
 module Plume
 	class NoOpTableConstraint < TableConstraint
-		token :name, required: false, inspect: true
+		optional_token :name, inspect: true
 	end
 end

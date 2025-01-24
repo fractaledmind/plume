@@ -2,7 +2,8 @@
 
 module Plume
 	class CheckTableConstraint < TableConstraint
-		token :name, required: false, inspect: true
-		prop :expression, Expression
+		required_node :expression, Expression
+
+		optional_token :name, inspect: true
 	end
 end
