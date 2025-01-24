@@ -1519,13 +1519,13 @@ module Plume
 			elsif maybe_all_of :PRIMARY, :KEY
 				require :LP
 				columns = one_or_more { indexed_column }
-				autoincrement = maybe :AUTOINCREMENT
+				autoincrement_kw = maybe :AUTOINCREMENT
 				require :RP
 				on_conflict = conflict_clause
 				PrimaryKeyTableConstraint.new(
 					name: (Token::Identifier(*name) if name),
 					columns:,
-					autoincrement: (true if autoincrement),
+					autoincrement_kw: (Token::Keyword(*autoincrement_kw) if autoincrement_kw),
 					conflict_clause: on_conflict
 				)
 			elsif maybe_all_of :FOREIGN, :KEY
