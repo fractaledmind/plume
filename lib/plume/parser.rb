@@ -1498,12 +1498,14 @@ module Plume
 			#    └─▶{ FOREIGN }─▶{ KEY }─▶{ ( }┬▶[ indexed-column ]┬▶{ ) }─▶[ foreign-key-clause ]────────────────────▶─┘
 			#                                  └──────{ , }◀───────┘
 			name = identifier_token if maybe :CONSTRAINT
+
 			if maybe :UNIQUE
 				require :LP
 				columns = one_or_more { indexed_column }
 				require :RP
 				on_conflict = conflict_clause
 				UniqueTableConstraint.new(
+					full_source: @lexer.sql,
 					name: (Token::Identifier(*name) if name),
 					columns:,
 					conflict_clause: on_conflict
@@ -1513,6 +1515,7 @@ module Plume
 				check = expression
 				require :RP
 				CheckTableConstraint.new(
+					full_source: @lexer.sql,
 					name: (Token::Identifier(*name) if name),
 					expression: check,
 				)
@@ -1523,6 +1526,7 @@ module Plume
 				require :RP
 				on_conflict = conflict_clause
 				PrimaryKeyTableConstraint.new(
+					full_source: @lexer.sql,
 					name: (Token::Identifier(*name) if name),
 					columns:,
 					autoincrement_kw: (Token::Keyword(*autoincrement_kw) if autoincrement_kw),
@@ -1534,13 +1538,17 @@ module Plume
 				require :RP
 				clause = foreign_key_clause
 				ForeignKeyTableConstraint.new(
+					full_source: @lexer.sql,
 					name: (Token::Identifier(*name) if name),
 					columns:,
 					foreign_key_clause: clause,
 				)
 			else
 				if name
-					NoOpTableConstraint.new(name: Token::Identifier(*name),)
+					NoOpTableConstraint.new(
+						full_source: @lexer.sql,
+						name: Token::Identifier(*name),
+					)
 				else
 					expected!(:CONSTRAINT, :PRIMARY, :UNIQUE, :CHECK, :FOREIGN)
 				end
