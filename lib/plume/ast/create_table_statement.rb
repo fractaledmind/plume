@@ -31,10 +31,10 @@ module Plume
 		node :constraints, TableConstraint, required: false, collection: true
 		node :options, TableOption, required: false, collection: true
 
-		def temporary = !!@temp_kw
-		def if_not_exists = !!@if_not_exists_kw
-		def strict = @options&.any?(StrictTableOption)
-		def without_row_id = @options&.any?(WithoutRowidTableOption)
+		inspectable def temporary = !!@temp_kw
+		inspectable def if_not_exists = !!@if_not_exists_kw
+		inspectable def strict = @options&.any?(StrictTableOption)
+		inspectable def without_row_id = @options&.any?(WithoutRowidTableOption)
 
 		def after_initialize
 			raise ArgumentError unless (!!@select_statement ^ @columns&.any?)
