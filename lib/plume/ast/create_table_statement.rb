@@ -11,18 +11,6 @@ module Plume
 	# - `without_row_id` → `_Nilable(_Boolean)`
 	# - `constraints` → `_Array(TableConstraint)`
 	#
-	# ```
-	# ◯─▶{ CREATE }┬───────▶──────┬▶{ TABLE }┬▶{ IF }─▶{ NOT }─▶{ EXISTS }─┐
-	#              ├▶{ TEMP }─────┤          │                             │
-	#              └▶{ TEMPORARY }┘          │                             │
-	# ┌─────────────────────◀────────────────┴──────────────────◀──────────┘
-	# ├─▶{ schema-name }─▶{ . }─┬▶{ table-name }┬───────▶{ AS }─▶[ select-stmt ]───▶──────┐
-	# └────────▶────────────────┘               │                                         │
-	# ┌────────────────────◀────────────────────┘                      ┌────────▶─────────┼─▶◯
-	# └▶{ ( }─┬▶[ column-def ]─┬▶┬──────────────────────────────┬▶{ ) }┴▶[ table-options ]┘
-	#         └─────{ , }◀─────┘ └[ table-constraint ]◀─{ ,* }◀─┘
-	# ```
-	#
 	# **[SQLite Docs](https://www.sqlite.org/lang_createtable.html)**
 	#
 	# ```sql
