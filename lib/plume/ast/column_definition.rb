@@ -2,8 +2,8 @@
 
 module Plume
 	class ColumnDefinition < Node
-		prop :name, String
-		prop :type_name, _Nilable(Type)
-		prop :constraints, _Nilable(_Array(ColumnConstraint))
+		token :name, required: true, inspect: true
+		node :type, Type, required: false
+		node :constraints, ColumnConstraint, required: false, collection: true
 	end
 end

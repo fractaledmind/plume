@@ -1180,7 +1180,7 @@ module Plume
 				case current_token
 				in :IN
 					ColumnReference.new(
-						column_name: id,
+						name: id,
 					)
 				in :LP
 					function_name = id.to_sym.upcase
@@ -1205,17 +1205,17 @@ module Plume
 						ColumnReference.new(
 							schema_name: schema_or_table_name,
 							table_name: table_or_column_name,
-							column_name:,
+							name: column_name,
 						)
 					else
 						ColumnReference.new(
 							table_name: schema_or_table_name,
-							column_name: table_or_column_name,
+							name: table_or_column_name,
 						)
 					end
 				else
 					ColumnReference.new(
-						column_name: id,
+						name: id,
 					)
 				end
 			elsif :RAISE == current_token
@@ -1464,13 +1464,14 @@ module Plume
 			# ◯─▶{ column-name }─┬─▶[ type-name ]─┬▶┬─▶───────────────────▶──┬─▶◯
 			#                    └────────▶───────┘ └─[ column-constraint ]◀─┘
 
-			column_name = identifier
+			name = identifier_token
 			type = maybe { type_name }
 			constraints = zero_or_more(sep: nil) { column_constraint }
 
 			ColumnDefinition.new(
-				name: column_name,
-				type_name: type,
+				full_source: @lexer.sql,
+				name: Token::Identifier(*name),
+				type:,
 				constraints: (constraints if constraints.any?)
 			)
 		end
@@ -1740,9 +1741,9 @@ module Plume
 			#    └▶[ expr ]─────▶──┘└─▶{ COLLATE }─▶{ collation-name }┘├─▶{ ASC }─▶─┤
 			#                                                          └─▶{ DESC }──┘
 			if :ID == current_token
-				name = ColumnReference.new(column_name: identifier)
+				name = ColumnReference.new(name: identifier)
 			elsif (e = maybe { expression })
-				name = (ColumnReference === e) ? e : ColumnReference.new(column_name: e)
+				name = (ColumnReference === e) ? e : ColumnReference.new(name: e)
 			else
 				expected! :ID, "expr"
 			end
@@ -2232,7 +2233,7 @@ module Plume
 		# Advance the implicit cursor pointing to the first token in the buffer by `n` tokens.
 		# Returns the new token at the head of the buffer.
 		def advance
-			ensure_buffer(n)
+			ensure_buffer
 			@peek_buffer.shift
 		end
 
