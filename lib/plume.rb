@@ -8,7 +8,6 @@ module Plume
 
 	autoload :Lexer, "plume/lexer"
 	autoload :Parser, "plume/parser"
-	autoload :Token, "plume/ast/token"
 
 	autoload :AnyType, "plume/ast/any_type"
 	autoload :BinaryExpression, "plume/ast/binary_expression"
