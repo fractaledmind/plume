@@ -327,7 +327,7 @@ test "parse basic create table with one column and a check constraint" do
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::CheckColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].expression.operator, :ABOVE
-	assert_equal node.columns[0].constraints[0].expression.left, Plume::ColumnReference.new(name: "c0")
+	assert_equal node.columns[0].constraints[0].expression.left, Plume::ColumnReference.new(column_name: "c0")
 	assert_equal node.columns[0].constraints[0].expression.right, 0
 end
 
@@ -341,7 +341,7 @@ test "parse basic create table with one column and a named check constraint" do
 	assert_operator Plume::CheckColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].name, "name"
 	assert_equal node.columns[0].constraints[0].expression.operator, :ABOVE
-	assert_equal node.columns[0].constraints[0].expression.left, Plume::ColumnReference.new(name: "c0")
+	assert_equal node.columns[0].constraints[0].expression.left, Plume::ColumnReference.new(column_name: "c0")
 	assert_equal node.columns[0].constraints[0].expression.right, 0
 end
 
@@ -916,7 +916,7 @@ test "parse a basic create table with a primary key table constraint" do
 	assert_equal node.table_name, "tb0"
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::PrimaryKeyTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
 end
 
 test "parse a basic create table with a composite primary key table constraint" do
@@ -928,8 +928,8 @@ test "parse a basic create table with a composite primary key table constraint" 
 	assert_equal node.columns[0].name, "c0"
 	assert_equal node.columns[1].name, "c1"
 	assert_operator Plume::PrimaryKeyTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
-	assert_equal node.constraints[0].columns[1].column.name, "c1"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
+	assert_equal node.constraints[0].columns[1].column.column_name, "c1"
 end
 
 test "parse a basic create table with an autoincrement primary key table constraint" do
@@ -940,7 +940,7 @@ test "parse a basic create table with an autoincrement primary key table constra
 	assert_equal node.table_name, "tb0"
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::PrimaryKeyTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
 	assert_equal node.constraints[0].autoincrement, true
 end
 
@@ -952,7 +952,7 @@ test "parse a basic create table with a primary key table constraint with a conf
 	assert_equal node.table_name, "tb0"
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::PrimaryKeyTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
 	assert_equal node.constraints[0].on_conflict, :ABORT
 end
 
@@ -965,8 +965,8 @@ test "parse a basic create table with an autoincrement composite primary key tab
 	assert_equal node.columns[0].name, "c0"
 	assert_equal node.columns[1].name, "c1"
 	assert_operator Plume::PrimaryKeyTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
-	assert_equal node.constraints[0].columns[1].column.name, "c1"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
+	assert_equal node.constraints[0].columns[1].column.column_name, "c1"
 	assert_equal node.constraints[0].autoincrement, true
 	assert_equal node.constraints[0].on_conflict, :ABORT
 end
@@ -979,7 +979,7 @@ test "parse a basic create table with a unique table constraint" do
 	assert_equal node.table_name, "tb0"
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::UniqueTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
 end
 
 test "parse a basic create table with a composite unique table constraint" do
@@ -991,8 +991,8 @@ test "parse a basic create table with a composite unique table constraint" do
 	assert_equal node.columns[0].name, "c0"
 	assert_equal node.columns[1].name, "c1"
 	assert_operator Plume::UniqueTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
-	assert_equal node.constraints[0].columns[1].column.name, "c1"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
+	assert_equal node.constraints[0].columns[1].column.column_name, "c1"
 end
 
 test "parse a basic create table with a unique table constraint with a conflict clause" do
@@ -1003,7 +1003,7 @@ test "parse a basic create table with a unique table constraint with a conflict 
 	assert_equal node.table_name, "tb0"
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::UniqueTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
 	assert_equal node.constraints[0].on_conflict, :ROLLBACK
 end
 
@@ -1016,8 +1016,8 @@ test "parse a basic create table with a composite unique table constraint with a
 	assert_equal node.columns[0].name, "c0"
 	assert_equal node.columns[1].name, "c1"
 	assert_operator Plume::UniqueTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
-	assert_equal node.constraints[0].columns[1].column.name, "c1"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
+	assert_equal node.constraints[0].columns[1].column.column_name, "c1"
 	assert_equal node.constraints[0].on_conflict, :ROLLBACK
 end
 
@@ -1030,7 +1030,7 @@ test "parse a basic create table with a check table constraint" do
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::CheckTableConstraint, :===, node.constraints[0]
 	assert_equal node.constraints[0].expression.operator, :ABOVE
-	assert_equal node.constraints[0].expression.left, Plume::ColumnReference.new(name: "c0")
+	assert_equal node.constraints[0].expression.left, Plume::ColumnReference.new(column_name: "c0")
 	assert_equal node.constraints[0].expression.right, 0
 end
 
@@ -1042,7 +1042,7 @@ test "parse a basic create table with a foreign key table constraint" do
 	assert_equal node.table_name, "tb0"
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::ForeignKeyTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
 	assert_equal node.constraints[0].foreign_key_clause.foreign_table, "tb1"
 	assert_equal node.constraints[0].foreign_key_clause.columns[0], "c1"
 end
@@ -1055,7 +1055,7 @@ test "parse a basic create table with a foreign key table constraint with on del
 	assert_equal node.table_name, "tb0"
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::ForeignKeyTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
 	assert_equal node.constraints[0].foreign_key_clause.foreign_table, "tb1"
 	assert_equal node.constraints[0].foreign_key_clause.columns[0], "c1"
 	assert_equal node.constraints[0].foreign_key_clause.on_delete, :NO_ACTION
@@ -1069,7 +1069,7 @@ test "parse a basic create table with a foreign key table constraint with on upd
 	assert_equal node.table_name, "tb0"
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::ForeignKeyTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
 	assert_equal node.constraints[0].foreign_key_clause.foreign_table, "tb1"
 	assert_equal node.constraints[0].foreign_key_clause.columns[0], "c1"
 	assert_equal node.constraints[0].foreign_key_clause.on_update, :NO_ACTION
@@ -1083,7 +1083,7 @@ test "parse a basic create table with a foreign key table constraint with on del
 	assert_equal node.table_name, "tb0"
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::ForeignKeyTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
 	assert_equal node.constraints[0].foreign_key_clause.foreign_table, "tb1"
 	assert_equal node.constraints[0].foreign_key_clause.columns[0], "c1"
 	assert_equal node.constraints[0].foreign_key_clause.on_delete, :CASCADE
@@ -1098,7 +1098,7 @@ test "parse a basic create table with a foreign key table constraint with match 
 	assert_equal node.table_name, "tb0"
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::ForeignKeyTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
 	assert_equal node.constraints[0].foreign_key_clause.foreign_table, "tb1"
 	assert_equal node.constraints[0].foreign_key_clause.columns[0], "c1"
 	assert_equal node.constraints[0].foreign_key_clause.match_name, "full"
@@ -1112,7 +1112,7 @@ test "parse a basic create table with a foreign key table constraint with deferr
 	assert_equal node.table_name, "tb0"
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::ForeignKeyTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
 	assert_equal node.constraints[0].foreign_key_clause.foreign_table, "tb1"
 	assert_equal node.constraints[0].foreign_key_clause.columns[0], "c1"
 	assert_equal node.constraints[0].foreign_key_clause.deferred, true
@@ -1126,7 +1126,7 @@ test "parse a basic create table with a foreign key table constraint with on del
 	assert_equal node.table_name, "tb0"
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::ForeignKeyTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
 	assert_equal node.constraints[0].foreign_key_clause.foreign_table, "tb1"
 	assert_equal node.constraints[0].foreign_key_clause.columns[0], "c1"
 	assert_equal node.constraints[0].foreign_key_clause.on_delete, :CASCADE
@@ -1191,7 +1191,7 @@ test "parse fully complex statement" do
 	assert_operator Plume::CheckColumnConstraint, :===, node.columns[4].constraints[0]
 	assert_equal node.columns[4].constraints[0].name, "checked"
 	assert_equal node.columns[4].constraints[0].expression.operator, :ABOVE
-	assert_equal node.columns[4].constraints[0].expression.left, Plume::ColumnReference.new(name: "c3")
+	assert_equal node.columns[4].constraints[0].expression.left, Plume::ColumnReference.new(column_name: "c3")
 	assert_equal node.columns[4].constraints[0].expression.right, 0
 
 	assert_equal node.columns[5].name, "c4"
@@ -1234,23 +1234,23 @@ test "parse fully complex statement" do
 	assert_equal node.columns[8].constraints[0].foreign_key_clause.on_delete, :SET_NULL
 
 	assert_operator Plume::PrimaryKeyTableConstraint, :===, node.constraints[0]
-	assert_equal node.constraints[0].columns[0].column.name, "c0"
-	assert_equal node.constraints[0].columns[1].column.name, "c1"
+	assert_equal node.constraints[0].columns[0].column.column_name, "c0"
+	assert_equal node.constraints[0].columns[1].column.column_name, "c1"
 	assert_equal node.constraints[0].autoincrement, true
 	assert_equal node.constraints[0].on_conflict, :ABORT
 
 	assert_operator Plume::UniqueTableConstraint, :===, node.constraints[1]
-	assert_equal node.constraints[1].columns[0].column.name, "c0"
-	assert_equal node.constraints[1].columns[1].column.name, "c1"
+	assert_equal node.constraints[1].columns[0].column.column_name, "c0"
+	assert_equal node.constraints[1].columns[1].column.column_name, "c1"
 	assert_equal node.constraints[1].on_conflict, :ROLLBACK
 
 	assert_operator Plume::CheckTableConstraint, :===, node.constraints[2]
 	assert_equal node.constraints[2].expression.operator, :ABOVE
-	assert_equal node.constraints[2].expression.left, Plume::ColumnReference.new(name: "c0")
+	assert_equal node.constraints[2].expression.left, Plume::ColumnReference.new(column_name: "c0")
 	assert_equal node.constraints[2].expression.right, 0
 
 	assert_operator Plume::ForeignKeyTableConstraint, :===, node.constraints[3]
-	assert_equal node.constraints[3].columns[0].column.name, "c0"
+	assert_equal node.constraints[3].columns[0].column.column_name, "c0"
 	assert_equal node.constraints[3].foreign_key_clause.foreign_table, "tb1"
 	assert_equal node.constraints[3].foreign_key_clause.columns[0], "c1"
 	assert_equal node.constraints[3].foreign_key_clause.on_delete, :CASCADE

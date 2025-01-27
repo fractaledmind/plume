@@ -17,26 +17,16 @@ module Plume
 	# create table tb0 (c0 primary key desc on conflict abort autoincrement)
 	# ```
 	class CreateTableStatement < Node
-		optional_node :select_statement, _Any
-		optional_nodes :columns, ColumnDefinition
-		optional_nodes :constraints, TableConstraint
-		optional_nodes :options, TableOption
-
-		required_token :table_name, inspect: true
-		required_token :create_kw
-		required_token :table_kw
-
-		optional_token :schema_name, inspect: true
-		optional_token :as_kw
-		optional_token :columns_lp
-		optional_token :columns_rp
-		optional_token :if_not_exists_kw
-		optional_token :temp_kw
-
-		inspectable def temporary = !!@temp_kw
-		inspectable def if_not_exists = !!@if_not_exists_kw
-		inspectable def strict = @options&.any?(StrictTableOption)
-		inspectable def without_row_id = @options&.any?(WithoutRowidTableOption)
+		prop :schema_name, _Nilable(String)
+		prop :table_name, String
+		prop :select_statement, _Nilable(_Any)
+		prop :columns, _Nilable(_Array(ColumnDefinition))
+		prop :strict, _Nilable(_Boolean)
+		prop :temporary, _Nilable(_Boolean)
+		prop :if_not_exists, _Nilable(_Boolean)
+		prop :without_row_id, _Nilable(_Boolean)
+		prop :constraints, _Nilable(_Array(TableConstraint))
+		prop :options, _Nilable(_Array(TableOption))
 
 		def after_initialize
 			raise ArgumentError unless (!!@select_statement ^ @columns&.any?)

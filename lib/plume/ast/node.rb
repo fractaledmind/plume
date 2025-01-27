@@ -2,7 +2,7 @@
 
 module Plume
 	class Node < Literal::Data
-		prop :full_source, _Nilable(String) # , inspect: false
+		# prop :full_source, _Nilable(String) # , inspect: false
 		# prop :loc, Location
 
 		def self.inspectable(*props)

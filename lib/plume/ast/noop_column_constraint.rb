@@ -2,6 +2,6 @@
 
 module Plume
 	class NoOpColumnConstraint < ColumnConstraint
-		optional_token :name, inspect: true
+		prop :name, _Nilable(String)
 	end
 end

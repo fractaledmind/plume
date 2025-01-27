@@ -4,10 +4,8 @@ module Plume
 	class GeneratedAsColumnConstraint < ColumnConstraint
 		Type = _Union(:STORED, :VIRTUAL)
 
-		required_node :expression, Expression
-
-		optional_node :type, Type
-
-		optional_token :name, inspect: true
+		prop :name, _Nilable(String)
+		prop :expression, Expression
+		prop :type, _Nilable(Type)
 	end
 end

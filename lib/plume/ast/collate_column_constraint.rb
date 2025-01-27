@@ -2,8 +2,7 @@
 
 module Plume
 	class CollateColumnConstraint < ColumnConstraint
-		required_node :collation_name, Symbol
-
-		optional_token :name, inspect: true
+		prop :name, _Nilable(String)
+		prop :collation_name, Symbol
 	end
 end
