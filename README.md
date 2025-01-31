@@ -171,23 +171,23 @@ Tokenize a SQL query with the `Plume::Lexer` class:
 
 ```ruby
 lexer = Plume::Lexer.new("SELECT * FROM users WHERE id = 1")
-tokens = lexer.tokenize
+tokens = lexer.tokens.to_a
 # =>
-# [Plume::TK::SELECT["SELECT"],
-#  Plume::TK::SPACE[" "],
-#  Plume::TK::STAR["*"],
-#  Plume::TK::SPACE[" "],
-#  Plume::TK::FROM["FROM"],
-#  Plume::TK::SPACE[" "],
-#  Plume::TK::ID["users"],
-#  Plume::TK::SPACE[" "],
-#  Plume::TK::WHERE["WHERE"],
-#  Plume::TK::SPACE[" "],
-#  Plume::TK::ID["id"],
-#  Plume::TK::SPACE[" "],
-#  Plume::TK::EQ["="],
-#  Plume::TK::SPACE[" "],
-#  Plume::TK::INTEGER["1"]]
+# [:SELECT,
+#  :SPACE,
+#  :STAR,
+#  :SPACE,
+#  :FROM,
+#  :SPACE,
+#  :ID,
+#  :SPACE,
+#  :WHERE,
+#  :SPACE,
+#  :ID,
+#  :SPACE,
+#  :EQ,
+#  :SPACE,
+#  :INTEGER]
 ```
 
 SQLite works with a grammar of _167_ token types, _136_ of which are keywords. The remaining _31_ are punctuation, operators, and literals.
