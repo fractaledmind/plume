@@ -330,7 +330,7 @@ module Plume
 		end
 
 		def value
-			@sql.byteslice(@anchor...@cursor)
+			@sql.byteslice(@anchor, (@cursor - @anchor))
 		end
 
 		private
