@@ -1956,6 +1956,14 @@ module Plume
 						name:,
 						value: unwrap_id
 					)
+				elsif (sign = maybe_one_of :PLUS, :MINUS)
+					DefaultColumnConstraint.new(
+						name:,
+						value: SignedExpression.new(
+							sign:,
+							expression: expression
+						)
+					)
 				else
 					expected! :LP, "literal-value", "signed-number"
 				end

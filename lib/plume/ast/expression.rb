@@ -16,6 +16,7 @@ module Plume
 				CollationExpression,
 				RaiseExpression,
 				FunctionReference,
+				SignedExpression,
 			)
 		},
 	)

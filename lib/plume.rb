@@ -9,6 +9,7 @@ module Plume
 	autoload :Lexer, "plume/lexer"
 	autoload :Parser, "plume/parser"
 
+	autoload :SignedExpression, "plume/ast/signed_expression"
 	autoload :AnyType, "plume/ast/any_type"
 	autoload :BinaryExpression, "plume/ast/binary_expression"
 	autoload :Blob, "plume/ast/blob"
