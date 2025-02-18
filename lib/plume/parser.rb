@@ -409,16 +409,44 @@ module Plume
 			#                           ┌────────────────────────┐
 			# ◯─▶─{ ALTER }─▶{ TABLE }─▶┴▶{ schema-name }─▶{ . }─┴▶{ table-name }─┐
 			# ┌───────────────────────────────────────────────────────────────────┘
-			# ├─▶{ RENAME }─▶{ TO }─▶{ new-table-name }───────────────────────────────────┬─▶◯
+			# ├─▶{ RENAME }─▶{ TO }─▶{ new-table-name }─────────────────────────────────────┬─▶◯
 			# ├─▶{ RENAME }─▶┬─▶{ COLUMN }─┬▶{ column-name }─▶{ TO }─▶{ new-column-name }─▶─┤
-			# │            └──────▶──────┘                                                │
-			# ├─▶{ ADD }─▶┬─▶{ COLUMN }─┬▶{ column-def }────────────────────────────────▶─┤
-			# │           └──────▶──────┘                                                 │
-			# └─▶{ DROP }─▶┬─▶{ COLUMN }─┬▶{ column-name }──────────────────────────────▶─┘
+			# │              └──────▶──────┘                                                │
+			# ├─▶{ ADD }─▶┬─▶{ COLUMN }─┬▶[ column-def ]──────────────────────────────────▶─┤
+			# │           └──────▶──────┘                                                   │
+			# └─▶{ DROP }─▶┬─▶{ COLUMN }─┬▶{ column-name }────────────────────────────────▶─┘
 			#              └──────▶──────┘
-			require current_token until current_token.nil?
+			require_all_of :ALTER, :TABLE
+			schema_name, table_name = table_ref
+			table = TableReference.new(
+				schema_name:,
+				table_name:,
+			)
 
-			:alter_table_stmt
+			if maybe_all_of :RENAME, :TO
+				new_table_name = identifier
+
+				{ ALTER_TABLE: { RENAME_TABLE: [table, new_table_name] } }
+			elsif maybe :RENAME
+				maybe :COLUMN
+				column_name = identifier
+				require :TO
+				new_column_name = identifier
+
+				{ ALTER_TABLE: { RENAME_COLUMN: { table => [column_name, new_column_name] } } }
+			elsif maybe :ADD
+				maybe :COLUMN
+				definition = maybe { column_def }
+
+				{ ALTER_TABLE: { ADD_COLUMN: { table => definition } } }
+			elsif maybe :DROP
+				maybe :COLUMN
+				column_name = identifier
+
+				{ ALTER_TABLE: { DROP_COLUMN: { table => column_name } } }
+			else
+				expected!(:RENAME, :ADD, :DROP)
+			end
 		end
 
 		# TODO
