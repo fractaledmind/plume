@@ -2499,7 +2499,7 @@ module Plume
 		end
 
 		# Ensure that the `@peek_buffer` has at least `size` tokens.
-		# Note: the buffer is a nested array of `[token, start_pos, end_pos]` triples,
+		# Note: the buffer is a nested array of `[token, start_pos, end_pos]` triples
 		def ensure_buffer(size = 1)
 			lexer = @lexer
 			@peek_buffer.tap do |buf|
