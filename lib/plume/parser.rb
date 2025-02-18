@@ -590,7 +590,7 @@ module Plume
 				)
 			elsif maybe :LP
 				columns = one_or_more { column_def }
-				constraints = zero_or_more(sep: :COMMA, optional: true) { table_constraint }
+				constraints = zero_or_more(optional: true) { table_constraint }
 				require :RP
 				options = maybe { table_options }
 
