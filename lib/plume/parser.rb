@@ -836,38 +836,255 @@ module Plume
 		def select_stmt
 			# ◯─▶┬▶[ with-stmt ]─┐
 			#    ├───────◀───────┘
-			# ┌──┴▶┬─────▶{ SELECT }─┬───────▶──────┬─┬▶[ result-column ]─┐
-			# │    │                 ├▶{ DISTINCT }┤  └─────{ , }◀────────┤
-			# ▲    │                 └▶{ ALL }────▶┘                      │
-			# │    │    ┌──────────────────────────◀──────────────────────┘
-			# │    │    ├─▶{ FROM }┬─┬▶[ table-or-subquery ]─┬─┬─▶───┐
-			# │    │    │          │ └────────{ , }◀─────────┘ ▲     ▼
-			# │    │    │          └──▶[ join-clause ]─────────┘     │
-			# │    │    ├──────────────────────◀─────────────────────┘
-			# │    │    ├─▶{ WHERE }─▶[ expr ]─┐
-			# │    │    ├──────────◀───────────┘
-			# │    │    ├────────────▶─────────────────┐
-			# │    │    ├─▶{ GROUP }─▶{ BY }┬▶[ expr ]┬┴▶┬─▶{ HAVING }─▶[ expr ]─┬─┐
-			# │    │    ▼                   └──{ , }◀─┘  └────────▶──────────────┘ ▼
-			# │    │    ├─────────────────────────────◀────────────────────────────┘
-			# │    │    ├─▶{ WINDOW }┬▶{ window-name }─▶{ AS }─▶[ window-defn ]─┐
-			# ▲    │    │            └───────────────────{ , }◀─────────────────┤
-			# │    │    └──────────────────────▶─────────────────────────────▶──┤
-			# │    │                    ┌──{ , }◀─┐                             ▼
-			# │    └─▶{ VALUES }┬▶{ ( }─┴▶[ expr ]┴─▶{ ) }─┬─────────────────▶──┤
-			# │                 └──────────{ , }◀──────────┘                    │
-			# └────────────────────[ compound-operator ]◀───────────────────────┤
-			#             ┌──────────────────◀──────────────────────────────────┘
-			#             ├─▶{ ORDER }─▶{ BY }┬▶[ ordering-term ]─┬┐
-			#             ▼                   └───────{ , }◀──────┘│
-			#             ├────────────────◀───────────────────────┘
-			#             ├─▶{ LIMIT }─▶[ expr ]─▶┬───────────────────────▶─┐
-			#             │                       ├─▶{ OFFSET }─▶[ expr ]─▶─┤
-			#             │                       └─▶{ , }─▶[ expr ]──────▶─┤
-			#             └───────────────────────────────────────────────▶─┴───────▶◯
-			require current_token until current_token.nil?
+			# ┌──┴──────────────▶[ select-core ]───────────────────┐
+			# └──────────◀────[ compound-operator ]◀───────────────┤
+			#  ┌──────────────────◀────────────────────────────────┘
+			#  ├─▶{ ORDER }─▶{ BY }┬▶[ ordering-term ]─┬┐
+			#  ▼                   └───────{ , }◀──────┘│
+			#  ├────────────────◀───────────────────────┘
+			#  ├─▶{ LIMIT }─▶[ expr ]─▶┬───────────────────────▶─┐
+			#  │                       ├─▶{ OFFSET }─▶[ expr ]─▶─┤
+			#  │                       └─▶{ , }─▶[ expr ]──────▶─┤
+			#  └───────────────────────────────────────────────▶─┴───────▶◯
+			# seltablist ::= stl_prefix LP select RP as on_using
+			# seltablist ::= stl_prefix LP seltablist RP as on_using
+			# seltablist ::= stl_prefix nm dbnm LP exprlist RP as on_using
+			# seltablist ::= stl_prefix nm dbnm as indexed_by on_using
+			# seltablist ::= stl_prefix nm dbnm as on_using
+			# stl_prefix ::= seltablist joinop
+			# stl_prefix ::=
 
+			# with = maybe { with_stmt }
+			# x = select_core
+
+
+			require current_token until current_token.nil?
 			:select_stmt
+		end
+
+		def select_core
+			# ◯─┬───▶{ SELECT }─┬───────▶──────┬─┬▶[ result-column ]─┐
+			#   │               ├▶{ DISTINCT }─┤ └─────{ , }◀────────┤
+			#   │               └▶{ ALL }─────▶┘                     │
+			#   │  ┌──────────────────────────◀──────────────────────┘
+			#   │  ├─▶{ FROM }┬─┬▶[ table-or-subquery ]─┬─┬─▶───┐
+			#   │  │          │ └────────{ , }◀─────────┘ ▲     ▼
+			#   │  │          └──▶[ join-clause ]─────────┘     │
+			#   │  ├──────────────────────◀─────────────────────┘
+			#   │  ├─▶{ WHERE }─▶[ expr ]─┐
+			#   │  ├──────────◀───────────┘
+			#   │  ├────────────▶─────────────────┐
+			#   │  ├─▶{ GROUP }─▶{ BY }┬▶[ expr ]┬┴▶┬─▶{ HAVING }─▶[ expr ]─┬─┐
+			#   │  ▼                   └──{ , }◀─┘  └────────▶──────────────┘ ▼
+			#   │  ├─────────────────────────────◀────────────────────────────┘
+			#   │  ├─▶{ WINDOW }┬▶{ window-name }─▶{ AS }─▶[ window-defn ]─┐
+			#   │  │            └───────────────────{ , }◀─────────────────┤
+			#   │  └──────────────────────▶─────────────────────────────▶──┴─┬───▶◯
+			#   │                  ┌──{ , }◀─┐                               │
+			#   └─▶{ VALUES }┬▶{ ( }─┴▶[ expr ]┴─▶{ ) }─┬─────────────────▶──┘
+			#                └──────────{ , }◀──────────┘
+
+			if maybe :SELECT
+				type = maybe_one_of :DISTINCT, :ALL
+				columns = one_or_more { result_column }
+				from, condition, group_by, having, window, order_by, limit, offset = nil
+				if maybe :FROM
+					from = one_or_more { table_or_subquery }
+					join_clause
+				end
+				if maybe :WHERE
+					where = expression
+				end
+				if maybe_all_of :GROUP, :BY
+					group_by = one_or_more { expression }
+				end
+				if maybe(:HAVING)
+					having = expression
+				end
+				if maybe :WINDOW
+					window = one_or_more do
+						window_name = identifier
+						require :AS
+						window_def = window_defn
+						[window_name, window_def]
+					end
+				end
+				compound = []
+				while (op = maybe { compound_operator })
+						compound << [op, select_stmt]
+				end
+				if maybe :ORDER
+						require :BY
+						order_by = one_or_more { ordering_term }
+				end
+				if maybe :LIMIT
+						limit = expression
+						if maybe :OFFSET
+								offset = expression
+						elsif maybe :COMMA
+								offset = limit
+								limit = expression
+						end
+				end
+
+				SelectStatement.new(
+						type:,
+						columns:,
+						from:,
+						where:,
+						group_by:,
+						having:,
+						window:,
+						compound:,
+						order_by:,
+						limit:,
+						offset:
+				)
+			elsif maybe :VALUES
+			else
+				expected!(:SELECT, :VALUES)
+			end
+		end
+
+		def table_or_subquery
+			#                                            ┌───────┬────────────────┐
+			# ◯┬─────────────────────────┬─{ table-name }┴▶{ AS }┴▶{ table-alias }┴┬──────────┬─▶◯
+			#  ├─▶{ schema-name }─▶{ . }─┤   ┌───────────────────◀─────────────────┘          │
+			#  │                         │   ├─▶{ INDEXED }─▶{ BY }─▶{ index-name }─────────▶─┤
+			#  │                         │   └─▶{ NOT }─▶{ INDEXED }────────────────────────▶─┤
+			#  │                         │                                 ┌──{ , }◀─┐        │
+			#  ├─▶───────────────────────┴───{ table-function-name }─▶{ ( }┴▶[ expr ]┴▶{ ) }┬─┤
+			#  │                                               ┌────────┬───────◀───────────┘ │
+			#  │                                ┌──────────────┴▶{ AS }┬┴▶{ table-alias }───▶─┤
+			#  ├─▶{ ( }─▶[ select-stmt ]─▶{ ) }─┴──────────────────────┴────────────────────▶─┤
+			#  └─▶{ ( }┬┬▶[ table-or-subquery ]┬┬▶{ ) }─────────────────────────────────────▶─┘
+			#          │└─────────{ , }◀───────┘│
+			#          └─▶────[ join-clause ]───┘
+		end
+
+		def join_clause
+			# ◯─▶[ table-or-subquery ]┬───────────────────────────────▶────────────────────────────────┬─▶◯
+			#                         └┬▶[ join-operator ]─▶[ table-or-subquery ]─▶[ join-constraint ]┬┘
+			#                          └───────────────────────────────◀──────────────────────────────┘
+		end
+
+		def window_defn
+			# ◯──▶{ ( }┬───────────▶────────────┐
+			#          └─▶{ base-window-name }─▶┤
+			#       ┌───────────────◀───────────┘
+			#       ├─▶{ PARTITION }─▶{ BY }┬[ expr ]┐
+			#       │                       └─{ , }◀─┤
+			#       ├────────────◀───────────────────┘
+			#       ├─▶{ ORDER }─▶{ BY }┬[ ordering-term ]┐
+			#       │                   └──────{ , }◀─────┤
+			#       ├─────────────◀───────────────────────┘
+			#       ├─▶[ frame-spec ]┬─▶──────────────────{ ) }──▶◯
+			#       └─────────▶──────┘
+		end
+
+		def compound_operator
+			# ◯┬─▶{ UNION }────────────┬──▶◯
+			#  ├─▶{ UNION }─▶{ ALL }─▶─┤
+			#  ├─▶{ INTERSECT }──────▶─┤
+			#  └─▶{ EXCEPT }─────────▶─┘
+			if maybe :INTERSECT
+				IntersectCompoundOperator.new
+			elsif maybe :EXCEPT
+				ExceptCompoundOperator.new
+			elsif maybe :UNION
+				if maybe :ALL
+					UnionAllCompoundOperator.new
+				else
+					UnionCompoundOperator.new
+				end
+			else
+				expected!(:INTERSECT, :EXCEPT, :UNION)
+			end
+		end
+
+		def join_constraint
+			# ◯┬─▶{ ON }─▶[ expr ]───────────────────────────┬─▶◯
+			#  ├─▶{ USING }─▶{ ( }┬▶{ column-name }┬▶{ ) }─▶─┤
+			#  │                  └──────{ , }◀────┘         │
+			#  └───────────────────▶─────────────────────────┘
+			if maybe :ON
+				expr = expr
+				JoinOnConstraint.new(
+					expr: expr,
+				)
+			elsif maybe :USING
+				require :LP
+				columns = one_or_more { identifier }
+				require :RP
+
+				JoinUsingConstraint.new(
+					columns: columns,
+				)
+			end
+		end
+
+		def join_operator
+			# ◯┬────────────────────────▶{ , }──────────────────────────┬─▶◯
+			#  ├──────▶──────┬▶┬──────────────┬▶────────────┬─▶{ JOIN }─┘
+			#  ├─▶{ NATURAL }┘ ├─▶{ LEFT }──┬▶┴▶{ OUTER }─▶─┤
+			#  │               ├─▶{ RIGHT }─┤               │
+			#  │               ├─▶{ FULL }──┘               │
+			#  │               └─▶{ INNER }───────────────▶─┤
+			#  └─────────────────▶{ CROSS }───────────────▶─┘
+			if maybe(:COMMA) || maybe(:JOIN) || maybe_all_of(:INNER, :JOIN)
+				InnerJoinOperator.new
+			elsif maybe_all_of(:LEFT, :JOIN) || maybe_all_of(:LEFT, :OUTER, :JOIN)
+				LeftJoinOperator.new
+			elsif maybe_all_of(:RIGHT, :JOIN) || maybe_all_of(:RIGHT, :OUTER, :JOIN)
+				RightJoinOperator.new
+			elsif maybe_all_of(:FULL, :JOIN) || maybe_all_of(:FULL, :OUTER, :JOIN)
+				FullJoinOperator.new
+			elsif maybe_all_of(:CROSS, :JOIN)
+				CrossJoinOperator.new
+			elsif maybe :NATURAL
+				if maybe(:JOIN) || maybe_all_of(:INNER, :JOIN)
+					InnerJoinOperator.new(natural: true)
+				elsif maybe_all_of(:LEFT, :JOIN) || maybe_all_of(:LEFT, :OUTER, :JOIN)
+					LeftJoinOperator.new(natural: true)
+				elsif maybe_all_of(:RIGHT, :JOIN) || maybe_all_of(:RIGHT, :OUTER, :JOIN)
+					RightJoinOperator.new(natural: true)
+				elsif maybe_all_of(:FULL, :JOIN) || maybe_all_of(:FULL, :OUTER, :JOIN)
+					FullJoinOperator.new(natural: true)
+				else
+					expected!(:JOIN, :INNER, :LEFT, :RIGHT, :FULL)
+				end
+			else
+				expected!(:COMMA, :JOIN, :INNER, :LEFT, :RIGHT, :FULL, :NATURAL, :CROSS)
+			end
+		end
+
+		def result_column
+			# ◯┬─▶[ expr ]─┬─────────────▶───────────────┬─▶◯
+			#  │           ├─▶{ AS }┬▶{ column-alias }─▶─┤
+			#  │           └────▶───┘                    │
+			#  ├─▶{ * }────────────────────────────────▶─┤
+			#  └─▶{ table-name }─▶{ . }─▶{ * }─────────▶─┘
+			if maybe :STAR
+				StarResultColumn.new
+			elsif peek == :DOT
+				table_name = identifier
+				require :DOT
+				require :STAR
+
+				StarResultColumn.new(
+					table_name:,
+				)
+			elsif (result = maybe { expr })
+				maybe :AS
+				alias_name = maybe { identifier }
+
+				ResultColumn.new(
+					result:,
+					alias: alias_name,
+				)
+			else
+				expected!(:STAR, :ID, "expr")
+			end
 		end
 
 		# TODO
