@@ -455,9 +455,16 @@ module Plume
 			#                 ├▶{ schema-name }──────────────────────────────────▶─┤
 			#                 ├▶{ index-or-table-name }──────────────────────────▶─┤
 			#                 └▶{ schema-name }─▶{ . }─▶{ table-or-index-name }──▶─┘
-			require current_token until current_token.nil?
+			require :ANALYZE
+			if peek == :DOT
+				schema_name, table_or_index_name = table_ref
 
-			:analyze_stmt
+				{ ANALYZE: [schema_name, table_or_index_name] }
+			elsif (schema_or_index_or_table_name = maybe { identifier })
+				{ ANALYZE: schema_or_index_or_table_name }
+			else
+			 	{ ANALYZE: nil }
+			end
 		end
 
 		# TODO
