@@ -469,11 +469,24 @@ module Plume
 
 		# TODO
 		def attach_stmt
-			# ◯─▶{ ATTACH }─▶┬─▶{ DATABASE }┬▶[ expr ]─▶{ AS }─▶{ schema-name }─▶◯
-			#                └───────▶──────┘
-			require current_token until current_token.nil?
+			# ◯─▶{ ATTACH }─▶┬─▶{ DATABASE }┬▶[ expr ]─▶{ AS }─▶[ expr ]┬────────────────────┬▶◯
+			#                └───────▶──────┘                           └─▶{ KEY }─▶[ expr ]─┘
+			# cmd ::= ATTACH database_kw_opt expr(F) AS expr(D) key_opt(K).
+			# cmd ::= DETACH database_kw_opt expr(D).
+			# %type key_opt {Expr*}
+			# %destructor key_opt {sqlite3ExprDelete(pParse->db, $$);}
+			# key_opt(A) ::= .                     { A = 0; }
+			# key_opt(A) ::= KEY expr(X).          { A = X; }
+			# database_kw_opt ::= DATABASE.
+			# database_kw_opt ::= .
+			require :ATTACH
+			maybe :DATABASE
+			db_expr = expression
+			require :AS
+			alias_expr = expression
+			key_expr = expression if maybe :KEY
 
-			:attach_stmt
+			{ ATTACH: { db_expr => [alias_expr, key_expr] } }
 		end
 
 		# TODO
