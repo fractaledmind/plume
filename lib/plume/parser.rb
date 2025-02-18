@@ -1468,9 +1468,11 @@ module Plume
 					)
 				end
 			elsif :RAISE == current_token
-				left = raise_function
+				raise_function
+			elsif (var = maybe :VARIABLE)
+				var
 			else
-				expected!(".............")
+				expected!("<basic expression>")
 			end
 		end
 
