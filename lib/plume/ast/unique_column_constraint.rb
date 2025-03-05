@@ -2,7 +2,11 @@
 
 module Plume
 	class UniqueColumnConstraint < ColumnConstraint
-		prop :name, _Nilable(String)
-		prop :on_conflict, _Nilable(ConflictClause)
+		optional_token :constraint_kw
+		optional_token :name_tk,
+			reader: :name,
+			default: -> { name_tk_val }
+		required_token :unique_kw
+		optional_node :conflict_clause, ConflictClause
 	end
 end

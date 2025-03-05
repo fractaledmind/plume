@@ -65,7 +65,7 @@ ast = Plume::Parser.new(sql).parse.first
 #      [#<Plume::CheckColumnConstraint:0x000000011cb73988
 #        @expression=
 #         #<Plume::BinaryExpression:0x000000011cb761b0
-#          @left=#<Plume::ColumnReference:0x000000011cb7dd70 @column_name="c3", @schema_name=nil, @table_name=nil>,
+#          @left=#<Plume::ColumnName:0x000000011cb7dd70 @column_name="c3", @schema_name=nil, @table_name=nil>,
 #          @operator=:ABOVE,
 #          @right=0>,
 #        @name=nil>],
@@ -110,12 +110,12 @@ ast = Plume::Parser.new(sql).parse.first
 #     @columns=
 #      [#<Plume::IndexedColumn:0x000000011cab67e8
 #        @collation=nil,
-#        @column=#<Plume::ColumnReference:0x000000011cabb608 @column_name="c0", @schema_name=nil, @table_name=nil>,
+#        @column=#<Plume::ColumnName:0x000000011cabb608 @column_name="c0", @schema_name=nil, @table_name=nil>,
 #        @direction=nil,
 #        @expression=nil>,
 #       #<Plume::IndexedColumn:0x000000011be0d258
 #        @collation=nil,
-#        @column=#<Plume::ColumnReference:0x000000011cab6630 @column_name="c1", @schema_name=nil, @table_name=nil>,
+#        @column=#<Plume::ColumnName:0x000000011cab6630 @column_name="c1", @schema_name=nil, @table_name=nil>,
 #        @direction=nil,
 #        @expression=nil>],
 #     @name=nil,
@@ -124,12 +124,12 @@ ast = Plume::Parser.new(sql).parse.first
 #     @columns=
 #      [#<Plume::IndexedColumn:0x000000011be08208
 #        @collation=nil,
-#        @column=#<Plume::ColumnReference:0x000000011bf0c190 @column_name="c0", @schema_name=nil, @table_name=nil>,
+#        @column=#<Plume::ColumnName:0x000000011bf0c190 @column_name="c0", @schema_name=nil, @table_name=nil>,
 #        @direction=nil,
 #        @expression=nil>,
 #       #<Plume::IndexedColumn:0x000000011be08168
 #        @collation=nil,
-#        @column=#<Plume::ColumnReference:0x000000011bf0bf38 @column_name="c1", @schema_name=nil, @table_name=nil>,
+#        @column=#<Plume::ColumnName:0x000000011bf0bf38 @column_name="c1", @schema_name=nil, @table_name=nil>,
 #        @direction=nil,
 #        @expression=nil>],
 #     @name=nil,
@@ -137,7 +137,7 @@ ast = Plume::Parser.new(sql).parse.first
 #    #<Plume::CheckTableConstraint:0x000000011be8df20
 #     @expression=
 #      #<Plume::BinaryExpression:0x000000011bea8f28
-#       @left=#<Plume::ColumnReference:0x000000011bea9130 @column_name="c0", @schema_name=nil, @table_name=nil>,
+#       @left=#<Plume::ColumnName:0x000000011bea9130 @column_name="c0", @schema_name=nil, @table_name=nil>,
 #       @operator=:ABOVE,
 #       @right=0>,
 #     @name=nil>,
@@ -145,7 +145,7 @@ ast = Plume::Parser.new(sql).parse.first
 #     @columns=
 #      [#<Plume::IndexedColumn:0x000000011be02da8
 #        @collation=nil,
-#        @column=#<Plume::ColumnReference:0x000000011be8d818 @column_name="c0", @schema_name=nil, @table_name=nil>,
+#        @column=#<Plume::ColumnName:0x000000011be8d818 @column_name="c0", @schema_name=nil, @table_name=nil>,
 #        @direction=nil,
 #        @expression=nil>],
 #     @foreign_key_clause=

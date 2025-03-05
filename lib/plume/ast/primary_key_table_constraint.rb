@@ -2,9 +2,17 @@
 
 module Plume
 	class PrimaryKeyTableConstraint < TableConstraint
-		prop :name, _Nilable(String)
-		prop :columns, _Array(IndexedColumn)
-		prop :autoincrement, _Nilable(_Boolean)
-		prop :on_conflict, _Nilable(ConflictClause)
+		optional_token :constraint_kw
+		optional_token :name_tk,
+			reader: :name,
+			default: -> { name_tk_val }
+		required_token :primary_key_kw
+		optional_token :primary_key_lp
+		required_nodes :columns, IndexedColumn
+		optional_token :autoincrement_kw,
+			reader: :autoincrement,
+			default: -> { !!@autoincrement_kw }
+		optional_token :primary_key_rp
+		optional_node :conflict_clause, ConflictClause
 	end
 end

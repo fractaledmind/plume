@@ -17,7 +17,11 @@ require "plume"
 class Quickdraw::Test
 	def lex(str, with_values: false)
 		lex = Plume::Lexer.new(str)
-		lex.tokens(with_values).to_a
+		tokens = []
+		while (token = lex.next_token)
+			tokens << (with_values ? [token, lex.value] : token)
+		end
+		tokens
 	end
 
 	def parse_stmt(sql)

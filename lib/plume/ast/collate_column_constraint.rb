@@ -2,7 +2,13 @@
 
 module Plume
 	class CollateColumnConstraint < ColumnConstraint
-		prop :name, _Nilable(String)
-		prop :collation_name, Symbol
+		optional_token :constraint_kw
+		optional_token :name_tk,
+			reader: :name,
+			default: -> { name_tk_val }
+		required_token :collate_kw
+		required_token :collation_tk,
+			reader: :collation,
+			default: -> { collation_tk_val&.to_sym&.upcase }
 	end
 end

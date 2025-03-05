@@ -193,6 +193,8 @@ module Plume
 			:WINDOW,
 			:WITH,
 			:WITHOUT,
+			:TRUE,
+			:FALSE,
 		].freeze
 
 		# Maps ASCII characters to their respective character types
@@ -302,24 +304,12 @@ module Plume
 		def initialize(sql, skip_spaces: false)
 			case sql.encoding
 			when Encoding::UTF_8, Encoding::ASCII_8BIT
-				@sql = sql
+				@sql = sql.freeze
 			else
 				@sql = sql.encode(Encoding::UTF_8).freeze
 			end
 			@skip_spaces = skip_spaces
 			@cursor, @anchor = 0
-		end
-
-		def tokens(with_values = false)
-			@cursor, @anchor = 0
-			Enumerator.new do |yielder|
-				loop do
-					token = next_token
-					token_value = value if with_values
-					break if token.nil?
-					yielder << (with_values ? [token, token_value] : token)
-				end
-			end
 		end
 
 		def next_token

@@ -3,7 +3,8 @@
 module Plume
 	Expression = _Union(
 		LiteralValue,
-		ColumnReference,
+		Token,
+		ColumnName,
 		_Deferred {
 			_Union(
 				UnaryExpression,

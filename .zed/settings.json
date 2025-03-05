@@ -1,6 +1,6 @@
 {
 	"hard_tabs": true,
-	"format_on_save": "on",
+	"format_on_save": "off",
 	"languages": {
 		"YAML": {
 			"hard_tabs": false

@@ -2,9 +2,17 @@
 
 module Plume
 	class PrimaryKeyColumnConstraint < ColumnConstraint
-		prop :name, _Nilable(String)
-		prop :direction, _Nilable(Direction)
-		prop :on_conflict, _Nilable(ConflictClause)
-		prop :autoincrement, _Nilable(_Boolean)
+		optional_token :constraint_kw
+		optional_token :name_tk,
+			reader: :name,
+			default: -> { name_tk_val }
+		required_token :primary_key_kw
+		optional_token :direction_tk,
+			reader: :direction,
+			default: -> { direction_tk_val&.to_sym&.upcase }
+		optional_node  :conflict_clause, ConflictClause
+		optional_token :autoincrement_kw,
+			reader: :autoincrement,
+			default: -> { !!@autoincrement_kw }
 	end
 end

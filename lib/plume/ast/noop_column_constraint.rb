@@ -2,6 +2,9 @@
 
 module Plume
 	class NoOpColumnConstraint < ColumnConstraint
-		prop :name, _Nilable(String)
+		optional_token :constraint_kw
+		optional_token :name_tk,
+			reader: :name,
+			default: -> { name_tk_val }
 	end
 end

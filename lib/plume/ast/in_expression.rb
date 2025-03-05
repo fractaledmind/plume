@@ -5,7 +5,7 @@ module Plume
 		prop :member, Expression
 		prop :collection, _Union(
 			SelectStatement,
-			TableReference,
+			TableName,
 			FunctionReference,
 			_Array(Expression),
 		)
