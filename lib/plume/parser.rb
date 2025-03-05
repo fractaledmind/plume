@@ -178,51 +178,52 @@ module Plume
 		end
 
 		def sql_stmt
-			# Relevant `parse.y` grammar rules:
-			#   ecmd ::= SEMI | cmdx SEMI | explain cmdx SEMI
-			#   explain ::= EXPLAIN | EXPLAIN QUERY PLAN
-			#   cmdx ::= cmd
 			#
-			# Syntax diagram:
-			#   ◯─┬─────────────┬▶─────────────────────┬─┬─▶[ alter-table-stmt ]──────────▶─┬─▶◯
-			#     └─{ EXPLAIN }─┴─▶{ QUERY }─▶{ PLAN }─┘ ├─▶[ analyze-stmt ]──────────────▶─┤
-			#                                            ├─▶[ attach-stmt ]───────────────▶─┤
-			#                                            ├─▶[ begin-stmt ]────────────────▶─┤
-			#                                            ├─▶[ commit-stmt ]───────────────▶─┤
-			#                                            ├─▶[ create-index-stmt ]─────────▶─┤
-			#                                            ├─▶[ create-table-stmt ]─────────▶─┤
-			#                                            ├─▶[ create-trigger-stmt ]───────▶─┤
-			#                                            ├─▶[ create-view-stmt ]──────────▶─┤
-			#                                            ├─▶[ create-virtual-table-stmt ]─▶─┤
-			#                                            ├─▶[ delete-stmt ]───────────────▶─┤
-			#                                            ├─▶[ detach-stmt ]───────────────▶─┤
-			#                                            ├─▶[ drop-index-stmt ]───────────▶─┤
-			#                                            ├─▶[ drop-table-stmt ]───────────▶─┤
-			#                                            ├─▶[ drop-trigger-stmt ]─────────▶─┤
-			#                                            ├─▶[ drop-view-stmt ]────────────▶─┤
-			#                                            ├─▶[ insert-stmt ]───────────────▶─┤
-			#                                            ├─▶[ pragma-stmt ]───────────────▶─┤
-			#                                            ├─▶[ reindex-stmt ]──────────────▶─┤
-			#                                            ├─▶[ release-stmt ]──────────────▶─┤
-			#                                            ├─▶[ rollback-stmt ]─────────────▶─┤
-			#                                            ├─▶[ savepoint-stmt ]────────────▶─┤
-			#                                            ├─▶[ select-stmt ]───────────────▶─┤
-			#                                            ├─▶[ update-stmt ]───────────────▶─┤
-			#                                            └─▶[ vacuum-stmt ]───────────────▶─┘
-			# Simplified grammar:
-			#   [EXPLAIN [QUERY PLAN]] stmt
-			#
-			# Relevant SQLite documentation:
-			#   - https://www.sqlite.org/lang_explain.html
-			#   - https://www.sqlite.org/eqp.html
-			#   - https://www.sqlite.org/opcode.html
-			#
-			# A `sql_stmt` is a single SQL statement, optionally preceded by one of two different
-			# explanation prefixes. A simple `EXPLAIN` prefix requests the bytecode instructions,
-			# while `EXPLAIN QUERY PLAN` requests the query plan.
-			#
-			# This method doesn't consume tokens associated with the statements so that each
-			# statement method can independently consume the tokens it needs.
+				# Relevant `parse.y` grammar rules:
+				#   ecmd ::= SEMI | cmdx SEMI | explain cmdx SEMI
+				#   explain ::= EXPLAIN | EXPLAIN QUERY PLAN
+				#   cmdx ::= cmd
+				#
+				# Syntax diagram:
+				#   ◯─┬─────────────┬▶─────────────────────┬─┬─▶[ alter-table-stmt ]──────────▶─┬─▶◯
+				#     └─{ EXPLAIN }─┴─▶{ QUERY }─▶{ PLAN }─┘ ├─▶[ analyze-stmt ]──────────────▶─┤
+				#                                            ├─▶[ attach-stmt ]───────────────▶─┤
+				#                                            ├─▶[ begin-stmt ]────────────────▶─┤
+				#                                            ├─▶[ commit-stmt ]───────────────▶─┤
+				#                                            ├─▶[ create-index-stmt ]─────────▶─┤
+				#                                            ├─▶[ create-table-stmt ]─────────▶─┤
+				#                                            ├─▶[ create-trigger-stmt ]───────▶─┤
+				#                                            ├─▶[ create-view-stmt ]──────────▶─┤
+				#                                            ├─▶[ create-virtual-table-stmt ]─▶─┤
+				#                                            ├─▶[ delete-stmt ]───────────────▶─┤
+				#                                            ├─▶[ detach-stmt ]───────────────▶─┤
+				#                                            ├─▶[ drop-index-stmt ]───────────▶─┤
+				#                                            ├─▶[ drop-table-stmt ]───────────▶─┤
+				#                                            ├─▶[ drop-trigger-stmt ]─────────▶─┤
+				#                                            ├─▶[ drop-view-stmt ]────────────▶─┤
+				#                                            ├─▶[ insert-stmt ]───────────────▶─┤
+				#                                            ├─▶[ pragma-stmt ]───────────────▶─┤
+				#                                            ├─▶[ reindex-stmt ]──────────────▶─┤
+				#                                            ├─▶[ release-stmt ]──────────────▶─┤
+				#                                            ├─▶[ rollback-stmt ]─────────────▶─┤
+				#                                            ├─▶[ savepoint-stmt ]────────────▶─┤
+				#                                            ├─▶[ select-stmt ]───────────────▶─┤
+				#                                            ├─▶[ update-stmt ]───────────────▶─┤
+				#                                            └─▶[ vacuum-stmt ]───────────────▶─┘
+				# Simplified grammar:
+				#   [EXPLAIN [QUERY PLAN]] stmt
+				#
+				# Relevant SQLite documentation:
+				#   - https://www.sqlite.org/lang_explain.html
+				#   - https://www.sqlite.org/eqp.html
+				#   - https://www.sqlite.org/opcode.html
+				#
+				# A `sql_stmt` is a single SQL statement, optionally preceded by one of two different
+				# explanation prefixes. A simple `EXPLAIN` prefix requests the bytecode instructions,
+				# while `EXPLAIN QUERY PLAN` requests the query plan.
+				#
+				# This method doesn't consume tokens associated with the statements so that each
+				# statement method can independently consume the tokens it needs.
 			#
 			require :PLAN if (explain = maybe :EXPLAIN) && (query_plan = maybe :QUERY)
 
@@ -285,6 +286,37 @@ module Plume
 				expected!(:ALTER, :ANALYZE, :ATTACH, :BEGIN, :COMMIT, :END, :CREATE, :DELETE, :DETACH, :DROP, :INSERT, :REPLACE, :PRAGMA, :REINDEX, :RELEASE, :ROLLBACK, :SAVEPOINT, :SELECT, :UPDATE, :VACUUM, :WITH)
 			end
 		end
+
+		def _consume_all
+			require current_token until current_token.nil?
+
+			__callee__
+		end
+		alias_method :alter_table_stmt, :_consume_all
+		alias_method :analyze_stmt, :_consume_all
+		alias_method :attach_stmt, :_consume_all
+		alias_method :begin_stmt, :_consume_all
+		alias_method :commit_stmt, :_consume_all
+		alias_method :create_index_stmt, :_consume_all
+		alias_method :create_trigger_stmt, :_consume_all
+		alias_method :create_view_stmt, :_consume_all
+		alias_method :create_virtual_table_stmt, :_consume_all
+		alias_method :delete_stmt, :_consume_all
+		alias_method :detach_stmt, :_consume_all
+		alias_method :drop_index_stmt, :_consume_all
+		alias_method :drop_table_stmt, :_consume_all
+		alias_method :drop_trigger_stmt, :_consume_all
+		alias_method :drop_view_stmt, :_consume_all
+		alias_method :insert_stmt, :_consume_all
+		alias_method :pragma_stmt, :_consume_all
+		alias_method :reindex_stmt, :_consume_all
+		alias_method :release_stmt, :_consume_all
+		alias_method :rollback_stmt, :_consume_all
+		alias_method :savepoint_stmt, :_consume_all
+		alias_method :select_stmt, :_consume_all
+		alias_method :update_stmt, :_consume_all
+		alias_method :vacuum_stmt, :_consume_all
+		alias_method :with_stmt, :_consume_all
 
 		# ---------- Statements ----------
 
@@ -509,484 +541,6 @@ module Plume
 
 		# ---------- Clauses ----------
 
-		def column_def
-			#
-				# Used by:
-				#   - alter_table_stmt
-				#   - create_table_stmt
-				#
-				# Relevant `parse.y` grammar rules:
-				#   columnlist ::= columnname carglist
-				#   columnname ::= nm typetoken
-				#   carglist ::= . | carglist ccons
-				#
-				# Syntax diagram:
-				#   ◯─▶{ column-name }─┬─▶[ type-name ]─┬▶┬─▶───────────────────▶──┬─▶◯
-				#                      └────────▶───────┘ └─[ column-constraint ]◀─┘
-				#
-				# Simplified grammar:
-				#   name [type] [constraint [constraint]*]
-				#
-				# Relevant SQLite documentation:
-				#   - https://www.sqlite.org/lang_createtable.html#column_definitions
-				#   - https://www.sqlite.org/syntax/column-def.html
-				#
-				# Each column definition consists of the name of the column,
-				# optionally followed by the declared type of the column,
-				# then one or more optional column constraints.
-			#
-			column_name = name
-			column_type = maybe { type_name }
-			constraints = maybe_some(sep: nil) do
-				#
-					# Relevant `parse.y` grammar rules:
-					#   ccons ::= CONSTRAINT nm |
-					#             DEFAULT term |
-					#             DEFAULT LP expr RP |
-					#             DEFAULT PLUS term |
-					#             DEFAULT MINUS term |
-					#             DEFAULT id |
-					#             NULL onconf |
-					#             NOT NULL onconf |
-					#             PRIMARY KEY sortorder onconf autoinc |
-					#             UNIQUE onconf |
-					#             CHECK LP expr RP |
-					#             REFERENCES nm eidlist_opt refargs |
-					#             defer_subclause |
-					#             COLLATE ids |
-					#             GENERATED ALWAYS AS generated |
-					#             AS generated
-					#   term ::= NULL | FLOAT | BLOB | STRING | INTEGER | CTIME_KW | QNUMBER
-					#   id ::= ID | INDEXED
-					#   ids ::= ID | STRING
-					#   nm ::= idj | STRING
-					#   eidlist_opt ::= . | LP eidlist RP
-					#   eidlist ::= eidlist COMMA nm collate sortorder |
-					# 	            nm collate sortorder
-					#   onconf ::= . | ON CONFLICT resolvetype
-					#   sortorder ::= . | ASC | DESC
-					#   refargs ::= . | refargs refarg
-					#   refarg ::= MATCH nm |
-					# 	           ON INSERT refact |
-					# 	           ON DELETE refact |
-					# 		         ON UPDATE refact
-					#   generated ::= LP expr RP |
-					#                 LP expr RP ID
-					#   autoinc ::= . | AUTOINCR.
-					#
-					# Syntax diagram:
-					#   ◯─▶┬▶{ CONSTRAINT }─▶{ name }─┬───────────────────────────────▶───────────────────────┐
-					#      ├─────────────◀────────────┘                                                       │
-					#      ├─▶{ PRIMARY }─▶{ KEY }──┬─────▶──────┬─▶[ conflict-clause ]┬──────────▶───────────┼─▶◯
-					#      │                        ├─▶{ ASC }──▶┤                     └─▶{ AUTOINCREMENT }─▶─┤
-					#      ├─────▶───┐              └─▶{ DESC }─▶┘                                            │
-					#      ├─▶{ NOT }┴▶{ NULL }─▶[ conflict-clause ]────────────────────────────────────────▶─┤
-					#      ├─▶{ UNIQUE }─▶[ conflict-clause ]───────────────────────────────────────────────▶─┤
-					#      ├─▶{ CHECK }─▶{ ( }─▶[ expr ]─▶{ ) }─────────────────────────────────────────────▶─┤
-					#      ├─▶{ DEFAULT }─▶┬▶{ ( }─▶[ expr ]─▶{ ) }──┬──────────────────────────────────────▶─┤
-					#      │               ├─▶[ literal-value ]────▶─┤                                        │
-					#      │               └─▶[ signed-number ]────▶─┘                                        │
-					#      ├─▶{ COLLATE }─▶{ collation-name }───────────────────────────────────────────────▶─┤
-					#      ├─▶[ foreign-key-clause ]────────────────────────────────────────────────────────▶─┤
-					#      ├─▶{ GENERATED }─▶{ ALWAYS }┬▶{ AS }─▶{ ( }─▶[ expr ]─▶{ ) }┬────────────────────▶─┤
-					#      └──────────────▶────────────┘                               ├─▶{ STORED }────────▶─┤
-					#                                                                  └─▶{ VIRTUAL }───────▶─┘
-					#
-					# Simplified grammar:
-					#   [CONSTRAINT name] (
-					#     [PRIMARY KEY [ASC|DESC] [conflict_clause] [AUTOINCREMENT]]
-					#     [NOT NULL [conflict_clause]]
-					#     [NULL [conflict_clause]]
-					#     [UNIQUE [conflict_clause]]
-					#     [CHECK LP expression RP [conflict_clause]]
-					#     [COLLATE collation-name]
-					#     [foreign-key-clause]
-					#     [GENERATED ALWAYS AS (expr) STORED | VIRTUAL]
-					#   )
-					#
-					# Relevant SQLite documentation:
-					#   - https://www.sqlite.org/lang_createtable.html#column_definitions
-					#   - https://www.sqlite.org/syntax/column-constraint.html
-					#
-					# Included in the definition of "column constraints" for the purposes of the previous statement
-					# are the COLLATE and DEFAULT clauses, even though these are not really constraints in the sense
-					# that they do not restrict the data that the table may contain. The other constraints -
-					# NOT NULL, CHECK, UNIQUE, PRIMARY KEY and FOREIGN KEY constraints - impose restrictions on the table data.
-				#
-				if (constraint_kw = maybe :CONSTRAINT)
-					constraint_name = name
-				end
-
-				if    (primary_key_kw = maybe_all_of :PRIMARY, :KEY)
-					direction_tk        = maybe_one_of :ASC, :DESC
-					on_conflict         = maybe      { conflict_clause }
-					autoincrement_kw    = maybe        :AUTOINCREMENT
-
-					PrimaryKeyColumnConstraint.new(
-						full_source:      @lexer.sql,
-						constraint_kw:    Token::Keyword(constraint_kw),
-						name_tk:          Token::Identifier(constraint_name),
-						primary_key_kw:   Token::Keyword(primary_key_kw),
-						direction_tk:     Token::Keyword(direction_tk),
-						conflict_clause:  on_conflict,
-						autoincrement_kw: Token::Keyword(autoincrement_kw),
-					)
-				elsif (not_null_kw    = maybe_all_of :NOT, :NULL)
-					on_conflict         = maybe      { conflict_clause }
-
-					NotNullColumnConstraint.new(
-						full_source:     @lexer.sql,
-						constraint_kw:   Token::Keyword(constraint_kw),
-						name_tk:         Token::Identifier(constraint_name),
-						not_null_kw:     Token::Keyword(not_null_kw),
-						conflict_clause: on_conflict,
-					)
-				elsif (null_kw        = maybe        :NULL)
-					on_conflict         = maybe      { conflict_clause }
-
-					NullColumnConstraint.new(
-						full_source:     @lexer.sql,
-						constraint_kw:   Token::Keyword(constraint_kw),
-						name_tk:         Token::Identifier(constraint_name),
-						null_kw:         Token::Keyword(null_kw),
-						conflict_clause: on_conflict,
-					)
-				elsif (unique_kw      = maybe        :UNIQUE)
-					on_conflict         = maybe      { conflict_clause }
-
-					UniqueColumnConstraint.new(
-						full_source:     @lexer.sql,
-						constraint_kw:   Token::Keyword(constraint_kw),
-						name_tk:         Token::Identifier(constraint_name),
-						unique_kw:       Token::Keyword(unique_kw),
-						conflict_clause: on_conflict,
-					)
-				elsif (check_kw       = maybe        :CHECK)
-					check_lp            = require      :LP
-					check               =              expression
-					check_rp            = require      :RP
-
-					CheckColumnConstraint.new(
-						full_source:   @lexer.sql,
-						constraint_kw: Token::Keyword(constraint_kw),
-						name_tk:       Token::Identifier(constraint_name),
-						check_kw:      Token::Keyword(check_kw),
-						check_lp:      Token::Punctuation(check_lp),
-						expression:    check,
-						check_rp:      Token::Punctuation(check_rp),
-					)
-				elsif (default_kw     = maybe        :DEFAULT)
-					if (default_lp      = maybe        :LP)
-						value         = expression
-						default_rp    = require :RP
-
-						DefaultColumnConstraint.new(
-							full_source:   @lexer.sql,
-							constraint_kw: Token::Keyword(constraint_kw),
-							name_tk:       Token::Identifier(constraint_name),
-							default_kw:    Token::Keyword(default_kw),
-							default_lp:    Token::Punctuation(default_lp),
-							default_rp:    Token::Punctuation(default_rp),
-							value:         value,
-						)
-					elsif (number       = maybe      { signed_numeric })
-						DefaultColumnConstraint.new(
-							full_source:   @lexer.sql,
-							constraint_kw: Token::Keyword(constraint_kw),
-							name_tk:       Token::Identifier(constraint_name),
-							default_kw:    Token::Keyword(default_kw),
-							value_tk:      Token::Numeric(number),
-						)
-					elsif (value        = maybe      { literal_value })
-						DefaultColumnConstraint.new(
-							full_source:   @lexer.sql,
-							constraint_kw: Token::Keyword(constraint_kw),
-							name_tk:       Token::Identifier(constraint_name),
-							default_kw:    Token::Keyword(default_kw),
-							value_tk:      value,
-						)
-					elsif current_token in :ID | :INDEXED
-						DefaultColumnConstraint.new(
-							full_source:   @lexer.sql,
-							constraint_kw: Token::Keyword(constraint_kw),
-							name_tk:       Token::Identifier(constraint_name),
-							default_kw:    Token::Keyword(default_kw),
-							value:         unwrap_id,
-						)
-					else
-						expected! :LP, "literal-value", "signed-number"
-					end
-				elsif (collate_kw     = maybe        :COLLATE)
-					collation = name
-
-					CollateColumnConstraint.new(
-						full_source:   @lexer.sql,
-						constraint_kw: Token::Keyword(constraint_kw),
-						name_tk:       Token::Identifier(constraint_name),
-						collate_kw:    Token::Keyword(collate_kw),
-						collation_tk:  Token::Identifier(collation),
-					)
-				elsif :REFERENCES == current_token
-					clause = foreign_key_clause
-
-					ForeignKeyColumnConstraint.new(
-						full_source:        @lexer.sql,
-						constraint_kw:      Token::Keyword(constraint_kw),
-						name_tk:            Token::Identifier(constraint_name),
-						foreign_key_clause: clause,
-					)
-				elsif (as_kw = maybe_all_of(:GENERATED, :ALWAYS, :AS) || maybe(:AS))
-					as_lp      = require :LP
-					default    = expression
-					as_rp      = require :RP
-					type_tk    = maybe_one_of :STORED, :VIRTUAL
-
-					GeneratedAsColumnConstraint.new(
-						full_source:        @lexer.sql,
-						constraint_kw:      Token::Keyword(constraint_kw),
-						name_tk:            Token::Identifier(constraint_name),
-						as_kw:              Token::Keyword(as_kw),
-						as_lp:              Token::Punctuation(as_lp),
-						expression:         default,
-						as_rp:              Token::Punctuation(as_rp),
-						type_tk:            Token::Keyword(type_tk),
-					)
-				else
-					if constraint_name
-						NoOpColumnConstraint.new(
-							full_source:   @lexer.sql,
-							constraint_kw: Token::Keyword(constraint_kw),
-							name_tk:       Token::Identifier(constraint_name),
-						)
-					else
-						expected! :PRIMARY, :NOT, :NULL, :UNIQUE, :CHECK, :DEFAULT, :COLLATE, :REFERENCES, :GENERATED
-					end
-				end
-			end
-
-			ColumnDefinition.new(
-				full_source: @lexer.sql,
-				name:        Token::Identifier(column_name),
-				type:        column_type,
-				constraints: constraints,
-			)
-		end
-
-		# ---------- Names ----------
-
-		def type_name
-			#
-				# Used by:
-				#   - column_def
-				#   - expression
-				#
-				# Relevant `parse.y` grammar rules:
-				#   typetoken ::= . | typename. | typename LP signed RP | typename LP signed COMMA signed RP
-				#   typename ::= ids | typename ids
-				#   signed ::= plus_num | minus_num
-				#   plus_num ::= PLUS number | number
-				#   minus_num ::= MINUS number
-				#   number ::= INTEGER | FLOAT
-				#
-				# Syntax diagram:
-				#   ◯─┬▶{ name }─┬┬──────────────────────────────▶─────────────────────────────┬─▶◯
-				#     └────◀─────┘├─▶{ ( }─▶[ signed-number ]─▶{ ) }─────────────────────────▶─┤
-				#                 └─▶{ ( }─▶[ signed-number ]─▶{ , }─▶[ signed-number ]─▶{ ) }─┘
-				#
-				# Simplified grammar:
-				#   name [name]* [LP signed_number [, signed_number] RP]
-				#
-				# Relevant SQLite documentation:
-				#   - https://www.sqlite.org/syntax/type-name.html
-				#   - https://www.sqlite.org/datatype3.html
-				#   - https://www.sqlite.org/flextypegood.html
-				#
-				# A typetoken is really zero or more tokens that form a type name such
-				# as can be found after the column name in a CREATE TABLE statement.
-				# Multiple tokens are concatenated to form the value of the typetoken.
-			#
-			text = scan do
-				require_some(sep: nil) do
-					identifier_or_string(
-						# Don't consume tokens that mark the start of a `column_constraint`
-						except: Set[:CONSTRAINT, :PRIMARY, :NOT, :NULL, :UNIQUE, :CHECK, :DEFAULT, :COLLATE, :REFERENCES, :GENERATED, :AS]
-					)
-				end
-				if maybe :LP
-					signed_number
-					signed_number if maybe :COMMA
-					require :RP
-				end
-			end
-
-			ColumnType.new(
-				full_source: @lexer.sql,
-				text_span: Token::Keyword(text),
-			)
-		end
-
-		def table_name
-			#
-				# Used by:
-				#   - drop table
-				#   - delete
-				#   - update
-				#   - insert
-				#   - alter table
-				#
-				# Relevant `parse.y` grammar rules:
-				#   fullname ::= nm | nm DOT nm
-				#
-				# Syntax diagram:
-				#   ◯─▶┬▶{ schema-name }─▶{ . }┬▶{ object-name }─▶◯
-				#      └───────────▶───────────┘
-				#
-				# Simplified grammar:
-				#   name [DOT name]
-				#
-				# Relevant SQLite documentation:
-				#   - https://www.sqlite.org/lang_createtable.html
-				#   - https://www.sqlite.org/lang_createvtab.html
-				#
-				# A table or virtual table name, where the schema name is optional.
-			#
-
-			if peek == :DOT
-				schema_tk = name
-				dot_tk    = require :DOT
-				table_tk  = name
-
-				TableName.new(
-					full_source: @lexer.sql,
-					schema_tk:   Token::Identifier(schema_tk),
-					dot_tk:      Token::Punctuation(dot_tk),
-					table_tk:    Token::Identifier(table_tk),
-				)
-			else
-				table_tk = name
-
-				TableName.new(
-					full_source: @lexer.sql,
-					table_tk:    Token::Identifier(table_tk),
-				)
-			end
-		end
-
-		def source_name(as:)
-			#
-				# Used by:
-				#   - drop table
-				#   - create view
-				#   - drop view
-				#   - delete
-				#   - update
-				#   - insert
-				#   - drop index
-				#   - create trigger
-				#   - drop trigger
-				#   - alter table
-				#
-				# Relevant `parse.y` grammar rules:
-				#   fullname ::= nm | nm DOT nm
-				#
-				# Syntax diagram:
-				#   ◯─▶┬▶{ schema-name }─▶{ . }┬▶{ object-name }─▶◯
-				#      └───────────▶───────────┘
-				#
-				# Simplified grammar:
-				#   name [DOT name]
-				#
-				# Relevant SQLite documentation:
-				#   - https://www.sqlite.org/lang_createindex.html
-				#   - https://www.sqlite.org/lang_createtable.html
-				#   - https://www.sqlite.org/lang_createtrigger.html
-				#   - https://www.sqlite.org/lang_createview.html
-				#   - https://www.sqlite.org/lang_createvtab.html
-				#
-				# A table, virtual table, index, view, or trigger name, where the schema name is optional.
-			#
-			source_type = as
-
-			if peek == :DOT
-				schema_tk = name
-				dot_tk    = require :DOT
-				object_tk = name
-
-				source_type.new(
-					full_source: @lexer.sql,
-					schema_tk:   Token::Identifier(schema_tk),
-					dot_tk:      Token::Punctuation(dot_tk),
-					object_tk:   Token::Identifier(object_tk),
-				)
-			else
-				object_tk = name
-
-				source_type.new(
-					full_source: @lexer.sql,
-					object_tk:   Token::Identifier(object_tk),
-				)
-			end
-		end
-
-		# ---------- Token Classes ----------
-
-		def name(except: [])
-			# Relevant `parse.y` grammar rules:
-			#   // The name of a column or table can be any of the following:
-			#   nm ::= idj | STRING
-			#
-			if current_token in :STRING
-				require current_token
-			elsif (idj = maybe { identifier_or_join_keyword(except: except) })
-				idj
-			else
-				expected!(:STRING, 'idj')
-			end
-		end
-
-		def identifier(except: [])
-			# Relevant `parse.y` grammar rules:
-			#   // An IDENTIFIER can be a generic identifier, or one of several
-			#   // keywords.  Any non-standard keyword can also be an identifier.
-			#   %token_class id  ID | INDEXED
-			#
-			if current_token in :ID | :INDEXED
-				require current_token
-			elsif !except.include?(current_token) && TOKEN_FALLBACKS.include?(current_token)
-				require current_token
-			else
-				expected!(:ID, :INDEXED, 'fallback')
-			end
-		end
-
-		def identifier_or_string(except: [])
-			# Relevant `parse.y` grammar rules:
-			#   // And "ids" is an identifer-or-string.
-			#   %token_class ids  ID | STRING
-			#
-			if current_token in :ID | :STRING
-				require current_token
-			elsif !except.include?(current_token) && TOKEN_FALLBACKS.include?(current_token)
-				require current_token
-			else
-				expected!(:ID, :STRING, 'fallback')
-			end
-		end
-
-		def identifier_or_join_keyword(except: [])
-			# Relevant `parse.y` grammar rules:
-			#   // An identifier or a join-keyword
-			#   %token_class idj  ID | INDEXED | JOIN_KW
-			#
-			if current_token in :ID | :INDEXED | :CROSS | :FULL | :INNER | :LEFT | :NATURAL | :OUTER | :RIGHT
-				require current_token
-			elsif !except.include?(current_token) && TOKEN_FALLBACKS.include?(current_token)
-				require current_token
-			else
-				expected!(:ID, :INDEXED, :JOIN_KW, 'fallback')
-			end
-		end
-
 		def expression(min_precedence = 0)
 			#
 				# Relevant `parse.y` grammar rules:
@@ -1206,6 +760,472 @@ module Plume
 			end
 
 			left
+		end
+
+		def column_def
+			#
+				# Used by:
+				#   - alter_table_stmt
+				#   - create_table_stmt
+				#
+				# Relevant `parse.y` grammar rules:
+				#   columnlist ::= columnname carglist
+				#   columnname ::= nm typetoken
+				#   carglist ::= . | carglist ccons
+				#
+				# Syntax diagram:
+				#   ◯─▶{ column-name }─┬─▶[ type-name ]─┬▶┬─▶───────────────────▶──┬─▶◯
+				#                      └────────▶───────┘ └─[ column-constraint ]◀─┘
+				#
+				# Simplified grammar:
+				#   name [type] [constraint [constraint]*]
+				#
+				# Relevant SQLite documentation:
+				#   - https://www.sqlite.org/lang_createtable.html#column_definitions
+				#   - https://www.sqlite.org/syntax/column-def.html
+				#
+				# Each column definition consists of the name of the column,
+				# optionally followed by the declared type of the column,
+				# then one or more optional column constraints.
+			#
+			column_name = name
+			column_type = maybe { type_name }
+			constraints = maybe_some(sep: nil) do
+				#
+					# Relevant `parse.y` grammar rules:
+					#   ccons ::= CONSTRAINT nm |
+					#             DEFAULT term |
+					#             DEFAULT LP expr RP |
+					#             DEFAULT PLUS term |
+					#             DEFAULT MINUS term |
+					#             DEFAULT id |
+					#             NULL onconf |
+					#             NOT NULL onconf |
+					#             PRIMARY KEY sortorder onconf autoinc |
+					#             UNIQUE onconf |
+					#             CHECK LP expr RP |
+					#             REFERENCES nm eidlist_opt refargs |
+					#             defer_subclause |
+					#             COLLATE ids |
+					#             GENERATED ALWAYS AS generated |
+					#             AS generated
+					#   term ::= NULL | FLOAT | BLOB | STRING | INTEGER | CTIME_KW | QNUMBER
+					#   id ::= ID | INDEXED
+					#   ids ::= ID | STRING
+					#   nm ::= idj | STRING
+					#   eidlist_opt ::= . | LP eidlist RP
+					#   eidlist ::= eidlist COMMA nm collate sortorder |
+					# 	            nm collate sortorder
+					#   onconf ::= . | ON CONFLICT resolvetype
+					#   sortorder ::= . | ASC | DESC
+					#   refargs ::= . | refargs refarg
+					#   refarg ::= MATCH nm |
+					# 	           ON INSERT refact |
+					# 	           ON DELETE refact |
+					# 		         ON UPDATE refact
+					#   generated ::= LP expr RP |
+					#                 LP expr RP ID
+					#   autoinc ::= . | AUTOINCR.
+					#
+					# Syntax diagram:
+					#   ◯─▶┬▶{ CONSTRAINT }─▶{ name }─┬───────────────────────────────▶───────────────────────┐
+					#      ├─────────────◀────────────┘                                                       │
+					#      ├─▶{ PRIMARY }─▶{ KEY }──┬─────▶──────┬─▶[ conflict-clause ]┬──────────▶───────────┼─▶◯
+					#      │                        ├─▶{ ASC }──▶┤                     └─▶{ AUTOINCREMENT }─▶─┤
+					#      ├─────▶───┐              └─▶{ DESC }─▶┘                                            │
+					#      ├─▶{ NOT }┴▶{ NULL }─▶[ conflict-clause ]────────────────────────────────────────▶─┤
+					#      ├─▶{ UNIQUE }─▶[ conflict-clause ]───────────────────────────────────────────────▶─┤
+					#      ├─▶{ CHECK }─▶{ ( }─▶[ expr ]─▶{ ) }─────────────────────────────────────────────▶─┤
+					#      ├─▶{ DEFAULT }─▶┬▶{ ( }─▶[ expr ]─▶{ ) }──┬──────────────────────────────────────▶─┤
+					#      │               ├─▶[ literal-value ]────▶─┤                                        │
+					#      │               └─▶[ signed-number ]────▶─┘                                        │
+					#      ├─▶{ COLLATE }─▶{ collation-name }───────────────────────────────────────────────▶─┤
+					#      ├─▶[ foreign-key-clause ]────────────────────────────────────────────────────────▶─┤
+					#      ├─▶{ GENERATED }─▶{ ALWAYS }┬▶{ AS }─▶{ ( }─▶[ expr ]─▶{ ) }┬────────────────────▶─┤
+					#      └──────────────▶────────────┘                               ├─▶{ STORED }────────▶─┤
+					#                                                                  └─▶{ VIRTUAL }───────▶─┘
+					#
+					# Simplified grammar:
+					#   [CONSTRAINT name] (
+					#     [PRIMARY KEY [ASC|DESC] [conflict_clause] [AUTOINCREMENT]]
+					#     [NOT NULL [conflict_clause]]
+					#     [NULL [conflict_clause]]
+					#     [UNIQUE [conflict_clause]]
+					#     [CHECK LP expression RP [conflict_clause]]
+					#     [COLLATE collation-name]
+					#     [foreign-key-clause]
+					#     [GENERATED ALWAYS AS (expr) STORED | VIRTUAL]
+					#   )
+					#
+					# Relevant SQLite documentation:
+					#   - https://www.sqlite.org/lang_createtable.html#column_definitions
+					#   - https://www.sqlite.org/syntax/column-constraint.html
+					#
+					# Included in the definition of "column constraints" for the purposes of the previous statement
+					# are the COLLATE and DEFAULT clauses, even though these are not really constraints in the sense
+					# that they do not restrict the data that the table may contain. The other constraints -
+					# NOT NULL, CHECK, UNIQUE, PRIMARY KEY and FOREIGN KEY constraints - impose restrictions on the table data.
+				#
+				if (constraint_kw = maybe :CONSTRAINT)
+					constraint_name = name
+				end
+
+				if    (primary_key_kw = maybe_all_of :PRIMARY, :KEY)
+					direction_tk        = maybe_one_of :ASC, :DESC
+					on_conflict         = maybe      { conflict_clause }
+					autoincrement_kw    = maybe        :AUTOINCREMENT
+
+					PrimaryKeyColumnConstraint.new(
+						full_source:      @lexer.sql,
+						constraint_kw:    Token::Keyword(constraint_kw),
+						name_tk:          Token::Identifier(constraint_name),
+						primary_key_kw:   Token::Keyword(primary_key_kw),
+						direction_tk:     Token::Keyword(direction_tk),
+						conflict_clause:  on_conflict,
+						autoincrement_kw: Token::Keyword(autoincrement_kw),
+					)
+				elsif (not_null_kw    = maybe_all_of :NOT, :NULL)
+					on_conflict         = maybe      { conflict_clause }
+
+					NotNullColumnConstraint.new(
+						full_source:     @lexer.sql,
+						constraint_kw:   Token::Keyword(constraint_kw),
+						name_tk:         Token::Identifier(constraint_name),
+						not_null_kw:     Token::Keyword(not_null_kw),
+						conflict_clause: on_conflict,
+					)
+				elsif (null_kw        = maybe        :NULL)
+					on_conflict         = maybe      { conflict_clause }
+
+					NullColumnConstraint.new(
+						full_source:     @lexer.sql,
+						constraint_kw:   Token::Keyword(constraint_kw),
+						name_tk:         Token::Identifier(constraint_name),
+						null_kw:         Token::Keyword(null_kw),
+						conflict_clause: on_conflict,
+					)
+				elsif (unique_kw      = maybe        :UNIQUE)
+					on_conflict         = maybe      { conflict_clause }
+
+					UniqueColumnConstraint.new(
+						full_source:     @lexer.sql,
+						constraint_kw:   Token::Keyword(constraint_kw),
+						name_tk:         Token::Identifier(constraint_name),
+						unique_kw:       Token::Keyword(unique_kw),
+						conflict_clause: on_conflict,
+					)
+				elsif (check_kw       = maybe        :CHECK)
+					check_lp            = require      :LP
+					check               =              expression
+					check_rp            = require      :RP
+
+					CheckColumnConstraint.new(
+						full_source:   @lexer.sql,
+						constraint_kw: Token::Keyword(constraint_kw),
+						name_tk:       Token::Identifier(constraint_name),
+						check_kw:      Token::Keyword(check_kw),
+						check_lp:      Token::Punctuation(check_lp),
+						expression:    check,
+						check_rp:      Token::Punctuation(check_rp),
+					)
+				elsif (default_kw     = maybe        :DEFAULT)
+					if (default_lp      = maybe        :LP)
+						value         = expression
+						default_rp    = require :RP
+
+						DefaultColumnConstraint.new(
+							full_source:   @lexer.sql,
+							constraint_kw: Token::Keyword(constraint_kw),
+							name_tk:       Token::Identifier(constraint_name),
+							default_kw:    Token::Keyword(default_kw),
+							default_lp:    Token::Punctuation(default_lp),
+							default_rp:    Token::Punctuation(default_rp),
+							value:         value,
+						)
+					elsif (number       = maybe      { signed_numeric })
+						DefaultColumnConstraint.new(
+							full_source:   @lexer.sql,
+							constraint_kw: Token::Keyword(constraint_kw),
+							name_tk:       Token::Identifier(constraint_name),
+							default_kw:    Token::Keyword(default_kw),
+							value_tk:      Token::Numeric(number),
+						)
+					elsif (value        = maybe      { literal_value })
+						DefaultColumnConstraint.new(
+							full_source:   @lexer.sql,
+							constraint_kw: Token::Keyword(constraint_kw),
+							name_tk:       Token::Identifier(constraint_name),
+							default_kw:    Token::Keyword(default_kw),
+							value_tk:      value,
+						)
+					elsif (id           = maybe      { identifier })
+						DefaultColumnConstraint.new(
+							full_source:   @lexer.sql,
+							constraint_kw: Token::Keyword(constraint_kw),
+							name_tk:       Token::Identifier(constraint_name),
+							default_kw:    Token::Keyword(default_kw),
+							value_tk:      id,
+						)
+					else
+						expected! :LP, "literal-value", "signed-number"
+					end
+				elsif (collate_kw     = maybe        :COLLATE)
+					collation = name
+
+					CollateColumnConstraint.new(
+						full_source:   @lexer.sql,
+						constraint_kw: Token::Keyword(constraint_kw),
+						name_tk:       Token::Identifier(constraint_name),
+						collate_kw:    Token::Keyword(collate_kw),
+						collation_tk:  Token::Identifier(collation),
+					)
+				elsif :REFERENCES == current_token
+					clause = foreign_key_clause
+
+					ForeignKeyColumnConstraint.new(
+						full_source:        @lexer.sql,
+						constraint_kw:      Token::Keyword(constraint_kw),
+						name_tk:            Token::Identifier(constraint_name),
+						foreign_key_clause: clause,
+					)
+				elsif (as_kw = maybe_all_of(:GENERATED, :ALWAYS, :AS) || maybe(:AS))
+					as_lp      = require :LP
+					default    = expression
+					as_rp      = require :RP
+					type_tk    = maybe_one_of :STORED, :VIRTUAL
+
+					GeneratedAsColumnConstraint.new(
+						full_source:        @lexer.sql,
+						constraint_kw:      Token::Keyword(constraint_kw),
+						name_tk:            Token::Identifier(constraint_name),
+						as_kw:              Token::Keyword(as_kw),
+						as_lp:              Token::Punctuation(as_lp),
+						expression:         default,
+						as_rp:              Token::Punctuation(as_rp),
+						type_tk:            Token::Keyword(type_tk),
+					)
+				else
+					if constraint_name
+						NoOpColumnConstraint.new(
+							full_source:   @lexer.sql,
+							constraint_kw: Token::Keyword(constraint_kw),
+							name_tk:       Token::Identifier(constraint_name),
+						)
+					else
+						expected! :PRIMARY, :NOT, :NULL, :UNIQUE, :CHECK, :DEFAULT, :COLLATE, :REFERENCES, :GENERATED
+					end
+				end
+			end
+
+			ColumnDefinition.new(
+				full_source: @lexer.sql,
+				name:        Token::Identifier(column_name),
+				type:        column_type,
+				constraints: constraints,
+			)
+		end
+
+		def filter_clause
+			# Relevant `parse.y` grammar rules:
+			#
+			# Syntax diagram:
+			#   ◯─▶{ FILTER }─▶{ ( }─▶{ WHERE }─▶[ expr ]─▶{ ) }─▶◯
+			#
+			# Simplified grammar:
+			#
+			# Relevant SQLite documentation:
+			#   -
+			#
+			# [description]
+			#
+			require_all_of :FILTER, :LP, :WHERE
+			condition = expression
+			require :RP
+
+			condition
+		end
+
+		def over_clause
+			# Relevant `parse.y` grammar rules:
+			#
+			# Syntax diagram:
+			#   ◯─▶{ OVER }┬─▶{ window-name }───────────────────────────────┬─▶◯
+			#              └─▶{ ( }┬───────────▶────────────┐               │
+			#                      └─▶{ base-window-name }─▶┤               │
+			#                   ┌───────────────◀───────────┘               │
+			#                   ├─▶{ PARTITION }─▶{ BY }┬[ expr ]┐          │
+			#                   │                       └─{ , }◀─┤          │
+			#                   ├────────────◀───────────────────┘          │
+			#                   ├─▶{ ORDER }─▶{ BY }┬[ ordering-term ]┐     │
+			#                   │                   └──────{ , }◀─────┤     │
+			#                   ├─────────────◀───────────────────────┘     │
+			#                   ├─▶[ frame-spec ]┬─▶──────────────────{ ) }─┘
+			#                   └─────────▶──────┘
+			#
+			# Simplified grammar:
+			#
+			# Relevant SQLite documentation:
+			#   -
+			#
+			# [description]
+			#
+			require :OVER
+			if maybe :LP
+				base_window_name = maybe { identifier(except: [:PARTITION, :ORDER, :RANGE, :ROWS, :GROUPS]) }
+				partition_by = maybe_all_of(:PARTITION, :BY) ? require_some { expression } : nil
+				order_by = maybe_all_of(:ORDER, :BY) ? require_some { ordering_term } : nil
+				frame = frame_spec if current_token in :RANGE | :ROWS | :GROUPS
+				require :RP
+
+				OverClause.new(
+					base_window_name:,
+					partition_by:,
+					order_by:,
+					frame:,
+				)
+			else
+				OverClause.new(window_name: identifier)
+			end
+		end
+
+		def foreign_key_clause
+			#
+				# Relevant `parse.y` grammar rules:
+				#   ccons ::= REFERENCES nm eidlist_opt refargs.
+				#   eidlist_opt ::= . | LP eidlist RP
+				#   eidlist ::= eidlist COMMA nm collate sortorder | nm collate sortorder
+				#   refargs ::= . | refargs refarg
+				#   refarg ::= MATCH nm |
+				#              ON INSERT refact |
+				#              ON DELETE refact |
+				#              ON UPDATE refact
+				#   refact ::= SET NULL |
+				#              SET DEFAULT |
+				#              CASCADE |
+				#              RESTRICT |
+				#              NO ACTION
+				#   defer_subclause_opt ::= . | defer_subclause
+				#   defer_subclause ::= NOT DEFERRABLE init_deferred_pred_opt |
+				#                       DEFERRABLE init_deferred_pred_opt
+				#   init_deferred_pred_opt ::= . | INITIALLY DEFERRED | INITIALLY IMMEDIATE
+				#
+				# Syntax diagram:
+				#                                                ┌─────{ , }◀─────┐
+				#   ◯─▶{ REFERENCES }─▶{ foreign-table }─┬─▶{ ( }┴▶{ column-name }┴▶{ ) }──┐
+				#    ┌───────────────────────────────────┴──────────◀──┬───────────────────┘
+				#    ├─▶{ ON }┬─▶{ DELETE }─┬┬─▶{ SET }─▶{ NULL }────▶─┤
+				#    │        └─▶{ UPDATE }─┘├─▶{ SET }─▶{ DEFAULT }─▶─┤
+				#    │                       ├─▶{ CASCADE }──────────▶─┤
+				#    │                       ├─▶{ RESTRICT }─────────▶─┤
+				#    │                       └─▶{ NO }─▶{ ACTION }───▶─┤
+				#    ├─▶{ MATCH }─▶{ name }────────────────────────────┘
+				#    ├────────────┬─▶{ DEFERRABLE }┬───────────────────────────────▶─┐
+				#    ├─{ NOT }──▶─┘                ├─▶{ INITIALLY }─▶{ DEFERRED }──▶─┤
+				#    │                             └─▶{ INITIALLY }─▶{ IMMEDIATE }─▶─┤
+				#    └───────────────────────────────────────────────────────────────┴──────▶◯
+				#
+				# Simplified grammar:
+				#
+				# Relevant SQLite documentation:
+				#   - https://www.sqlite.org/syntax/foreign-key-clause.html
+				#   - https://www.sqlite.org/foreignkeys.html
+				#
+				# [description]
+			#
+			references_kw = require :REFERENCES
+			foreign_table = name(except: [:ON, :MATCH, :DEFERRABLE, :NOT])
+			columns = nil
+			if (columns_lp = maybe :LP)
+				columns = require_some { indexed_column }
+				columns_rp = require :RP
+			end
+			foreign_key_actions = maybe_some(sep: nil) do
+				on_kw      = require        :ON
+				trigger_kw = require_one_of :DELETE, :UPDATE
+				action_kw  = require_one_of :CASCADE, :RESTRICT, [:SET, :NULL].freeze, [:SET, :DEFAULT].freeze, [:NO, :ACTION].freeze
+				ForeignKeyAction.new(
+					full_source: @lexer.sql,
+					on_kw:       Token::Keyword(on_kw),
+					trigger_kw:  Token::Keyword(trigger_kw),
+					action_kw:   Token::Keyword(action_kw),
+				)
+			end
+			match_clauses = maybe_some(sep: nil) do
+				match_kw = require :MATCH
+				type_tk  = name(except: [:ON, :MATCH, :DEFERRABLE, :NOT])
+				MatchClause.new(
+					full_source: @lexer.sql,
+					match_kw:    Token::Keyword(match_kw),
+					type_tk:     Token::Identifier(type_tk),
+				)
+			end
+
+			deferrable_span = maybe_one_of(
+				[:NOT, :DEFERRABLE, :INITIALLY, :IMMEDIATE].freeze,
+				[:NOT, :DEFERRABLE, :INITIALLY, :DEFERRED].freeze,
+				[:DEFERRABLE, :INITIALLY, :IMMEDIATE].freeze,
+				[:DEFERRABLE, :INITIALLY, :DEFERRED].freeze,
+				[:NOT, :DEFERRABLE].freeze,
+				:DEFERRABLE,
+			)
+
+			ForeignKeyClause.new(
+				full_source: @lexer.sql,
+				references_kw: Token::Keyword(references_kw),
+				table_tk: Token::Identifier(foreign_table),
+				columns_lp: Token::Punctuation(columns_lp),
+				columns: columns,
+				columns_rp: Token::Punctuation(columns_rp),
+				actions: foreign_key_actions,
+				match_clauses: match_clauses,
+				deferrable_span: Token::Keyword(deferrable_span),
+			)
+		end
+
+		def conflict_clause
+			#
+				# Used by:
+				#   - column_def
+				#
+				# Relevant `parse.y` grammar rules:
+				#   onconf ::= . | ON CONFLICT resolvetype.
+				#   orconf ::= . | OR resolvetype.
+				#   resolvetype ::= raisetype |
+				#                   IGNORE |
+				#                   REPLACE
+				#   raisetype ::= ROLLBACK |
+				#                 ABORT |
+				#                 FAIL
+				#
+				# Syntax diagram:
+				#   ◯─▶┬────────────────────────────────────────┬─────▶◯
+				#      └─▶{ ON }─▶{ CONFLICT }┬─▶{ ROLLBACK }─▶─┤
+				#                             ├─▶{ ABORT }────▶─┤
+				#                             ├─▶{ FAIL }─────▶─┤
+				#                             ├─▶{ IGNORE }───▶─┤
+				#                             └─▶{ REPLACE }──▶─┘
+				#
+				# Simplified grammar:
+				#   [ON CONFLICT [ROLLBACK | ABORT | FAIL | IGNORE | REPLACE]]
+				#
+				# Relevant SQLite documentation:
+				#   - https://www.sqlite.org/lang_conflict.html
+				#
+				# The ON CONFLICT clause is a non-standard extension specific to SQLite
+				# that can appear in many other SQL commands. There are five conflict resolution
+				# algorithm choices: ROLLBACK, ABORT, FAIL, IGNORE, and REPLACE.
+			#
+			return unless (on_conflict_kw  = maybe_all_of :ON, :CONFLICT)
+
+			if (resolution_kw = maybe_one_of :ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE)
+				ConflictClause.new(
+					full_source:    @lexer.sql,
+					on_conflict_kw: Token::Keyword(on_conflict_kw),
+					resolution_kw:  Token::Keyword(resolution_kw),
+				)
+			else
+				expected! :ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE
+			end
 		end
 
 		def basic_expression
@@ -1440,69 +1460,6 @@ module Plume
 			end
 		end
 
-		def filter_clause
-			# Relevant `parse.y` grammar rules:
-			#
-			# Syntax diagram:
-			#   ◯─▶{ FILTER }─▶{ ( }─▶{ WHERE }─▶[ expr ]─▶{ ) }─▶◯
-			#
-			# Simplified grammar:
-			#
-			# Relevant SQLite documentation:
-			#   -
-			#
-			# [description]
-			#
-			require_all_of :FILTER, :LP, :WHERE
-			condition = expression
-			require :RP
-
-			condition
-		end
-
-		def over_clause
-			# Relevant `parse.y` grammar rules:
-			#
-			# Syntax diagram:
-			#   ◯─▶{ OVER }┬─▶{ window-name }───────────────────────────────┬─▶◯
-			#              └─▶{ ( }┬───────────▶────────────┐               │
-			#                      └─▶{ base-window-name }─▶┤               │
-			#                   ┌───────────────◀───────────┘               │
-			#                   ├─▶{ PARTITION }─▶{ BY }┬[ expr ]┐          │
-			#                   │                       └─{ , }◀─┤          │
-			#                   ├────────────◀───────────────────┘          │
-			#                   ├─▶{ ORDER }─▶{ BY }┬[ ordering-term ]┐     │
-			#                   │                   └──────{ , }◀─────┤     │
-			#                   ├─────────────◀───────────────────────┘     │
-			#                   ├─▶[ frame-spec ]┬─▶──────────────────{ ) }─┘
-			#                   └─────────▶──────┘
-			#
-			# Simplified grammar:
-			#
-			# Relevant SQLite documentation:
-			#   -
-			#
-			# [description]
-			#
-			require :OVER
-			if maybe :LP
-				base_window_name = maybe { identifier(except: [:PARTITION, :ORDER, :RANGE, :ROWS, :GROUPS]) }
-				partition_by = maybe_all_of(:PARTITION, :BY) ? require_some { expression } : nil
-				order_by = maybe_all_of(:ORDER, :BY) ? require_some { ordering_term } : nil
-				frame = frame_spec if current_token in :RANGE | :ROWS | :GROUPS
-				require :RP
-
-				OverClause.new(
-					base_window_name:,
-					partition_by:,
-					order_by:,
-					frame:,
-				)
-			else
-				OverClause.new(window_name: identifier)
-			end
-		end
-
 		def frame_spec
 			# Relevant `parse.y` grammar rules:
 			#
@@ -1639,6 +1596,170 @@ module Plume
 			end
 		end
 
+		# ---------- Objects ----------
+
+		def type_name
+			#
+				# Used by:
+				#   - column_def
+				#   - expression
+				#
+				# Relevant `parse.y` grammar rules:
+				#   typetoken ::= . | typename. | typename LP signed RP | typename LP signed COMMA signed RP
+				#   typename ::= ids | typename ids
+				#   signed ::= plus_num | minus_num
+				#   plus_num ::= PLUS number | number
+				#   minus_num ::= MINUS number
+				#   number ::= INTEGER | FLOAT
+				#
+				# Syntax diagram:
+				#   ◯─┬▶{ name }─┬┬──────────────────────────────▶─────────────────────────────┬─▶◯
+				#     └────◀─────┘├─▶{ ( }─▶[ signed-number ]─▶{ ) }─────────────────────────▶─┤
+				#                 └─▶{ ( }─▶[ signed-number ]─▶{ , }─▶[ signed-number ]─▶{ ) }─┘
+				#
+				# Simplified grammar:
+				#   name [name]* [LP signed_number [, signed_number] RP]
+				#
+				# Relevant SQLite documentation:
+				#   - https://www.sqlite.org/syntax/type-name.html
+				#   - https://www.sqlite.org/datatype3.html
+				#   - https://www.sqlite.org/flextypegood.html
+				#
+				# A typetoken is really zero or more tokens that form a type name such
+				# as can be found after the column name in a CREATE TABLE statement.
+				# Multiple tokens are concatenated to form the value of the typetoken.
+			#
+			text = scan do
+				require_some(sep: nil) do
+					identifier_or_string(
+						# Don't consume tokens that mark the start of a `column_constraint`
+						except: Set[:CONSTRAINT, :PRIMARY, :NOT, :NULL, :UNIQUE, :CHECK, :DEFAULT, :COLLATE, :REFERENCES, :GENERATED, :AS]
+					)
+				end
+				if maybe :LP
+					signed_number
+					signed_number if maybe :COMMA
+					require :RP
+				end
+			end
+
+			ColumnType.new(
+				full_source: @lexer.sql,
+				text_span: Token::Keyword(text),
+			)
+		end
+
+		def table_name
+			#
+				# Used by:
+				#   - drop table
+				#   - delete
+				#   - update
+				#   - insert
+				#   - alter table
+				#
+				# Relevant `parse.y` grammar rules:
+				#   fullname ::= nm | nm DOT nm
+				#
+				# Syntax diagram:
+				#   ◯─▶┬▶{ schema-name }─▶{ . }┬▶{ object-name }─▶◯
+				#      └───────────▶───────────┘
+				#
+				# Simplified grammar:
+				#   name [DOT name]
+				#
+				# Relevant SQLite documentation:
+				#   - https://www.sqlite.org/lang_createtable.html
+				#   - https://www.sqlite.org/lang_createvtab.html
+				#
+				# A table or virtual table name, where the schema name is optional.
+			#
+
+			if peek == :DOT
+				schema_tk = name
+				dot_tk    = require :DOT
+				table_tk  = name
+
+				TableName.new(
+					full_source: @lexer.sql,
+					schema_tk:   Token::Identifier(schema_tk),
+					dot_tk:      Token::Punctuation(dot_tk),
+					table_tk:    Token::Identifier(table_tk),
+				)
+			else
+				table_tk = name
+
+				TableName.new(
+					full_source: @lexer.sql,
+					table_tk:    Token::Identifier(table_tk),
+				)
+			end
+		end
+
+		def literal_value
+			#
+				# Relevant `parse.y` grammar rules:
+				#   term ::= NULL | FLOAT | BLOB | STRING | INTEGER | CTIME_KW | QNUMBER
+				#
+				# Syntax diagram:
+				#   ◯─┬─▶{ numeric-literal }────▶─┬─▶◯
+				#     ├─▶{ string-literal }─────▶─┤
+				#     ├─▶{ blob-literal }───────▶─┤
+				#     ├─▶{ NULL }───────────────▶─┤
+				#     ├─▶{ TRUE }───────────────▶─┤
+				#     ├─▶{ FALSE }──────────────▶─┤
+				#     ├─▶{ CURRENT_TIME }───────▶─┤
+				#     ├─▶{ CURRENT_DATE }───────▶─┤
+				#     └─▶{ CURRENT_TIMESTAMP }──▶─┘
+				#
+				# Simplified grammar:
+				#   NULL | CURRENT_TIME | CURRENT_DATE | CURRENT_TIMESTAMP | INTEGER | FLOAT | STRING | BLOB | TRUE | FALSE | QNUMBER
+				#
+				# Relevant SQLite documentation:
+				#   - https://www.sqlite.org/syntax/literal-value.html
+				#
+				# A value
+			#
+
+			case current_token
+			when :NULL
+				tk = require :NULL
+				Token::Null(tk)
+			when :CURRENT_TIME
+				tk = require :CURRENT_TIME
+				Token::Current(tk)
+			when :CURRENT_DATE
+				tk = require :CURRENT_DATE
+				Token::Current(tk)
+			when :CURRENT_TIMESTAMP
+				tk = require :CURRENT_TIMESTAMP
+				Token::Current(tk)
+			when :TRUE
+				tk = require :TRUE
+				Token::True(tk)
+			when :FALSE
+				tk = require :FALSE
+				Token::False(tk)
+			when :QNUMBER
+				tk = require :QNUMBER
+				Token::Numeric(tk)
+			when :INTEGER
+				tk = require :INTEGER
+				Token::Numeric(tk)
+			when :FLOAT
+				tk = require :FLOAT
+				Token::Numeric(tk)
+			when :STRING
+				tk = require :STRING
+				Token::String(tk)
+			when :BLOB
+				tk = require :BLOB
+				Token::Blob(tk)
+			else
+				expected!(:INTEGER, :FLOAT, :QNUMBER, :STRING, :BLOB, :NULL, :TRUE, :FALSE, :CURRENT_TIME, :CURRENT_DATE, :CURRENT_TIMESTAMP)
+			end
+		end
+
 		def indexed_column
 			# Used by:
 			#   - ccons, tcons, creat-view, cte
@@ -1721,52 +1842,6 @@ module Plume
 				direction_tk: Token::Keyword(direction_tk),
 				nulls_tk: Token::Keyword(nulls_tk)
 			)
-		end
-
-		def conflict_clause
-			#
-				# Used by:
-				#   - column_def
-				#
-				# Relevant `parse.y` grammar rules:
-				#   onconf ::= . | ON CONFLICT resolvetype.
-				#   orconf ::= . | OR resolvetype.
-				#   resolvetype ::= raisetype |
-				#                   IGNORE |
-				#                   REPLACE
-				#   raisetype ::= ROLLBACK |
-				#                 ABORT |
-				#                 FAIL
-				#
-				# Syntax diagram:
-				#   ◯─▶┬────────────────────────────────────────┬─────▶◯
-				#      └─▶{ ON }─▶{ CONFLICT }┬─▶{ ROLLBACK }─▶─┤
-				#                             ├─▶{ ABORT }────▶─┤
-				#                             ├─▶{ FAIL }─────▶─┤
-				#                             ├─▶{ IGNORE }───▶─┤
-				#                             └─▶{ REPLACE }──▶─┘
-				#
-				# Simplified grammar:
-				#   [ON CONFLICT [ROLLBACK | ABORT | FAIL | IGNORE | REPLACE]]
-				#
-				# Relevant SQLite documentation:
-				#   - https://www.sqlite.org/lang_conflict.html
-				#
-				# The ON CONFLICT clause is a non-standard extension specific to SQLite
-				# that can appear in many other SQL commands. There are five conflict resolution
-				# algorithm choices: ROLLBACK, ABORT, FAIL, IGNORE, and REPLACE.
-			#
-			return unless (on_conflict_kw  = maybe_all_of :ON, :CONFLICT)
-
-			if (resolution_kw = maybe_one_of :ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE)
-				ConflictClause.new(
-					full_source:    @lexer.sql,
-					on_conflict_kw: Token::Keyword(on_conflict_kw),
-					resolution_kw:  Token::Keyword(resolution_kw),
-				)
-			else
-				expected! :ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE
-			end
 		end
 
 		def ordering_term
@@ -1873,296 +1948,69 @@ module Plume
 			[[sign_tk, value_tk], beg, fin]
 		end
 
-		def numeric_literal
-			# Relevant `parse.y` grammar rules:
-			#
-			# Syntax diagram:
-			#
-			# Simplified grammar:
-			#
-			# Relevant SQLite documentation:
-			#   -
-			#
-			# [description]
-			#
-			case current_token
-			when :INTEGER
-				value = current_value.to_i
-				require :INTEGER
-				value
-			when :FLOAT
-				value = current_value.to_f
-				require :FLOAT
-				value
-			when :QNUMBER
-				value = current_value.to_f
-				value = value.to_i if value % 1 == 0
-				require :QNUMBER
-				value
-			else
-				expected!(:INTEGER, :FLOAT, :QNUMBER)
-			end
-		end
+		# ---------- Token Classes ----------
 
-		def string_literal
-			# Relevant `parse.y` grammar rules:
-			#
-			# Syntax diagram:
-			#
-			# Simplified grammar:
-			#
-			# Relevant SQLite documentation:
-			#   -
-			#
-			# [description]
-			#
-			case current_token
-			when :STRING
-				value = current_value
-				require :STRING
-				bytesize = value.bytesize
-				value.byteslice(1, bytesize - 2)
-			else
-				expected!(:STRING)
-			end
-		end
 
-		def blob_literal
+		def name(except: [])
 			# Relevant `parse.y` grammar rules:
+			#   // The name of a column or table can be any of the following:
+			#   nm ::= idj | STRING
 			#
-			# Syntax diagram:
-			#
-			# Simplified grammar:
-			#
-			# Relevant SQLite documentation:
-			#   -
-			#
-			# [description]
-			#
-			if current_token == :BLOB
-				value = current_value
+			if current_token in :STRING
 				require current_token
-				bytesize = value.bytesize
-				# trim the leading /x'/i and trailing /'/ then decode the hexadecimal string
-				[value.byteslice(2, bytesize - 3)].pack("H*")
+			elsif (idj = maybe { identifier_or_join_keyword(except: except) })
+				idj
 			else
-				expected!(:BLOB)
+				expected!(:STRING, 'idj')
 			end
-		end
-
-		def literal_value
-			#
-				# Relevant `parse.y` grammar rules:
-				#   term ::= NULL | FLOAT | BLOB | STRING | INTEGER | CTIME_KW | QNUMBER
-				#
-				# Syntax diagram:
-				#   ◯─┬─▶{ numeric-literal }────▶─┬─▶◯
-				#     ├─▶{ string-literal }─────▶─┤
-				#     ├─▶{ blob-literal }───────▶─┤
-				#     ├─▶{ NULL }───────────────▶─┤
-				#     ├─▶{ TRUE }───────────────▶─┤
-				#     ├─▶{ FALSE }──────────────▶─┤
-				#     ├─▶{ CURRENT_TIME }───────▶─┤
-				#     ├─▶{ CURRENT_DATE }───────▶─┤
-				#     └─▶{ CURRENT_TIMESTAMP }──▶─┘
-				#
-				# Simplified grammar:
-				#   NULL | CURRENT_TIME | CURRENT_DATE | CURRENT_TIMESTAMP | INTEGER | FLOAT | STRING | BLOB | TRUE | FALSE | QNUMBER
-				#
-				# Relevant SQLite documentation:
-				#   - https://www.sqlite.org/syntax/literal-value.html
-				#
-				# A value
-			#
-
-			case current_token
-			when :NULL
-				tk = require :NULL
-				Token::Null(tk)
-			when :CURRENT_TIME
-				tk = require :CURRENT_TIME
-				Token::Current(tk)
-			when :CURRENT_DATE
-				tk = require :CURRENT_DATE
-				Token::Current(tk)
-			when :CURRENT_TIMESTAMP
-				tk = require :CURRENT_TIMESTAMP
-				Token::Current(tk)
-			when :TRUE
-				tk = require :TRUE
-				Token::True(tk)
-			when :FALSE
-				tk = require :FALSE
-				Token::False(tk)
-			when :QNUMBER
-				tk = require :QNUMBER
-				Token::Numeric(tk)
-			when :INTEGER
-				tk = require :INTEGER
-				Token::Numeric(tk)
-			when :FLOAT
-				tk = require :FLOAT
-				Token::Numeric(tk)
-			when :STRING
-				tk = require :STRING
-				Token::String(tk)
-			when :BLOB
-				tk = require :BLOB
-				Token::Blob(tk)
-			else
-				expected!(:INTEGER, :FLOAT, :QNUMBER, :STRING, :BLOB, :NULL, :TRUE, :FALSE, :CURRENT_TIME, :CURRENT_DATE, :CURRENT_TIMESTAMP)
-			end
-		end
-
-		def foreign_key_clause
-			#
-				# Relevant `parse.y` grammar rules:
-				#   ccons ::= REFERENCES nm eidlist_opt refargs.
-				#   eidlist_opt ::= . | LP eidlist RP
-				#   eidlist ::= eidlist COMMA nm collate sortorder | nm collate sortorder
-				#   refargs ::= . | refargs refarg
-				#   refarg ::= MATCH nm |
-				#              ON INSERT refact |
-				#              ON DELETE refact |
-				#              ON UPDATE refact
-				#   refact ::= SET NULL |
-				#              SET DEFAULT |
-				#              CASCADE |
-				#              RESTRICT |
-				#              NO ACTION
-				#   defer_subclause_opt ::= . | defer_subclause
-				#   defer_subclause ::= NOT DEFERRABLE init_deferred_pred_opt |
-				#                       DEFERRABLE init_deferred_pred_opt
-				#   init_deferred_pred_opt ::= . | INITIALLY DEFERRED | INITIALLY IMMEDIATE
-				#
-				# Syntax diagram:
-				#                                                ┌─────{ , }◀─────┐
-				#   ◯─▶{ REFERENCES }─▶{ foreign-table }─┬─▶{ ( }┴▶{ column-name }┴▶{ ) }──┐
-				#    ┌───────────────────────────────────┴──────────◀──┬───────────────────┘
-				#    ├─▶{ ON }┬─▶{ DELETE }─┬┬─▶{ SET }─▶{ NULL }────▶─┤
-				#    │        └─▶{ UPDATE }─┘├─▶{ SET }─▶{ DEFAULT }─▶─┤
-				#    │                       ├─▶{ CASCADE }──────────▶─┤
-				#    │                       ├─▶{ RESTRICT }─────────▶─┤
-				#    │                       └─▶{ NO }─▶{ ACTION }───▶─┤
-				#    ├─▶{ MATCH }─▶{ name }────────────────────────────┘
-				#    ├────────────┬─▶{ DEFERRABLE }┬───────────────────────────────▶─┐
-				#    ├─{ NOT }──▶─┘                ├─▶{ INITIALLY }─▶{ DEFERRED }──▶─┤
-				#    │                             └─▶{ INITIALLY }─▶{ IMMEDIATE }─▶─┤
-				#    └───────────────────────────────────────────────────────────────┴──────▶◯
-				#
-				# Simplified grammar:
-				#
-				# Relevant SQLite documentation:
-				#   - https://www.sqlite.org/syntax/foreign-key-clause.html
-				#   - https://www.sqlite.org/foreignkeys.html
-				#
-				# [description]
-			#
-			references_kw = require :REFERENCES
-			foreign_table = name(except: [:ON, :MATCH, :DEFERRABLE, :NOT])
-			columns = nil
-			if (columns_lp = maybe :LP)
-				columns = require_some { indexed_column }
-				columns_rp = require :RP
-			end
-			foreign_key_actions = maybe_some(sep: nil) do
-				on_kw      = require        :ON
-				trigger_kw = require_one_of :DELETE, :UPDATE
-				action_kw  = require_one_of :CASCADE, :RESTRICT, [:SET, :NULL].freeze, [:SET, :DEFAULT].freeze, [:NO, :ACTION].freeze
-				ForeignKeyAction.new(
-					full_source: @lexer.sql,
-					on_kw:       Token::Keyword(on_kw),
-					trigger_kw:  Token::Keyword(trigger_kw),
-					action_kw:   Token::Keyword(action_kw),
-				)
-			end
-			match_clauses = maybe_some(sep: nil) do
-				match_kw = require :MATCH
-				type_tk  = name(except: [:ON, :MATCH, :DEFERRABLE, :NOT])
-				MatchClause.new(
-					full_source: @lexer.sql,
-					match_kw:    Token::Keyword(match_kw),
-					type_tk:     Token::Identifier(type_tk),
-				)
-			end
-
-			deferrable_span = maybe_one_of(
-				[:NOT, :DEFERRABLE, :INITIALLY, :IMMEDIATE].freeze,
-				[:NOT, :DEFERRABLE, :INITIALLY, :DEFERRED].freeze,
-				[:DEFERRABLE, :INITIALLY, :IMMEDIATE].freeze,
-				[:DEFERRABLE, :INITIALLY, :DEFERRED].freeze,
-				[:NOT, :DEFERRABLE].freeze,
-				:DEFERRABLE,
-			)
-
-			ForeignKeyClause.new(
-				full_source: @lexer.sql,
-				references_kw: Token::Keyword(references_kw),
-				table_tk: Token::Identifier(foreign_table),
-				columns_lp: Token::Punctuation(columns_lp),
-				columns: columns,
-				columns_rp: Token::Punctuation(columns_rp),
-				actions: foreign_key_actions,
-				match_clauses: match_clauses,
-				deferrable_span: Token::Keyword(deferrable_span),
-			)
 		end
 
 		def identifier(except: [])
 			# Relevant `parse.y` grammar rules:
-			#   nm ::= ID|INDEXED|JOIN_KW
-			#   nm ::= STRING
+			#   // An IDENTIFIER can be a generic identifier, or one of several
+			#   // keywords.  Any non-standard keyword can also be an identifier.
+			#   %token_class id  ID | INDEXED
 			#
-			# Syntax diagram:
-			#
-			# Simplified grammar:
-			#
-			# Relevant SQLite documentation:
-			#   -
-			#
-			# [description]
-			#
-
-			if :STRING == current_token
-				string_literal
-			elsif :ID == current_token
-				unwrap_id
-			elsif current_token in :INDEXED | :CROSS | :FULL | :INNER | :LEFT | :NATURAL | :OUTER | :RIGHT
-				value = current_value
+			if current_token in :ID | :INDEXED
 				require current_token
-				value
 			elsif !except.include?(current_token) && TOKEN_FALLBACKS.include?(current_token)
-				value = current_token.name
 				require current_token
-				value
 			else
-				expected!(:STRING, :ID, :INDEXED, :CROSS, :FULL, :INNER, :LEFT, :NATURAL, :OUTER, :RIGHT)
+				expected!(:ID, :INDEXED, 'fallback')
 			end
 		end
 
-		def table_ref
-			schema_or_table = identifier
-			if maybe :DOT
-				table = identifier
-				[schema_or_table, table]
+		def identifier_or_string(except: [])
+			# Relevant `parse.y` grammar rules:
+			#   // And "ids" is an identifer-or-string.
+			#   %token_class ids  ID | STRING
+			#
+			if current_token in :ID | :STRING
+				require current_token
+			elsif !except.include?(current_token) && TOKEN_FALLBACKS.include?(current_token)
+				require current_token
 			else
-				[nil, schema_or_table]
+				expected!(:ID, :STRING, 'fallback')
 			end
 		end
 
-		def unwrap_id
-			val = current_value
-			require :ID
-			case val.getbyte(0)
-			when 96, 39, 34, 91 # "`", "'", '"', "["
-				bytesize = val.bytesize
-				val.byteslice(1, bytesize - 2)
+		def identifier_or_join_keyword(except: [])
+			# Relevant `parse.y` grammar rules:
+			#   // An identifier or a join-keyword
+			#   %token_class idj  ID | INDEXED | JOIN_KW
+			#
+			if current_token in :ID | :INDEXED | :CROSS | :FULL | :INNER | :LEFT | :NATURAL | :OUTER | :RIGHT
+				require current_token
+			elsif !except.include?(current_token) && TOKEN_FALLBACKS.include?(current_token)
+				require current_token
 			else
-				val
+				expected!(:ID, :INDEXED, :JOIN_KW, 'fallback')
 			end
 		end
 
 		private
+
+		# ---------- Parsing Helpers ----------
 
 		def require(token)
 			if token == current_token
