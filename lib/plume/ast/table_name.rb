@@ -2,13 +2,18 @@
 
 module Plume
 	class TableName < Node
-		optional_token :schema_tk,
-			reader: :schema,
-			default: -> { schema_tk_val }
-		optional_token :dot_tk
-		required_token :table_tk,
-			reader: :table,
-			default: -> { table_tk_val }
+		token :schema_tk
+		token :dot_tk
+		token :table_tk
+
+		attr :schema, Stringy
+		attr :table, Stringy
+
+		def self.new(*, table:, **) = super
+		def self.concrete(*, table_tk:, **) = super
+
+		def schema = @schema || schema_tk_val
+		def table = @table || table_tk_val
 
 		alias_method :name, :table
 	end

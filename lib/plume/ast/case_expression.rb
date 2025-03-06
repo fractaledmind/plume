@@ -2,8 +2,21 @@
 
 module Plume
 	class CaseExpression < Node
-		prop :predicate, _Nilable(Expression)
-		prop :conditions, _Array(CaseCondition)
-		prop :else_clause, _Nilable(Expression)
+		token :case_kw
+		token :predicate_tk
+		token :else_kw
+		token :else_clause_tk
+		token :end_kw
+
+		attr :predicate, Expression
+		attr :else_clause, Expression
+
+		nodes :conditions, CaseCondition
+
+		def self.new(*, conditions:, **) = super
+		def self.concrete(*, case_kw:, conditions:, end_kw:, **) = super
+
+		def predicate = @predicate || predicate_tk_val
+		def else_clause = @else_clause || else_clause_tk_val
 	end
 end

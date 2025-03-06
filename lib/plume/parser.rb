@@ -145,8 +145,6 @@ module Plume
 			end
 		end
 
-		private
-
 		def sql_stmt_list
 			# Relevant `parse.y` grammar rules:
 			#   input ::= cmdlist
@@ -702,7 +700,7 @@ module Plume
 					left_attr = Node === left ? { left: left } : { left_tk: left }
 					right_attr = Node === right ? { right: right } : { right_tk: right }
 
-					return BinaryExpression.new(
+					return BinaryExpression.concrete(
 						full_source: @lexer.sql,
 						operator_tk: Token::Punctuation(operator_tk),
 						**left_attr,
@@ -732,16 +730,19 @@ module Plume
 					left_attr = Node === left ? { left: left } : { left_tk: left }
 					right_attr = Node === right ? { right: right } : { right_tk: right }
 
-					left = BinaryExpression.new(
+					left = BinaryExpression.concrete(
 						full_source: @lexer.sql,
 						operator_tk: Token::Punctuation(operator_tk),
 						**left_attr,
 						**right_attr,
 					)
 				elsif maybe :COLLATE
+					expression_attr = Node === left ? { expression: left } : { expression_tk: left }
+					collating_sequence = identifier_or_string()
+
 					left = CollationExpression.new(
-						expression: left,
-						collation_name: identifier.to_sym.upcase
+						**expression_attr,
+						sequence_tk: Token::Keyword(collating_sequence),
 					)
 				else
 					operator_tk = require operator
@@ -750,7 +751,7 @@ module Plume
 					left_attr = Node === left ? { left: left } : { left_tk: left }
 					right_attr = Node === right ? { right: right } : { right_tk: right }
 
-					left = BinaryExpression.new(
+					left = BinaryExpression.concrete(
 						full_source: @lexer.sql,
 						operator_tk: Token::Punctuation(operator_tk),
 						**left_attr,
@@ -1266,25 +1267,38 @@ module Plume
 					expression: e,
 					as: t,
 				)
-			elsif maybe :CASE
-				if maybe :WHEN
-					conditions = require_some(sep: :WHEN) do
+			elsif (case_kw = maybe :CASE)
+				if current_token == :WHEN
+					conditions = require_some(prefix: :WHEN) do |when_kw|
 						case_predicate = expression
-						require :THEN
+						then_kw = require :THEN
 						case_consequence = expression
 
-						CaseCondition.new(
-							predicate: case_predicate,
-							consequence: case_consequence,
+						predicate_attr = Node === case_predicate ? { predicate: case_predicate } : { predicate_tk: case_predicate }
+						consequence_attr = Node === case_consequence ? { consequence: case_consequence } : { consequence_tk: case_consequence }
+
+						CaseCondition.concrete(
+							full_source: @lexer.sql,
+							when_kw: Token::Keyword(when_kw),
+							**predicate_attr,
+							then_kw: Token::Keyword(then_kw),
+							**consequence_attr,
 						)
 					end
-					else_clause = maybe(:ELSE) ? expression : nil
-					require :END
+					if (else_kw = maybe :ELSE)
+						else_clause = expression
+					end
+					end_kw = require :END
 
-					CaseExpression.new(
-						predicate: nil,
-						conditions:,
-						else_clause:,
+					else_clause_attr = Node === else_clause ? { else_clause: else_clause } : { else_clause_tk: else_clause }
+
+					CaseExpression.concrete(
+						full_source: @lexer.sql,
+						case_kw: Token::Keyword(case_kw),
+						conditions: conditions,
+						else_kw: Token::Keyword(else_kw),
+						**else_clause_attr,
+						end_kw: Token::Keyword(end_kw),
 					)
 				else
 					predicate = expression
@@ -1319,7 +1333,7 @@ module Plume
 			elsif (id = maybe { name(except: [:RAISE]) })
 				case current_token
 				in :IN
-					ColumnName.new(
+					ColumnName.concrete(
 						full_source: @lexer.sql,
 						column_tk: Token::Identifier(id),
 					)
@@ -1343,7 +1357,7 @@ module Plume
 					table_or_column_name = name
 					if (dot2 = maybe :DOT)
 						column_name = name
-						ColumnName.new(
+						ColumnName.concrete(
 							full_source: @lexer.sql,
 							schema_tk: Token::Identifier(schema_or_table_name),
 							dot1: Token::Punctuation(dot),
@@ -1352,7 +1366,7 @@ module Plume
 							column_tk: Token::Identifier(column_name),
 						)
 					else
-						ColumnName.new(
+						ColumnName.concrete(
 							full_source: @lexer.sql,
 							table_tk: Token::Identifier(schema_or_table_name),
 							dot2: Token::Punctuation(dot),
@@ -1360,7 +1374,7 @@ module Plume
 						)
 					end
 				else
-					ColumnName.new(
+					ColumnName.concrete(
 						full_source: @lexer.sql,
 						column_tk: Token::Identifier(id),
 					)
@@ -1375,39 +1389,52 @@ module Plume
 		end
 
 		def raise_function
-			# Relevant `parse.y` grammar rules:
 			#
-			# Syntax diagram:
-			#   ◯─▶{ RAISE }─▶{ ( }┬─▶{ IGNORE }────────────────────▶─────────┬▶{ ) }──▶◯
-			#                      ├─▶{ ROLLBACK }─┬▶{ , }─▶{ error-message }─┘
-			#                      ├─▶{ ABORT }──▶─┤
-			#                      └─▶{ FAIL }───▶─┘
+				# Relevant `parse.y` grammar rules:
+				#    expr ::= RAISE LP IGNORE RP | RAISE LP raisetype COMMA expr RP
+				#    raisetype ::= ROLLBACK | ABORT | FAIL
+				#
+				# Syntax diagram:
+				#   ◯─▶{ RAISE }─▶{ ( }┬─▶{ IGNORE }────────────────────▶─────────┬▶{ ) }──▶◯
+				#                      ├─▶{ ROLLBACK }─┬▶{ , }─▶{ error-message }─┘
+				#                      ├─▶{ ABORT }──▶─┤
+				#                      └─▶{ FAIL }───▶─┘
+				#
+				# Simplified grammar:
+				#   RAISE LP (IGNORE | (ROLLBACK | ABORT | FAIL) COMMA expr) RP
+				#
+				# Relevant SQLite documentation:
+				#   - https://www.sqlite.org/syntax/raise-function.html
+				#   - https://www.sqlite.org/lang_createtrigger.html#the_raise_function
+				#
+				# The special RAISE expression that may _only_ occur in trigger programs.
 			#
-			# Simplified grammar:
-			#
-			# Relevant SQLite documentation:
-			#   -
-			#
-			# [description]
-			#
-			require_all_of :RAISE, :LP
-			if maybe :IGNORE
-				require :RP
-				RaiseExpression.new(type: :IGNORE)
-			elsif maybe :ROLLBACK
+			raise_kw = require :RAISE
+			raise_lp = require :LP
+			if (ignore_kw = maybe :IGNORE)
+				raise_rp = require :RP
+
+				RaiseExpression.concrete(
+					full_source: @lexer.sql,
+					raise_kw: Token::Keyword(raise_kw),
+					raise_lp: Token::Punctuation(raise_lp),
+					type_kw: Token::Keyword(ignore_kw),
+					raise_rp: Token::Punctuation(raise_rp),
+				)
+			elsif (rollback_kw = maybe :ROLLBACK)
 				require :COMMA
 				error_message = identifier
-				require :RP
+				require_rp = require :RP
 				RaiseExpression.new(type: :ROLLBACK, message: error_message)
-			elsif maybe :ABORT
+			elsif (abort_kw = maybe :ABORT)
 				require :COMMA
 				error_message = identifier
-				require :RP
+				require_rp = require :RP
 				RaiseExpression.new(type: :ABORT, message: error_message)
-			elsif maybe :FAIL
+			elsif (fail_kw = maybe :FAIL)
 				require :COMMA
 				error_message = identifier
-				require :RP
+				require_rp = require :RP
 				RaiseExpression.new(type: :FAIL, message: error_message)
 			else
 				expected!(:IGNORE, :ROLLBACK, :ABORT, :FAIL)
@@ -2117,9 +2144,16 @@ module Plume
 			expected!(*tokens)
 		end
 
-		def require_some(sep: :COMMA, given: nil, &block)
+		def require_some(sep: :COMMA, prefix: nil, given: nil, &block)
 			a = []
-			a << (given || yield)
+
+			val = if prefix
+				sep_tk = require(prefix)
+				yield(sep_tk)
+			else
+				(given || yield)
+			end
+			a << val
 
 			if Array === sep
 				i, len = 0, sep.length
@@ -2128,10 +2162,12 @@ module Plume
 					i += 1
 				end
 			else
-				collect(into: a, sep: sep, &block)
+				collect(into: a, sep: prefix || sep, &block)
 			end
 
 			return a unless a.all?(Array)
+
+			return token_span_from(*a)
 
 			beg = a[0][1]
 			fin = a[-1][2]
@@ -2165,6 +2201,16 @@ module Plume
 			end
 		end
 
+		def collect(into:, sep: :COMMA, &block)
+			while true
+				sep_tk = maybe(sep)
+				break unless sep_tk
+				val = maybe { yield(sep_tk) }
+
+				val ? into << val : break
+			end
+		end
+
 		def token_span_from(*spans)
 			spans.compact!
 			i, len = 0, spans.length
@@ -2180,15 +2226,6 @@ module Plume
 			end
 
 			[tokens, start_pos, end_pos]
-		end
-
-		def collect(into:, sep: :COMMA, &block)
-			while true
-				sep_tk = maybe(sep)
-				val = maybe { yield }
-
-				val ? into << val : break
-			end
 		end
 
 		# Access the current token type in the lexer stream.

@@ -2,9 +2,14 @@
 
 module Plume
 	class ColumnType < Node
-		required_token :text_span,
-			reader: :text,
-			default: -> { text_span_val }
+		token :text_span
+
+		attr :text, Stringy
+
+		def self.new(*, text:, **) = super
+		def self.concrete(*, text_span:, **) = super
+
+		def text = @text || text_span_val
 
 		inspectable def affinity
 			# rules found at: https://www.sqlite.org/datatype3.html#determination_of_column_affinity

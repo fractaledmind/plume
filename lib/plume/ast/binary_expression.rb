@@ -38,19 +38,31 @@ module Plume
 			[:NOT, :REGEXP].freeze               => :NOT_REGEXP,
 			[:NOT, :MATCH].freeze                => :NOT_MATCH,
 		}.freeze
-		Operator = _Union(TOKEN_TO_OPERATOR.values)
+		Operator = _Union(*TOKEN_TO_OPERATOR.values)
 
-		required_token :operator_tk,
-			reader: :operator,
-			type: Operator,
-			default: -> { TOKEN_TO_OPERATOR[operator_tk_tok] }
-		required_token :left_tk,
-			reader: :left,
-			type: Expression,
-			default: -> { left_tk_val }
-		required_token :right_tk,
-			reader: :right,
-			type: Expression,
-			default: -> { right_tk_val }
+		token :operator_tk         # required
+		token :left_tk             # required
+		token :right_tk            # required
+
+		attr :operator, Operator   # required
+		attr :left,     Expression # required
+		attr :right,    Expression # required
+
+		def self.new(*, operator:, left:, right:, **) = super
+		def self.concrete(*, operator_tk:, **) = super
+
+		# Parser may pass either tokens or attributes, so
+		# require none in `concrete` signature but ensure presence here.
+		def after_initialize()
+			if @left.nil? && @left_tk.nil?
+				raise ArgumentError.new("missing either: :left, :left_tk")
+			elsif @right.nil? && @right_tk.nil?
+				raise ArgumentError.new("missing either: :right, :right_tk")
+			end
+		end
+
+		def operator = @operator || TOKEN_TO_OPERATOR[operator_tk_tok]
+		def left = @left || left_tk_val
+		def right = @right || right_tk_val
 	end
 end
