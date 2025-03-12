@@ -2,4 +2,6 @@
 
 module Plume
 	LiteralFalse = Object.new
+	def LiteralFalse.inspect = "<LiteralFalse>"
+	LiteralFalse.freeze
 end

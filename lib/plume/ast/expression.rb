@@ -18,6 +18,7 @@ module Plume
 				RaiseExpression,
 				FunctionReference,
 				SignedExpression,
+				LiteralExpression,
 			)
 		},
 	)

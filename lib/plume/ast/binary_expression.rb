@@ -61,8 +61,8 @@ module Plume
 			end
 		end
 
-		def operator = @operator || TOKEN_TO_OPERATOR[operator_tk_tok]
-		def left = @left || left_tk_val
-		def right = @right || right_tk_val
+		def operator = (@operator == LiteralNil) ? TOKEN_TO_OPERATOR[operator_tk_tok] : @operator
+		def left = (@left == LiteralNil) ? left_tk_val : @left
+		def right = (@right == LiteralNil) ? right_tk_val : @right
 	end
 end

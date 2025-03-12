@@ -15,8 +15,8 @@ module Plume
 		def self.new(*, column:, **) = super
 		def self.concrete(*, column_tk:, **) = super
 
-		def schema = @schema || schema_tk_val
-		def table = @table || table_tk_val
-		def column = @column || column_tk_val
+		def schema = (@schema == LiteralNil) ? schema_tk_val : @schema
+		def table = (@table == LiteralNil) ? table_tk_val : @table
+		def column = (@column == LiteralNil) ? column_tk_val : @column
 	end
 end

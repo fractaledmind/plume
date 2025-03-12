@@ -1,283 +1,330 @@
 # frozen_string_literal: true
 
-# EXISTS
+# -- literal values
 
-# test "COLLATE expression" do
-# 	parser = Plume::Parser.new("'foo' COLLATE NOCASE")
-# 	actual = parser.expression
-# 	expected = Plume::CollationExpression.new(
-# 		expression: "foo",
-# 		sequence: :NOCASE,
-# 	)
-# 	assert_equal "foo", expected.expression
-# 	assert_equal :NOCASE, expected.sequence
-# end
+test "Single integer literal expression" do
+	parser = Plume::Parser.new("2")
+	actual = parser.expression
+	expected = Plume::LiteralExpression.new(
+		value: 2
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "RAISE expression with IGNORE" do
-# 	parser = Plume::Parser.new("RAISE (IGNORE)")
-# 	actual = parser.expression
-# 	expected = Plume::RaiseExpression.new(
-# 		type: :IGNORE
-# 	)
-# 	assert_equal :IGNORE, actual.type
-# end
+test "Single float literal expression" do
+	parser = Plume::Parser.new("1.2")
+	actual = parser.expression
+	expected = Plume::LiteralExpression.new(
+		value: 1.2
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "RAISE expression with ROLLBACK" do
-# 	parser = Plume::Parser.new("RAISE (ROLLBACK, 'error message')")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::RaiseExpression.new(
-# 		type: :ROLLBACK,
-# 		message: "error message"
-# 	)
-# end
+test "Single string literal expression" do
+	parser = Plume::Parser.new("'foo'")
+	actual = parser.expression
+	expected = Plume::LiteralExpression.new(
+		value: "foo"
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "RAISE expression with ABORT" do
-# 	parser = Plume::Parser.new("RAISE (ABORT, 'error message')")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::RaiseExpression.new(
-# 		type: :ABORT,
-# 		message: "error message"
-# 	)
-# end
+test "Single blob literal expression" do
+	parser = Plume::Parser.new("X'53514C697465'")
+	actual = parser.expression
+	expected = Plume::LiteralExpression.new(
+		value: "SQLite"
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "RAISE expression with FAIL" do
-# 	parser = Plume::Parser.new("RAISE (FAIL, 'error message')")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::RaiseExpression.new(
-# 		type: :FAIL,
-# 		message: "error message"
-# 	)
-# end
+test "Single NULL literal expression" do
+	parser = Plume::Parser.new("null")
+	actual = parser.expression
+	expected = Plume::LiteralExpression.new(
+		value: nil
+	)
+	assert_equal actual.value, expected.value
+end
 
-# # -- literal values
+test "Single TRUE literal expression" do
+	parser = Plume::Parser.new("true")
+	actual = parser.expression
+	expected = Plume::LiteralExpression.new(
+		value: true
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "Single integer literal expression" do
-# 	parser = Plume::Parser.new("2")
-# 	expr = parser.expression
-# 	assert_equal expr, 2
-# end
+test "Single FALSE literal expression" do
+	parser = Plume::Parser.new("false")
+	actual = parser.expression
+	expected = Plume::LiteralExpression.new(
+		value: false
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "Single float literal expression" do
-# 	parser = Plume::Parser.new("1.2")
-# 	expr = parser.expression
-# 	assert_equal expr, 1.2
-# end
+test "Single CURRENT_TIME literal expression" do
+	parser = Plume::Parser.new("current_time")
+	actual = parser.expression
+	expected = Plume::LiteralExpression.new(
+		value: :CURRENT_TIME
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "Single string literal expression" do
-# 	parser = Plume::Parser.new("'foo'")
-# 	expr = parser.expression
-# 	assert_equal expr, "foo"
-# end
+test "Single CURRENT_DATE literal expression" do
+	parser = Plume::Parser.new("current_date")
+	actual = parser.expression
+	expected = Plume::LiteralExpression.new(
+		value: :CURRENT_DATE
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "Single blob literal expression" do
-# 	parser = Plume::Parser.new("X'53514C697465'")
-# 	expr = parser.expression
-# 	assert_equal expr, "SQLite"
-# end
+test "Single CURRENT_TIMESTAMP literal expression" do
+	parser = Plume::Parser.new("current_timestamp")
+	actual = parser.expression
+	expected = Plume::LiteralExpression.new(
+		value: :CURRENT_TIMESTAMP
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "Single NULL literal expression" do
-# 	parser = Plume::Parser.new("null")
-# 	expr = parser.expression
-# 	assert_equal expr, nil
-# end
+test "Single unqualified column reference expression" do
+	parser = Plume::Parser.new("c0")
+	actual = parser.expression
+	expected = Plume::ColumnName.new(column: "c0")
+	assert_equal actual.column, expected.column
+end
 
-# test "Single TRUE literal expression" do
-# 	parser = Plume::Parser.new("true")
-# 	expr = parser.expression
-# 	assert_equal expr, true
-# end
+test "Single table-qualified column reference expression" do
+	parser = Plume::Parser.new("tb1.c0")
+	actual = parser.expression
+	expected = Plume::ColumnName.new(
+		table: "tb1",
+		column: "c0",
+	)
+	assert_equal actual.column, expected.column
+	assert_equal actual.table, expected.table
+end
 
-# test "Single FALSE literal expression" do
-# 	parser = Plume::Parser.new("false")
-# 	expr = parser.expression
-# 	assert_equal expr, false
-# end
+test "Single fully qualified column reference expression" do
+	parser = Plume::Parser.new("sc1.tb1.c0")
+	actual = parser.expression
+	expected = Plume::ColumnName.new(
+		schema: "sc1",
+		table: "tb1",
+		column: "c0",
+	)
+	assert_equal actual.column, expected.column
+	assert_equal actual.table, expected.table
+	assert_equal actual.schema, expected.schema
+end
 
-# test "Single CURRENT_TIME literal expression" do
-# 	parser = Plume::Parser.new("current_time")
-# 	expr = parser.expression
-# 	assert_equal expr, :CURRENT_TIME
-# end
+test "Parenthetical integer literal expression" do
+	parser = Plume::Parser.new("(2)")
+	actual = parser.expression
+	expected = Plume::ParentheticalExpression.new(
+		value: 2
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "Single CURRENT_DATE literal expression" do
-# 	parser = Plume::Parser.new("current_date")
-# 	expr = parser.expression
-# 	assert_equal expr, :CURRENT_DATE
-# end
+test "Parenthetical float literal expression" do
+	parser = Plume::Parser.new("(1.2)")
+	actual = parser.expression
+	expected = Plume::ParentheticalExpression.new(
+		value: 1.2
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "Single CURRENT_TIMESTAMP literal expression" do
-# 	parser = Plume::Parser.new("current_timestamp")
-# 	expr = parser.expression
-# 	assert_equal expr, :CURRENT_TIMESTAMP
-# end
+test "Parenthetical string literal expression" do
+	parser = Plume::Parser.new("('foo')")
+	actual = parser.expression
+	expected = Plume::ParentheticalExpression.new(
+		value: "foo"
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "Single unqualified column reference expression" do
-# 	parser = Plume::Parser.new("c0")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::ColumnName.new(column: "c0")
-# end
+test "Parenthetical blob literal expression" do
+	parser = Plume::Parser.new("(X'53514C697465')")
+	actual = parser.expression
+	expected = Plume::ParentheticalExpression.new(
+		value: "SQLite"
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "Single table-qualified column reference expression" do
-# 	parser = Plume::Parser.new("tb1.c0")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::ColumnName.new(
-# 		table_name: "tb1",
-# 		column_name: "c0",
-# 	)
-# end
+test "Parenthetical NULL literal expression" do
+	parser = Plume::Parser.new("(null)")
+	actual = parser.expression
+	expected = Plume::ParentheticalExpression.new(
+		value: nil
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "Single fully qualified column reference expression" do
-# 	parser = Plume::Parser.new("sc1.tb1.c0")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::ColumnName.new(
-# 		schema_name: "sc1",
-# 		table_name: "tb1",
-# 		column_name: "c0",
-# 	)
-# end
+test "Parenthetical TRUE literal expression" do
+	parser = Plume::Parser.new("(true)")
+	actual = parser.expression
+	expected = Plume::ParentheticalExpression.new(
+		value: true
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "Parenthetical integer literal expression" do
-# 	parser = Plume::Parser.new("(2)")
-# 	expr = parser.expression
-# 	assert_equal expr, 2
-# end
+test "Parenthetical FALSE literal expression" do
+	parser = Plume::Parser.new("(false)")
+	actual = parser.expression
+	expected = Plume::ParentheticalExpression.new(
+		value: false
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "Parenthetical float literal expression" do
-# 	parser = Plume::Parser.new("(1.2)")
-# 	expr = parser.expression
-# 	assert_equal expr, 1.2
-# end
+test "Parenthetical CURRENT_TIME literal expression" do
+	parser = Plume::Parser.new("(current_time)")
+	actual = parser.expression
+	expected = Plume::ParentheticalExpression.new(
+		value: :CURRENT_TIME
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "Parenthetical string literal expression" do
-# 	parser = Plume::Parser.new("('foo')")
-# 	expr = parser.expression
-# 	assert_equal expr, "foo"
-# end
+test "Parenthetical CURRENT_DATE literal expression" do
+	parser = Plume::Parser.new("(current_date)")
+	actual = parser.expression
+	expected = Plume::ParentheticalExpression.new(
+		value: :CURRENT_DATE
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "Parenthetical blob literal expression" do
-# 	parser = Plume::Parser.new("(X'53514C697465')")
-# 	expr = parser.expression
-# 	assert_equal expr, "SQLite"
-# end
+test "Parenthetical CURRENT_TIMESTAMP literal expression" do
+	parser = Plume::Parser.new("(current_timestamp)")
+	actual = parser.expression
+	expected = Plume::ParentheticalExpression.new(
+		value: :CURRENT_TIMESTAMP
+	)
+	assert_equal actual.value, expected.value
+end
 
-# test "Parenthetical NULL literal expression" do
-# 	parser = Plume::Parser.new("(null)")
-# 	expr = parser.expression
-# 	assert_equal expr, nil
-# end
+test "Parenthetical unqualified column reference expression" do
+	parser = Plume::Parser.new("(c0)")
+	actual = parser.expression
+	expected = Plume::ParentheticalExpression.new(
+		value: Plume::ColumnName.new(column: "c0")
+	)
+	assert_equal actual.value.column, expected.value.column
+end
 
-# test "Parenthetical TRUE literal expression" do
-# 	parser = Plume::Parser.new("(true)")
-# 	expr = parser.expression
-# 	assert_equal expr, true
-# end
+test "Parenthetical table-qualified column reference expression" do
+	parser = Plume::Parser.new("(tb1.c0)")
+	actual = parser.expression
+	expected = Plume::ParentheticalExpression.new(
+		value: Plume::ColumnName.new(
+			table: "tb1",
+			column: "c0",
+		)
+	)
+	assert_equal actual.value.column, expected.value.column
+	assert_equal actual.value.table, expected.value.table
+end
 
-# test "Parenthetical FALSE literal expression" do
-# 	parser = Plume::Parser.new("(false)")
-# 	expr = parser.expression
-# 	assert_equal expr, false
-# end
+test "Parenthetical fully qualified column reference expression" do
+	parser = Plume::Parser.new("(sc1.tb1.c0)")
+	actual = parser.expression
+	expected = Plume::ParentheticalExpression.new(
+		value: Plume::ColumnName.new(
+			schema: "sc1",
+			table: "tb1",
+			column: "c0",
+		)
+	)
+	assert_equal actual.value.column, expected.value.column
+	assert_equal actual.value.table, expected.value.table
+	assert_equal actual.value.schema, expected.value.schema
+end
 
-# test "Parenthetical CURRENT_TIME literal expression" do
-# 	parser = Plume::Parser.new("(current_time)")
-# 	expr = parser.expression
-# 	assert_equal expr, :CURRENT_TIME
-# end
+# -- unary operations
 
-# test "Parenthetical CURRENT_DATE literal expression" do
-# 	parser = Plume::Parser.new("(current_date)")
-# 	expr = parser.expression
-# 	assert_equal expr, :CURRENT_DATE
-# end
+test "Bitwise NOT operation" do
+	parser = Plume::Parser.new("~c0")
+	actual = parser.expression
+	expected = Plume::UnaryExpression.new(
+		operator: :INVERT,
+		operand: Plume::ColumnName.new(column: "c0")
+	)
 
-# test "Parenthetical CURRENT_TIMESTAMP literal expression" do
-# 	parser = Plume::Parser.new("(current_timestamp)")
-# 	expr = parser.expression
-# 	assert_equal expr, :CURRENT_TIMESTAMP
-# end
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.operand.column, expected.operand.column
+end
 
-# test "Parenthetical unqualified column reference expression" do
-# 	parser = Plume::Parser.new("(c0)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::ColumnName.new(column: "c0")
-# end
+test "Unary plus operation" do
+	parser = Plume::Parser.new("+c0")
+	actual = parser.expression
+	expected = Plume::UnaryExpression.new(
+		operator: :IDENTITY,
+		operand: Plume::ColumnName.new(column: "c0")
+	)
 
-# test "Parenthetical table-qualified column reference expression" do
-# 	parser = Plume::Parser.new("(tb1.c0)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::ColumnName.new(
-# 		table_name: "tb1",
-# 		column_name: "c0",
-# 	)
-# end
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.operand.column, expected.operand.column
+end
 
-# test "Parenthetical fully qualified column reference expression" do
-# 	parser = Plume::Parser.new("(sc1.tb1.c0)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::ColumnName.new(
-# 		schema_name: "sc1",
-# 		table_name: "tb1",
-# 		column_name: "c0",
-# 	)
-# end
+test "Unary minus operation" do
+	parser = Plume::Parser.new("-c0")
+	actual = parser.expression
+	expected = Plume::UnaryExpression.new(
+		operator: :NEGATE,
+		operand: Plume::ColumnName.new(column: "c0")
+	)
 
-# # -- unary operations
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.operand.column, expected.operand.column
+end
 
-# test "Bitwise NOT operation" do
-# 	parser = Plume::Parser.new("~c0")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::UnaryExpression.new(
-# 		operator: :INVERT,
-# 		operand: Plume::ColumnName.new(column: "c0")
-# 	)
-# end
+test "Logical NOT operation" do
+	parser = Plume::Parser.new("NOT c0")
+	actual = parser.expression
+	expected = Plume::UnaryExpression.new(
+		operator: :NOT,
+		operand: Plume::ColumnName.new(column: "c0")
+	)
 
-# test "Unary plus operation" do
-# 	parser = Plume::Parser.new("+c0")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::UnaryExpression.new(
-# 		operator: :IDENTITY,
-# 		operand: Plume::ColumnName.new(column: "c0")
-# 	)
-# end
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.operand.column, expected.operand.column
+end
 
-# test "Unary minus operation" do
-# 	parser = Plume::Parser.new("-c0")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::UnaryExpression.new(
-# 		operator: :NEGATE,
-# 		operand: Plume::ColumnName.new(column: "c0")
-# 	)
-# end
+test "ISNULL operator" do
+	parser = Plume::Parser.new("c0 ISNULL")
+	actual = parser.expression
+	expected = Plume::UnaryExpression.new(
+		operator: :IS_NULL,
+		operand: Plume::ColumnName.new(column: "c0"),
+	)
 
-# test "Logical NOT operation" do
-# 	parser = Plume::Parser.new("NOT c0")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::UnaryExpression.new(
-# 		operator: :NOT,
-# 		operand: Plume::ColumnName.new(column: "c0")
-# 	)
-# end
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.operand.column, expected.operand.column
+end
 
-# test "ISNULL operator" do
-# 	parser = Plume::Parser.new("c0 ISNULL")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::UnaryExpression.new(
-# 		operator: :IS_NULL,
-# 		operand: Plume::ColumnName.new(column: "c0"),
-# 	)
-# end
+test "NOTNULL operator" do
+	parser = Plume::Parser.new("c0 NOTNULL")
+	actual = parser.expression
+	expected = Plume::UnaryExpression.new(
+		operator: :NOT_NULL,
+		operand: Plume::ColumnName.new(column: "c0"),
+	)
 
-# test "NOTNULL operator" do
-# 	parser = Plume::Parser.new("c0 NOTNULL")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::UnaryExpression.new(
-# 		operator: :NOT_NULL,
-# 		operand: Plume::ColumnName.new(column: "c0"),
-# 	)
-# end
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.operand.column, expected.operand.column
+end
 
-# # -- binary operations
+# -- binary operations
 
 # test "Binary concat operation" do
 # 	parser = Plume::Parser.new("c0 || 'suffix'")
@@ -920,9 +967,46 @@
 # 	)
 # end
 
-# # -- CASE expressions
+# -- CASE expressions
 
 test "CASE expression without base expression but with ELSE" do
+	parser = Plume::Parser.new("CASE WHEN c0 > 0 THEN 'Positive' WHEN c0 < 0 THEN 'Negative' ELSE 'Zero' END")
+	actual = parser.expression
+	expected = Plume::CaseExpression.new(
+		conditions: [
+			Plume::CaseCondition.new(
+				predicate: Plume::BinaryExpression.new(
+					operator: :ABOVE,
+					left: Plume::ColumnName.new(column: "c0"),
+					right: Plume::LiteralExpression.new(value: 0)
+				),
+				consequence: Plume::LiteralExpression.new(value: "Positive")
+			),
+			Plume::CaseCondition.new(
+				predicate: Plume::BinaryExpression.new(
+					operator: :BELOW,
+					left: Plume::ColumnName.new(column: "c0"),
+					right: Plume::LiteralExpression.new(value: 0)
+				),
+				consequence: Plume::LiteralExpression.new(value: "Negative")
+			),
+		],
+		else_clause: Plume::LiteralExpression.new(value: "Zero")
+	)
+
+	assert_equal actual.predicate, expected.predicate
+	assert_equal actual.conditions[0].predicate.operator, expected.conditions[0].predicate.operator
+	assert_equal actual.conditions[0].predicate.left.column, expected.conditions[0].predicate.left.column
+	assert_equal actual.conditions[0].predicate.right.value, expected.conditions[0].predicate.right.value
+	assert_equal actual.conditions[0].consequence.value, expected.conditions[0].consequence.value
+	assert_equal actual.conditions[1].predicate.operator, expected.conditions[1].predicate.operator
+	assert_equal actual.conditions[1].predicate.left.column, expected.conditions[1].predicate.left.column
+	assert_equal actual.conditions[1].predicate.right.value, expected.conditions[1].predicate.right.value
+	assert_equal actual.conditions[1].consequence.value, expected.conditions[1].consequence.value
+	assert_equal actual.else_clause.value, expected.else_clause.value
+end
+
+test "CASE expression without base expression and without ELSE" do
 	parser = Plume::Parser.new("CASE WHEN c0 > 0 THEN 'Positive' WHEN c0 < 0 THEN 'Negative' END")
 	actual = parser.expression
 	expected = Plume::CaseExpression.new(
@@ -931,89 +1015,86 @@ test "CASE expression without base expression but with ELSE" do
 				predicate: Plume::BinaryExpression.new(
 					operator: :ABOVE,
 					left: Plume::ColumnName.new(column: "c0"),
-					right: 0
+					right: Plume::LiteralExpression.new(value: 0)
 				),
-				consequence: "Positive"
+				consequence: Plume::LiteralExpression.new(value: "Positive")
 			),
 			Plume::CaseCondition.new(
 				predicate: Plume::BinaryExpression.new(
 					operator: :BELOW,
 					left: Plume::ColumnName.new(column: "c0"),
-					right: 0
+					right: Plume::LiteralExpression.new(value: 0)
 				),
-				consequence: "Negative"
+				consequence: Plume::LiteralExpression.new(value: "Negative")
 			),
 		],
-		else_clause: "Zero"
 	)
 
-	assert_equal expected.else_clause, actual.else_clause
+	assert_equal actual.predicate, expected.predicate
+	assert_equal actual.conditions[0].predicate.operator, expected.conditions[0].predicate.operator
+	assert_equal actual.conditions[0].predicate.left.column, expected.conditions[0].predicate.left.column
+	assert_equal actual.conditions[0].predicate.right.value, expected.conditions[0].predicate.right.value
+	assert_equal actual.conditions[0].consequence.value, expected.conditions[0].consequence.value
+	assert_equal actual.conditions[1].predicate.operator, expected.conditions[1].predicate.operator
+	assert_equal actual.conditions[1].predicate.left.column, expected.conditions[1].predicate.left.column
+	assert_equal actual.conditions[1].predicate.right.value, expected.conditions[1].predicate.right.value
+	assert_equal actual.conditions[1].consequence.value, expected.conditions[1].consequence.value
+	assert_equal actual.else_clause, expected.else_clause
 end
 
-# test "CASE expression without base expression and without ELSE" do
-# 	parser = Plume::Parser.new("CASE WHEN c0 > 0 THEN 'Positive' WHEN c0 < 0 THEN 'Negative' END")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::CaseExpression.new(
-# 		predicate: nil,
-# 		conditions: [
-# 			Plume::CaseCondition.new(
-# 				predicate: Plume::BinaryExpression.new(
-# 					operator: :ABOVE,
-# 					left: Plume::ColumnName.new(column: "c0"),
-# 					right: 0
-# 				),
-# 				consequence: "Positive"
-# 			),
-# 			Plume::CaseCondition.new(
-# 				predicate: Plume::BinaryExpression.new(
-# 					operator: :BELOW,
-# 					left: Plume::ColumnName.new(column: "c0"),
-# 					right: 0
-# 				),
-# 				consequence: "Negative"
-# 			),
-# 		],
-# 	)
-# end
+test "CASE expression with base expression and with ELSE" do
+	parser = Plume::Parser.new("CASE x WHEN w1 THEN r1 WHEN w2 THEN r2 ELSE r3 END")
+	actual = parser.expression
+	expected = Plume::CaseExpression.new(
+		predicate: Plume::ColumnName.new(column: "x"),
+		conditions: [
+			Plume::CaseCondition.new(
+				predicate: Plume::ColumnName.new(column: "w1"),
+				consequence: Plume::ColumnName.new(column: "r1")
+			),
+			Plume::CaseCondition.new(
+				predicate: Plume::ColumnName.new(column: "w2"),
+				consequence: Plume::ColumnName.new(column: "r2")
+			),
+		],
+		else_clause: Plume::ColumnName.new(column: "r3")
+	)
 
-# test "CASE expression with base expression and with ELSE" do
-# 	parser = Plume::Parser.new("CASE x WHEN w1 THEN r1 WHEN w2 THEN r2 ELSE r3 END")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::CaseExpression.new(
-# 		predicate: Plume::ColumnName.new(column: "x"),
-# 		conditions: [
-# 			Plume::CaseCondition.new(
-# 				predicate: Plume::ColumnName.new(column: "w1"),
-# 				consequence: Plume::ColumnName.new(column: "r1")
-# 			),
-# 			Plume::CaseCondition.new(
-# 				predicate: Plume::ColumnName.new(column: "w2"),
-# 				consequence: Plume::ColumnName.new(column: "r2")
-# 			),
-# 		],
-# 		else_clause: Plume::ColumnName.new(column: "r3")
-# 	)
-# end
+	assert_equal expected.predicate.column, actual.predicate.column
+	assert_equal expected.conditions[0].predicate.column, actual.conditions[0].predicate.column
+	assert_equal expected.conditions[0].consequence.column, actual.conditions[0].consequence.column
+	assert_equal expected.conditions[1].predicate.column, actual.conditions[1].predicate.column
+	assert_equal expected.conditions[1].consequence.column, actual.conditions[1].consequence.column
+	assert_equal expected.else_clause.column, actual.else_clause.column
+end
 
-# test "CASE expression with base expression and without ELSE" do
-# 	parser = Plume::Parser.new("CASE x WHEN w1 THEN r1 WHEN w2 THEN r2 END")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::CaseExpression.new(
-# 		predicate: Plume::ColumnName.new(column: "x"),
-# 		conditions: [
-# 			Plume::CaseCondition.new(
-# 				predicate: Plume::ColumnName.new(column: "w1"),
-# 				consequence: Plume::ColumnName.new(column: "r1")
-# 			),
-# 			Plume::CaseCondition.new(
-# 				predicate: Plume::ColumnName.new(column: "w2"),
-# 				consequence: Plume::ColumnName.new(column: "r2")
-# 			),
-# 		],
-# 	)
-# end
+test "CASE expression with base expression and without ELSE" do
+	parser = Plume::Parser.new("CASE x WHEN w1 THEN r1 WHEN w2 THEN r2 END")
+	actual = parser.expression
+	expected = Plume::CaseExpression.new(
+		predicate: Plume::ColumnName.new(column: "x"),
+		conditions: [
+			Plume::CaseCondition.new(
+				predicate: Plume::ColumnName.new(column: "w1"),
+				consequence: Plume::ColumnName.new(column: "r1")
+			),
+			Plume::CaseCondition.new(
+				predicate: Plume::ColumnName.new(column: "w2"),
+				consequence: Plume::ColumnName.new(column: "r2")
+			),
+		],
+		else_clause: nil,
+	)
 
-# # -- CAST expressions
+	assert_equal actual.predicate.column, expected.predicate.column
+	assert_equal actual.conditions[0].predicate.column, expected.conditions[0].predicate.column
+	assert_equal actual.conditions[0].consequence.column, expected.conditions[0].consequence.column
+	assert_equal actual.conditions[1].predicate.column, expected.conditions[1].predicate.column
+	assert_equal actual.conditions[1].consequence.column, expected.conditions[1].consequence.column
+	assert_equal actual.else_clause, expected.else_clause
+end
+
+# -- CAST expressions
 
 # test "CAST expression with integer type" do
 # 	parser = Plume::Parser.new("CAST(c0 AS INTEGER)")
@@ -1879,5 +1960,55 @@ end
 # 			right: 3,
 # 		),
 # 		right: 4,
+# 	)
+# end
+
+
+# EXISTS
+
+# test "COLLATE expression" do
+# 	parser = Plume::Parser.new("'foo' COLLATE NOCASE")
+# 	actual = parser.expression
+# 	expected = Plume::CollationExpression.new(
+# 		expression: "foo",
+# 		sequence: :NOCASE,
+# 	)
+# 	assert_equal "foo", expected.expression
+# 	assert_equal :NOCASE, expected.sequence
+# end
+
+# test "RAISE expression with IGNORE" do
+# 	parser = Plume::Parser.new("RAISE (IGNORE)")
+# 	actual = parser.expression
+# 	expected = Plume::RaiseExpression.new(
+# 		type: :IGNORE
+# 	)
+# 	assert_equal :IGNORE, actual.type
+# end
+
+# test "RAISE expression with ROLLBACK" do
+# 	parser = Plume::Parser.new("RAISE (ROLLBACK, 'error message')")
+# 	expr = parser.expression
+# 	assert_equal expr, Plume::RaiseExpression.new(
+# 		type: :ROLLBACK,
+# 		message: "error message"
+# 	)
+# end
+
+# test "RAISE expression with ABORT" do
+# 	parser = Plume::Parser.new("RAISE (ABORT, 'error message')")
+# 	expr = parser.expression
+# 	assert_equal expr, Plume::RaiseExpression.new(
+# 		type: :ABORT,
+# 		message: "error message"
+# 	)
+# end
+
+# test "RAISE expression with FAIL" do
+# 	parser = Plume::Parser.new("RAISE (FAIL, 'error message')")
+# 	expr = parser.expression
+# 	assert_equal expr, Plume::RaiseExpression.new(
+# 		type: :FAIL,
+# 		message: "error message"
 # 	)
 # end

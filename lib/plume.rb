@@ -11,6 +11,7 @@ module Plume
 	autoload :Token, "plume/ast/token"
 
 	autoload :BinaryExpression, "plume/ast/binary_expression"
+	autoload :ParentheticalExpression, "plume/ast/parenthetical_expression"
 	autoload :Blob, "plume/ast/blob"
 	autoload :CaseCondition, "plume/ast/case_condition"
 	autoload :CaseExpression, "plume/ast/case_expression"
@@ -81,6 +82,7 @@ module Plume
 	autoload :UnionCompoundOperator, "plume/ast/union_compound_operator"
 	autoload :UniqueColumnConstraint, "plume/ast/unique_column_constraint"
 	autoload :UniqueTableConstraint, "plume/ast/unique_table_constraint"
+	autoload :LiteralExpression, "plume/ast/literal_expression"
 	autoload :Variable, "plume/ast/variable"
 	autoload :WithoutRowidTableOption, "plume/ast/without_rowid_table_option"
 

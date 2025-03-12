@@ -710,15 +710,21 @@ module Plume
 
 				expected!(:IN, :BETWEEN, :LIKE, :GLOB, :REGEXP, :MATCH) if negated
 
-				if maybe :ISNULL
-					left = UnaryExpression.new(
-						operator: :IS_NULL,
-						operand: left
+				if (operator_tk = maybe :ISNULL)
+					operand_attr = Node === left ? { operand: left } : { operand_tk: left }
+
+					left = UnaryExpression.concrete(
+						full_source: @lexer.sql,
+						operator_tk: Token::Punctuation(operator_tk),
+						**operand_attr,
 					)
-				elsif maybe :NOTNULL
-					left = UnaryExpression.new(
-						operator: :NOT_NULL,
-						operand: left
+				elsif (operator_tk = maybe :NOTNULL)
+					operand_attr = Node === left ? { operand: left } : { operand_tk: left }
+
+					left = UnaryExpression.concrete(
+						full_source: @lexer.sql,
+						operator_tk: Token::Punctuation(operator_tk),
+						**operand_attr,
 					)
 				elsif (is_tk = maybe :IS)
 					negated_tk = maybe :NOT
@@ -1230,31 +1236,55 @@ module Plume
 		end
 
 		def basic_expression
-			if maybe :BITNOT
-				UnaryExpression.new(
-					operator: :INVERT,
-					operand: expression(OPERATOR_PRECEDENCE[:BITNOT])
+			if (operator_tk = maybe :BITNOT)
+				operand = expression(OPERATOR_PRECEDENCE[:BITNOT])
+				operand_attr = Node === operand ? { operand: operand } : { operand_tk: operand }
+
+				UnaryExpression.concrete(
+					full_source: @lexer.sql,
+					operator_tk: Token::Punctuation(operator_tk),
+					**operand_attr,
 				)
-			elsif maybe :PLUS
-				UnaryExpression.new(
-					operator: :IDENTITY,
-					operand: expression(OPERATOR_PRECEDENCE[:UPLUS])
+			elsif (operator_tk = maybe :PLUS)
+				operand = expression(OPERATOR_PRECEDENCE[:UPLUS])
+				operand_attr = Node === operand ? { operand: operand } : { operand_tk: operand }
+
+				UnaryExpression.concrete(
+					full_source: @lexer.sql,
+					operator_tk: Token::Punctuation(operator_tk),
+					**operand_attr,
 				)
-			elsif maybe :MINUS
-				UnaryExpression.new(
-					operator: :NEGATE,
-					operand: expression(OPERATOR_PRECEDENCE[:UMINUS])
+			elsif (operator_tk = maybe :MINUS)
+				operand = expression(OPERATOR_PRECEDENCE[:UMINUS])
+				operand_attr = Node === operand ? { operand: operand } : { operand_tk: operand }
+
+				UnaryExpression.concrete(
+					full_source: @lexer.sql,
+					operator_tk: Token::Punctuation(operator_tk),
+					**operand_attr,
 				)
-			elsif maybe :LP
-				# could be implicit EXISTS expression
-				e = expression(0)
-				require :RP
-				e
-			elsif maybe :NOT
-				# could be NOT EXISTS expression
-				UnaryExpression.new(
-					operator: :NOT,
-					operand: expression(OPERATOR_PRECEDENCE[:NOT])
+			elsif (operator_tk = maybe :NOT)
+				# TODO: could be NOT EXISTS expression
+				operand = expression(OPERATOR_PRECEDENCE[:NOT])
+				operand_attr = Node === operand ? { operand: operand } : { operand_tk: operand }
+
+				UnaryExpression.concrete(
+					full_source: @lexer.sql,
+					operator_tk: Token::Punctuation(operator_tk),
+					**operand_attr,
+				)
+			elsif (value_lp = maybe :LP)
+				# TODO: could be implicit EXISTS expression
+				value = expression(0)
+				value_rp = require :RP
+
+				value_attr = Node === value ? { value: value } : { value_tk: value }
+
+				ParentheticalExpression.concrete(
+					full_source: @lexer.sql,
+					value_lp: Token::Punctuation(value_lp),
+					**value_attr,
+					value_rp: Token::Punctuation(value_rp),
 				)
 			elsif maybe :CAST
 				require :LP
@@ -1324,12 +1354,11 @@ module Plume
 				end
 			elsif maybe :EXISTS
 				# is EXISTS expression
-			elsif (v = maybe { literal_value })
-				case v
-				when LiteralNil then nil
-				when LiteralFalse then false
-				else v
-				end
+			elsif (literal_tk = maybe { literal_value })
+				LiteralExpression.concrete(
+					full_source: @lexer.sql,
+					value_tk: literal_tk,
+				)
 			elsif (id = maybe { name(except: [:RAISE]) })
 				case current_token
 				in :IN
@@ -1747,7 +1776,6 @@ module Plume
 				#
 				# A value
 			#
-
 			case current_token
 			when :NULL
 				tk = require :NULL

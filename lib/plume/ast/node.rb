@@ -43,12 +43,12 @@ module Plume
 		end
 
 		def self.attr(name, type, **kw)
-			prop name, _Nilable(type), reader: false, **kw
+			prop name, _Union(type, LiteralNil, nil), reader: false, default: LiteralNil, **kw
 			inspectable name
 		end
 
 		def self.token(name, **kw)
-			prop name, _Nilable(Token), reader: false, **kw
+			prop name, _Union(Token, LiteralNil, nil), reader: false, default: LiteralNil, **kw
 
 			# Define methods for accessing token properties, like the original source text, parsed value, and location.
 			# The token reader method is simply the parsed value of the token.

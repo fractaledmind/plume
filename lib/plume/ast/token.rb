@@ -133,9 +133,9 @@ module Plume
 
 		def blob_literal(str, tup)
 			src = source(str, tup)
-			bytesize = value.bytesize
+			bytesize = src.bytesize
 			# trim the leading /x'/i and trailing /'/ then decode the hexadecimal string
-			[value.byteslice(2, bytesize - 3)].pack("H*")
+			[src.byteslice(2, bytesize - 3)].pack("H*")
 		end
 
 		def identifier(str, tup)
