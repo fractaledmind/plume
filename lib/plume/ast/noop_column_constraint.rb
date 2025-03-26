@@ -2,9 +2,14 @@
 
 module Plume
 	class NoOpColumnConstraint < ColumnConstraint
-		optional_token :constraint_kw
-		optional_token :name_tk,
-			reader: :name,
-			default: -> { name_tk_val }
+		token :constraint_kw
+		token :name_tk
+
+		attr :name, Stringy
+
+		def self.new(*, **) = super
+		def self.concrete(*, **) = super
+
+		def name = (@name == LiteralNil) ? name_tk_val : @name
 	end
 end

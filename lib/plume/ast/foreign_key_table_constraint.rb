@@ -2,14 +2,19 @@
 
 module Plume
 	class ForeignKeyTableConstraint < TableConstraint
-		optional_token :constraint_kw
-		optional_token :name_tk,
-			reader: :name,
-			default: -> { name_tk_val }
-		required_token :foreign_key_kw
-		optional_token :foreign_key_lp
-		required_nodes :columns, IndexedColumn
-		optional_token :foreign_key_rp
-		required_node :foreign_key_clause, ForeignKeyClause
+		token :constraint_kw
+		token :name_tk
+		token :foreign_key_kw
+		token :foreign_key_lp
+		token :foreign_key_rp
+
+		attr :name, Stringy
+		nodes :columns, IndexedColumn
+		node :foreign_key_clause, ForeignKeyClause
+
+		def self.new(*, columns:, foreign_key_clause:, **) = super
+		def self.concrete(*, foreign_key_kw:, columns:, foreign_key_clause:, **) = super
+
+		def name = (@name == LiteralNil) ? name_tk_val : @name
 	end
 end

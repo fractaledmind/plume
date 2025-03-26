@@ -2,14 +2,19 @@
 
 module Plume
 	class UniqueTableConstraint < TableConstraint
-		optional_token :constraint_kw
-		optional_token :name_tk,
-			reader: :name,
-			default: -> { name_tk_val }
-		optional_token :unique_kw
-		optional_token :unique_lp
-		required_nodes :columns, IndexedColumn
-		optional_token :unique_rp
-		optional_node :conflict_clause, ConflictClause
+		token :constraint_kw
+		token :name_tk
+		token :unique_kw
+		token :unique_lp
+		token :unique_rp
+
+		attr :name, Stringy
+		nodes :columns, IndexedColumn
+		node :conflict_clause, ConflictClause
+
+		def self.new(*, columns:, **) = super
+		def self.concrete(*, columns:, **) = super
+
+		def name = (@name == LiteralNil) ? name_tk_val : @name
 	end
 end

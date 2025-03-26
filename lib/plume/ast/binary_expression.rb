@@ -27,6 +27,7 @@ module Plume
 			:GLOB                                => :GLOB,
 			:REGEXP                              => :REGEXP,
 			:MATCH                               => :MATCH,
+			:IN                                  => :IN,
 			[:IS, :NOT, :DISTINCT, :FROM].freeze => :IS,
 			[:IS, :DISTINCT, :FROM].freeze       => :IS_NOT,
 			[:IS, :NOT].freeze                   => :IS_NOT,
@@ -34,9 +35,11 @@ module Plume
 			[:GLOB].freeze                       => :GLOB,
 			[:REGEXP].freeze                     => :REGEXP,
 			[:MATCH].freeze                      => :MATCH,
+			[:IN].freeze                         => :IN,
 			[:NOT, :GLOB].freeze                 => :NOT_GLOB,
 			[:NOT, :REGEXP].freeze               => :NOT_REGEXP,
 			[:NOT, :MATCH].freeze                => :NOT_MATCH,
+			[:NOT, :IN].freeze                   => :NOT_IN,
 		}.freeze
 		Operator = _Union(*TOKEN_TO_OPERATOR.values)
 
@@ -64,5 +67,9 @@ module Plume
 		def operator = (@operator == LiteralNil) ? TOKEN_TO_OPERATOR[operator_tk_tok] : @operator
 		def left = (@left == LiteralNil) ? left_tk_val : @left
 		def right = (@right == LiteralNil) ? right_tk_val : @right
+
+		def to_sql
+			# ALWAYS USE READER METHODS
+		end
 	end
 end

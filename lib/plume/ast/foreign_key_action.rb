@@ -10,12 +10,17 @@ module Plume
 			[:NO, :ACTION].freeze   => :NO_ACTION,
 		}.freeze
 
-		required_token :on_kw
-		required_token :trigger_kw,
-			reader: :trigger,
-			default: -> { trigger_kw_src.to_sym.upcase }
-		required_token :action_kw,
-			reader: :action,
-			default: -> { TOKEN_TO_ACTION[action_kw_tok] }
+		token :on_kw
+		token :trigger_kw
+		token :action_kw
+
+		attr :trigger, Stringy
+		attr :action, _Union(TOKEN_TO_ACTION.values)
+
+		def self.new(*, trigger:, action:, **) = super
+		def self.concrete(*, on_kw:, trigger_kw:, action_kw:, **) = super
+
+		def trigger = (@trigger == LiteralNil) ? trigger_kw_src.to_sym.upcase : @trigger
+		def action = (@action == LiteralNil) ? TOKEN_TO_ACTION[action_kw_tok] : @action
 	end
 end

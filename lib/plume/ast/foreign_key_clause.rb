@@ -13,19 +13,23 @@ module Plume
 		}.freeze
 		Deferrable = _Union(TOKEN_TO_DEFERRABLE.values)
 
-		required_token :references_kw
-		required_token :table_tk,
-			reader: :table,
-			default: -> { table_tk_val }
-		optional_token :columns_lp
-		optional_nodes :columns, IndexedColumn
-		optional_token :columns_rp
-		optional_nodes :actions, ForeignKeyAction
-		optional_nodes :match_clauses, MatchClause
-		optional_token :deferrable_span,
-			reader: :deferred,
-			type: Deferrable,
-			default: -> { TOKEN_TO_DEFERRABLE[deferrable_span_tok] }
+		token :references_kw
+		token :table_tk
+		token :columns_lp
+		token :columns_rp
+		token :deferrable_span
+
+		attr :table, Stringy
+		attr :deferred, Deferrable
+		nodes :columns, IndexedColumn
+		nodes :actions, ForeignKeyAction
+		nodes :match_clauses, MatchClause
+
+		def self.new(*, name:, **) = super
+		def self.concrete(*, references_kw:, table_tk:, **) = super
+
+		def table = (@table == LiteralNil) ? table_tk_val : @table
+		def deferred = (@deferred == LiteralNil) ? TOKEN_TO_DEFERRABLE[deferrable_span_tok] : @deferred
 
 		def on_delete
 			actions.reverse_each do |it|

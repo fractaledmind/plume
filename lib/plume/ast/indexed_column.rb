@@ -2,15 +2,20 @@
 
 module Plume
 	class IndexedColumn < Node
-		required_token :name_tk,
-			reader: :name,
-			default: -> { name_tk_val }
-		optional_token :collate_kw
-		optional_token :collation_tk,
-			reader: :collation,
-			default: -> { collation_tk_val&.to_sym&.upcase }
-		optional_token :direction_tk,
-			reader: :direction,
-			default: -> { direction_tk_val&.to_sym&.upcase }
+		token :name_tk
+		token :collate_kw
+		token :collation_tk
+		token :direction_tk
+
+		attr :name, Stringy
+		attr :collation, Stringy
+		attr :direction, Stringy
+
+		def self.new(*, name:, **) = super
+		def self.concrete(*, name_tk:, **) = super
+
+		def name = (@name == LiteralNil) ? name_tk_val : @name
+		def collation = (@collation == LiteralNil) ? collation_tk_val&.to_sym&.upcase : @collation
+		def direction = (@direction == LiteralNil) ? direction_tk_val&.to_sym&.upcase : @direction
 	end
 end

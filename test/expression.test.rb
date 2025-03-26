@@ -300,6 +300,23 @@ test "Logical NOT operation" do
 	assert_equal actual.operand.column, expected.operand.column
 end
 
+test "Logical NOT operation with addition expression" do
+	parser = Plume::Parser.new("NOT 0 + 1")
+	actual = parser.expression
+	expected = Plume::UnaryExpression.new(
+		operator: :NOT,
+		operand: Plume::BinaryExpression.new(
+			operator: :ADD,
+			left: Plume::LiteralExpression.new(value: 0),
+			right: Plume::LiteralExpression.new(value: 1)
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.operand.operator, expected.operand.operator
+	assert_equal actual.operand.left.value, expected.operand.left.value
+	assert_equal actual.operand.right.value, expected.operand.right.value
+end
+
 test "ISNULL operator" do
 	parser = Plume::Parser.new("c0 ISNULL")
 	actual = parser.expression
@@ -326,503 +343,644 @@ end
 
 # -- binary operations
 
-# test "Binary concat operation" do
-# 	parser = Plume::Parser.new("c0 || 'suffix'")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :CONCAT,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: "suffix",
-# 	)
-# end
+test "Binary concat operation" do
+	parser = Plume::Parser.new("c0 || 'suffix'")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :CONCAT,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: "suffix"),
+	)
 
-# test "Binary extract operation" do
-# 	parser = Plume::Parser.new("c0 -> '$.key'")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :EXTRACT,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: "$.key",
-# 	)
-# end
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Binary retrieve operation" do
-# 	parser = Plume::Parser.new("c0 ->> '$.key'")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :RETRIEVE,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: "$.key",
-# 	)
-# end
+test "Binary extract operation" do
+	parser = Plume::Parser.new("c0 -> '$.key'")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :EXTRACT,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: "$.key"),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Multiplication operation" do
-# 	parser = Plume::Parser.new("c0 * 5")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :MULTIPLY,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: 5,
-# 	)
-# end
+test "Binary retrieve operation" do
+	parser = Plume::Parser.new("c0 ->> '$.key'")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :RETRIEVE,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: "$.key"),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Division operation" do
-# 	parser = Plume::Parser.new("c0 / 2")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :DIVIDE,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: 2,
-# 	)
-# end
+test "Multiplication operation" do
+	parser = Plume::Parser.new("c0 * 5")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :MULTIPLY,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: 5),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Modulo operation" do
-# 	parser = Plume::Parser.new("c0 % 3")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :MODULO,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: 3,
-# 	)
-# end
+test "Division operation" do
+	parser = Plume::Parser.new("c0 / 2")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :DIVIDE,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: 2),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Addition operation" do
-# 	parser = Plume::Parser.new("c0 + 10")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :ADD,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: 10,
-# 	)
-# end
+test "Modulo operation" do
+	parser = Plume::Parser.new("c0 % 3")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :MODULO,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: 3),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Subtraction operation" do
-# 	parser = Plume::Parser.new("c0 - 5")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :SUB,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: 5,
-# 	)
-# end
+test "Addition operation" do
+	parser = Plume::Parser.new("c0 + 10")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :ADD,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: 10),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Bitwise AND operation" do
-# 	parser = Plume::Parser.new("c0 & 7")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :BIT_AND,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: 7,
-# 	)
-# end
+test "Subtraction operation" do
+	parser = Plume::Parser.new("c0 - 5")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :SUB,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: 5),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Bitwise OR operation" do
-# 	parser = Plume::Parser.new("c0 | 8")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :BIT_OR,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: 8,
-# 	)
-# end
+test "Bitwise AND operation" do
+	parser = Plume::Parser.new("c0 & 7")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :BIT_AND,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: 7),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Bitwise left shift operation" do
-# 	parser = Plume::Parser.new("c0 << 2")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :BIT_LSHIFT,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: 2,
-# 	)
-# end
+test "Bitwise OR operation" do
+	parser = Plume::Parser.new("c0 | 8")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :BIT_OR,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: 8),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Bitwise right shift operation" do
-# 	parser = Plume::Parser.new("c0 >> 1")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :BIT_RSHIFT,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: 1,
-# 	)
-# end
+test "Bitwise left shift operation" do
+	parser = Plume::Parser.new("c0 << 2")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :BIT_LSHIFT,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: 2),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Less than comparison" do
-# 	parser = Plume::Parser.new("c0 < 100")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :BELOW,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: 100,
-# 	)
-# end
+test "Bitwise right shift operation" do
+	parser = Plume::Parser.new("c0 >> 1")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :BIT_RSHIFT,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: 1),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Less than or equal comparison" do
-# 	parser = Plume::Parser.new("c0 <= 50")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :ATMOST,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: 50,
-# 	)
-# end
+test "Less than comparison" do
+	parser = Plume::Parser.new("c0 < 100")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :BELOW,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: 100),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Greater than or equal comparison" do
-# 	parser = Plume::Parser.new("c0 >= 20")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :ATLEAST,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: 20,
-# 	)
-# end
+test "Less than or equal comparison" do
+	parser = Plume::Parser.new("c0 <= 50")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :ATMOST,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: 50),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Equality comparison" do
-# 	parser = Plume::Parser.new("c0 = 42")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :EQUALS,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: 42,
-# 	)
-# end
+test "Greater than or equal comparison" do
+	parser = Plume::Parser.new("c0 >= 20")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :ATLEAST,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: 20),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Inequality comparison" do
-# 	parser = Plume::Parser.new("c0 != 42")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :NOT_EQUALS,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: 42,
-# 	)
-# end
+test "Equality comparison" do
+	parser = Plume::Parser.new("c0 = 42")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :EQUALS,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: 42),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "IS comparison" do
-# 	parser = Plume::Parser.new("c0 IS TRUE")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :IS,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: true,
-# 	)
-# end
+test "Inequality comparison" do
+	parser = Plume::Parser.new("c0 != 42")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :NOT_EQUALS,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: 42),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "IS DISTINCT FROM comparison" do
-# 	parser = Plume::Parser.new("c0 IS DISTINCT FROM TRUE")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :IS_NOT,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: true,
-# 	)
-# end
+test "IS comparison" do
+	parser = Plume::Parser.new("c0 IS TRUE")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :IS,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: true),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "IS NOT comparison" do
-# 	parser = Plume::Parser.new("c0 IS NOT FALSE")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :IS_NOT,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: false,
-# 	)
-# end
+test "IS DISTINCT FROM comparison" do
+	parser = Plume::Parser.new("c0 IS DISTINCT FROM TRUE")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :IS_NOT,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: true),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "IS NOT DISTINCT FROM comparison" do
-# 	parser = Plume::Parser.new("c0 IS NOT DISTINCT FROM TRUE")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :IS,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: true,
-# 	)
-# end
+test "IS NOT comparison" do
+	parser = Plume::Parser.new("c0 IS NOT FALSE")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :IS_NOT,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: false),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "IS NOT comparison" do
-# 	parser = Plume::Parser.new("c0 IS NOT FALSE")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :IS_NOT,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: false,
-# 	)
-# end
+test "IS NOT DISTINCT FROM comparison" do
+	parser = Plume::Parser.new("c0 IS NOT DISTINCT FROM TRUE")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :IS,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: true),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Greater than comparison with positive integer" do
-# 	parser = Plume::Parser.new("c0 > 0")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :ABOVE,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: 0,
-# 	)
-# end
+test "IS NOT comparison" do
+	parser = Plume::Parser.new("c0 IS NOT FALSE")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :IS_NOT,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: false),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Greater than comparison with negative integer" do
-# 	parser = Plume::Parser.new("c0 > -1")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :ABOVE,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: Plume::UnaryExpression.new(
-# 			operator: :NEGATE,
-# 			operand: 1
-# 		),
-# 	)
-# end
+test "Greater than comparison with positive integer" do
+	parser = Plume::Parser.new("c0 > 0")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :ABOVE,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: 0),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Greater than comparison with negative integer on left side" do
-# 	parser = Plume::Parser.new("-1 > c0")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :ABOVE,
-# 		left: Plume::UnaryExpression.new(
-# 			operator: :NEGATE,
-# 			operand: 1
-# 		),
-# 		right: Plume::ColumnName.new(column: "c0"),
-# 	)
-# end
+test "Greater than comparison with negative integer" do
+	parser = Plume::Parser.new("c0 > -1")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :ABOVE,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::UnaryExpression.new(
+			operator: :NEGATE,
+			operand: Plume::LiteralExpression.new(value: 1)
+		),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.operator, expected.right.operator
+	assert_equal actual.right.operand.value, expected.right.operand.value
+end
 
-# test "LIKE operator with string literals" do
-# 	parser = Plume::Parser.new("'str' like 'foo'")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::LikeExpression.new(
-# 		left: "str",
-# 		right: "foo",
-# 	)
-# end
+test "Greater than comparison with negative integer on left side" do
+	parser = Plume::Parser.new("-1 > c0")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :ABOVE,
+		left: Plume::UnaryExpression.new(
+			operator: :NEGATE,
+			operand: Plume::LiteralExpression.new(value: 1)
+		),
+		right: Plume::ColumnName.new(column: "c0"),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.operator, expected.left.operator
+	assert_equal actual.left.operand.value, expected.left.operand.value
+	assert_equal actual.right.column, expected.right.column
+end
 
-# test "NOT LIKE operator with string literals" do
-# 	parser = Plume::Parser.new("'str' not like 'foo'")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::NotLikeExpression.new(
-# 		left: "str",
-# 		right: "foo",
-# 	)
-# end
+test "IS NOT NULL operator" do
+	parser = Plume::Parser.new("c0 IS NOT NULL")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :IS_NOT,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: nil),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "LIKE operator with string literals and ESCAPE clause" do
-# 	parser = Plume::Parser.new("'str' like 'foo' escape '|'")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::LikeExpression.new(
-# 		left: "str",
-# 		right: "foo",
-# 		escape: "|",
-# 	)
-# end
+test "GLOB operator" do
+	parser = Plume::Parser.new("c0 GLOB '*.txt'")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :GLOB,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: "*.txt"),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "NOT LIKE operator with string literals and ESCAPE clause" do
-# 	parser = Plume::Parser.new("'str' not like 'foo' escape '|'")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::NotLikeExpression.new(
-# 		left: "str",
-# 		right: "foo",
-# 		escape: "|",
-# 	)
-# end
+test "REGEXP operator" do
+	parser = Plume::Parser.new("c0 REGEXP '^[A-Z]+'")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :REGEXP,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: "^[A-Z]+"),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "IS NOT NULL operator" do
-# 	parser = Plume::Parser.new("c0 IS NOT NULL")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :IS_NOT,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: nil
-# 	)
-# end
+test "MATCH operator" do
+	parser = Plume::Parser.new("c0 MATCH 'patten'")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :MATCH,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: "patten"),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "GLOB operator" do
-# 	parser = Plume::Parser.new("c0 GLOB '*.txt'")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :GLOB,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: "*.txt",
-# 	)
-# end
+test "NOT GLOB operator" do
+	parser = Plume::Parser.new("c0 NOT GLOB '*.txt'")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :NOT_GLOB,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: "*.txt"),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "REGEXP operator" do
-# 	parser = Plume::Parser.new("c0 REGEXP '^[A-Z]+'")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :REGEXP,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: "^[A-Z]+",
-# 	)
-# end
+test "NOT REGEXP operator" do
+	parser = Plume::Parser.new("c0 NOT REGEXP '^[A-Z]+'")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :NOT_REGEXP,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: "^[A-Z]+"),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "MATCH operator" do
-# 	parser = Plume::Parser.new("c0 MATCH 'patten'")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :MATCH,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: "patten",
-# 	)
-# end
+test "NOT MATCH operator" do
+	parser = Plume::Parser.new("c0 NOT MATCH 'patten'")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :NOT_MATCH,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::LiteralExpression.new(value: "patten"),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "NOT GLOB operator" do
-# 	parser = Plume::Parser.new("c0 NOT GLOB '*.txt'")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :NOT_GLOB,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: "*.txt",
-# 	)
-# end
+test "Compound AND condition with greater than and less than" do
+	parser = Plume::Parser.new("c0 > 0 AND c1 < 0")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :ALL,
+		left: Plume::BinaryExpression.new(
+			operator: :ABOVE,
+			left: Plume::ColumnName.new(column: "c0"),
+			right: Plume::LiteralExpression.new(value: 0)
+		),
+		right: Plume::BinaryExpression.new(
+			operator: :BELOW,
+			left: Plume::ColumnName.new(column: "c1"),
+			right: Plume::LiteralExpression.new(value: 0)
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.operator, expected.left.operator
+	assert_equal actual.left.left.column, expected.left.left.column
+	assert_equal actual.left.right.value, expected.left.right.value
+	assert_equal actual.right.operator, expected.right.operator
+	assert_equal actual.right.left.column, expected.right.left.column
+	assert_equal actual.right.right.value, expected.right.right.value
+end
 
-# test "NOT REGEXP operator" do
-# 	parser = Plume::Parser.new("c0 NOT REGEXP '^[A-Z]+'")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :NOT_REGEXP,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: "^[A-Z]+",
-# 	)
-# end
+test "Compound OR condition with greater than and less than" do
+	parser = Plume::Parser.new("c0 > 0 OR c1 LIKE 'foo%'")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :ANY,
+		left: Plume::BinaryExpression.new(
+			operator: :ABOVE,
+			left: Plume::ColumnName.new(column: "c0"),
+			right: Plume::LiteralExpression.new(value: 0),
+		),
+		right: Plume::LikeExpression.new(
+			left: Plume::ColumnName.new(column: "c1"),
+			right: Plume::LiteralExpression.new(value: "foo%"),
+		)
+	)
+	assert_equal actual.left.operator, expected.left.operator
+	assert_equal actual.left.left.column, expected.left.left.column
+	assert_equal actual.left.right.value, expected.left.right.value
+	assert_equal actual.right.left.column, expected.right.left.column
+	assert_equal actual.right.right.value, expected.right.right.value
+end
 
-# test "NOT MATCH operator" do
-# 	parser = Plume::Parser.new("c0 NOT MATCH 'patten'")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :NOT_MATCH,
-# 		left: Plume::ColumnName.new(column: "c0"),
-# 		right: "patten",
-# 	)
-# end
+# -- comparison operators
 
-# test "Compound AND condition with greater than and less than" do
-# 	parser = Plume::Parser.new("c0 > 0 AND c1 < 0")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :ALL,
-# 		left: Plume::BinaryExpression.new(
-# 			operator: :ABOVE,
-# 			left: Plume::ColumnName.new(column: "c0"),
-# 			right: 0
-# 		),
-# 		right: Plume::BinaryExpression.new(
-# 			operator: :BELOW,
-# 			left: Plume::ColumnName.new(column: "c1"),
-# 			right: 0
-# 		)
-# 	)
-# end
+test "LIKE operator with string literals" do
+	parser = Plume::Parser.new("'str' like 'foo'")
+	actual = parser.expression
+	expected = Plume::LikeExpression.new(
+		left: Plume::LiteralExpression.new(value: "str"),
+		right: Plume::LiteralExpression.new(value: "foo"),
+	)
+	assert_equal actual.left.value, expected.left.value
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "Compound OR condition with greater than and less than" do
-# 	parser = Plume::Parser.new("c0 > 0 OR c1 LIKE 'foo%'")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :ANY,
-# 		left: Plume::BinaryExpression.new(
-# 			operator: :ABOVE,
-# 			left: Plume::ColumnName.new(column: "c0"),
-# 			right: 0
-# 		),
-# 		right: Plume::LikeExpression.new(
-# 			left: Plume::ColumnName.new(column: "c1"),
-# 			right: "foo%"
-# 		)
-# 	)
-# end
+test "NOT LIKE operator with string literals" do
+	parser = Plume::Parser.new("'str' not like 'foo'")
+	actual = parser.expression
+	expected = Plume::NotLikeExpression.new(
+		left: Plume::LiteralExpression.new(value: "str"),
+		right: Plume::LiteralExpression.new(value: "foo"),
+	)
+	assert_equal actual.left.value, expected.left.value
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "NOT operator with column reference" do
-# 	parser = Plume::Parser.new("NOT c0")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::UnaryExpression.new(
-# 		operator: :NOT,
-# 		operand: Plume::ColumnName.new(column: "c0")
-# 	)
-# end
+test "LIKE operator with string literals and ESCAPE clause" do
+	parser = Plume::Parser.new("'str' like 'foo' escape '|'")
+	actual = parser.expression
+	expected = Plume::LikeExpression.new(
+		left: Plume::LiteralExpression.new(value: "str"),
+		right: Plume::LiteralExpression.new(value: "foo"),
+		escape: Plume::LiteralExpression.new(value: "|"),
+	)
+	assert_equal actual.left.value, expected.left.value
+	assert_equal actual.right.value, expected.right.value
+	assert_equal actual.escape.value, expected.escape.value
+end
 
-# test "NOT operator with addition expression" do
-# 	parser = Plume::Parser.new("NOT 0 + 1")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::UnaryExpression.new(
-# 		operator: :NOT,
-# 		operand: Plume::BinaryExpression.new(
-# 			operator: :ADD,
-# 			left: 0,
-# 			right: 1
-# 		)
-# 	)
-# end
+test "NOT LIKE operator with string literals and ESCAPE clause" do
+	parser = Plume::Parser.new("'str' not like 'foo' escape '|'")
+	actual = parser.expression
+	expected = Plume::NotLikeExpression.new(
+		left: Plume::LiteralExpression.new(value: "str"),
+		right: Plume::LiteralExpression.new(value: "foo"),
+		escape: Plume::LiteralExpression.new(value: "|"),
+	)
+	assert_equal actual.left.value, expected.left.value
+	assert_equal actual.right.value, expected.right.value
+	assert_equal actual.escape.value, expected.escape.value
+end
 
-# test "BETWEEN operator with integer values" do
-# 	parser = Plume::Parser.new("2 between 1 and 10")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::TernaryExpression.new(
-# 		operator: :BETWEEN,
-# 		left: 2,
-# 		middle: 1,
-# 		right: 10
-# 	)
-# end
+# -- ternary expressions
 
-# test "NOT BETWEEN operator with integer values" do
-# 	parser = Plume::Parser.new("2 not between 1 and 10")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::TernaryExpression.new(
-# 		operator: :NOT_BETWEEN,
-# 		left: 2,
-# 		middle: 1,
-# 		right: 10
-# 	)
-# end
+test "BETWEEN operator with integer values" do
+	parser = Plume::Parser.new("2 between 1 and 10")
+	actual = parser.expression
+	expected = Plume::TernaryExpression.new(
+		operator: :BETWEEN,
+		left: Plume::LiteralExpression.new(value: 2),
+		middle: Plume::LiteralExpression.new(value: 1),
+		right: Plume::LiteralExpression.new(value: 10)
+	)
+	assert_equal actual.left.value, expected.left.value
+	assert_equal actual.middle.value, expected.middle.value
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "IN operator with list of values" do
-# 	parser = Plume::Parser.new("c0 IN (1, 2, 3)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::InExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: [1, 2, 3]
-# 	)
-# end
+test "NOT BETWEEN operator with integer values" do
+	parser = Plume::Parser.new("2 not between 1 and 10")
+	actual = parser.expression
+	expected = Plume::TernaryExpression.new(
+		operator: :NOT_BETWEEN,
+		left: Plume::LiteralExpression.new(value: 2),
+		middle: Plume::LiteralExpression.new(value: 1),
+		right: Plume::LiteralExpression.new(value: 10)
+	)
+	assert_equal actual.left.value, expected.left.value
+	assert_equal actual.middle.value, expected.middle.value
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "IN operator with empty parens" do
-# 	parser = Plume::Parser.new("c0 IN ()")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::InExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: []
-# 	)
-# end
+test "IN operator with list of values" do
+	parser = Plume::Parser.new("c0 IN (1, 2, 3)")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::ParentheticalExpression.new(
+			value: [
+				Plume::LiteralExpression.new(value: 1),
+				Plume::LiteralExpression.new(value: 2),
+				Plume::LiteralExpression.new(value: 3),
+			]
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value[0].value, expected.right.value[0].value
+	assert_equal actual.right.value[1].value, expected.right.value[1].value
+	assert_equal actual.right.value[2].value, expected.right.value[2].value
+end
 
-# test "IN operator with an unqualified table reference" do
-# 	parser = Plume::Parser.new("c0 IN tb0")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::InExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: Plume::TableName.new(
-# 			table_name: "tb0"
-# 		)
-# 	)
-# end
+test "IN operator with empty parens" do
+	parser = Plume::Parser.new("c0 IN ()")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::ParentheticalExpression.new(
+			value: nil
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "IN operator with a qualified table reference" do
-# 	parser = Plume::Parser.new("c0 IN sc0.tb0")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::InExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: Plume::TableName.new(
-# 			schema_name: "sc0",
-# 			table_name: "tb0",
-# 		)
-# 	)
-# end
+test "IN operator with an unqualified table reference" do
+	parser = Plume::Parser.new("c0 IN tb0")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::TableName.new(
+			table: "tb0",
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.table, expected.right.table
+end
 
-# test "IN operator with an unqualified function reference" do
-# 	parser = Plume::Parser.new("c0 IN foobar()")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::InExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: Plume::FunctionReference.new(
-# 			function_name: "foobar",
-# 			arguments: Plume::FunctionArguments.new(
-# 				expressions: [],
-# 			)
-# 		)
-# 	)
-# end
+test "IN operator with a qualified table reference" do
+	parser = Plume::Parser.new("c0 IN sc0.tb0")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::TableName.new(
+			schema: "sc0",
+			table: "tb0",
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.schema, expected.right.schema
+	assert_equal actual.right.table, expected.right.table
+end
+
+test "IN operator with an unqualified function reference" do
+	parser = Plume::Parser.new("c0 IN foobar()")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::FunctionReference.new(
+			function: "foobar",
+			arguments: Plume::FunctionArguments.new(
+				expressions: [],
+			),
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.function, expected.right.function
+	assert_equal actual.right.arguments.expressions, expected.right.arguments.expressions
+end
 
 # test "IN operator with a qualified function reference" do
 # 	parser = Plume::Parser.new("c0 IN sc0.foobar()")

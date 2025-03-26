@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
 module Plume
-	class Node < Literal::Data
+	class Node < Literal::Struct
 		Stringy = _Union(String, Symbol)
 
 		prop :full_source, _Nilable(String)
+		prop :leading, _Nilable(Token)
+		prop :trailing, _Nilable(Token)
 
 		def self.inspectable(*props)
 			@inspectable_props ||= Set.new
@@ -43,7 +45,7 @@ module Plume
 		end
 
 		def self.attr(name, type, **kw)
-			prop name, _Union(type, LiteralNil, nil), reader: false, default: LiteralNil, **kw
+			prop name, _Union(type, LiteralNil, nil), reader: kw.fetch(:reader, false), default: LiteralNil, **kw
 			inspectable name
 		end
 
@@ -71,17 +73,19 @@ module Plume
 				def #{name}_tok
 					Token.token(@#{name})
 				end
+
+				def #{name}_spn
+					@#{name}
+				end
 			RUBY
 		end
 
 		def self.node(name, type, **kw)
-			prop name, _Nilable(type), **kw
-			inspectable name
+			attr name, _Nilable(type), reader: :public, **kw
 		end
 
 		def self.nodes(name, type, **kw)
-			prop name, _Nilable(_Array(type)), **kw
-			inspectable name
+			attr name, _Nilable(_Array(type)), reader: :public, **kw
 		end
 	end
 end

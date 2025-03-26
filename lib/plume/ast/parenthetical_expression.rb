@@ -3,10 +3,10 @@
 module Plume
 	class ParentheticalExpression < Node
 		token :value_lp
-		token :value_tk          # required
+		token :value_tk
 		token :value_rp
 
-		attr :value, _Void # required
+		attr :value, _Union(Expression, _Array(Expression))
 
 		def self.new(*, value:, **) = super
 		def self.concrete(*, **) = super

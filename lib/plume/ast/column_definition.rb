@@ -2,9 +2,15 @@
 
 module Plume
 	class ColumnDefinition < Node
-		required_token :name, inspect: true
+		token :name_tk
 
-		optional_node :type, ColumnType
-		optional_nodes :constraints, ColumnConstraint
+		attr :name, Stringy
+		node :type, ColumnType
+		nodes :constraints, ColumnConstraint
+
+		def self.new(*, name:, **) = super
+		def self.concrete(*, name_tk:, **) = super
+
+		def name = (@name == LiteralNil) ? name_tk_val : @name
 	end
 end

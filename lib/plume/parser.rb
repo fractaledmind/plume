@@ -369,9 +369,9 @@ module Plume
 					select_statement: as_select
 				)
 			elsif (columns_lp = maybe          :LP)
-				columns         = require_some { column_def }
+				columns         = require_some(trailing_sep: :COMMA) { column_def }
 				# inlined `table_constraint`
-				constraints     = maybe_some(sep: [:COMMA, nil].freeze) do
+				constraints     = maybe_some(trailing_sep: [:COMMA, nil].freeze) do
 					#
 						# Relevant `parse.y` grammar rules:
 						#   conslist_opt ::= . | COMMA conslist.
@@ -408,11 +408,11 @@ module Plume
 
 					if    (unique_kw      = maybe          :UNIQUE)
 						unique_lp           = require        :LP
-						unique_columns      = require_some { indexed_column }
+						unique_columns      = require_some(trailing_sep: :COMMA) { indexed_column }
 						unique_rp           = require        :RP
 						on_conflict         = maybe        { conflict_clause }
 
-						UniqueTableConstraint.new(
+						UniqueTableConstraint.concrete(
 							full_source:     @lexer.sql,
 							constraint_kw:   Token::Keyword(constraint_kw),
 							name_tk:         Token::Identifier(constraint_name),
@@ -427,7 +427,7 @@ module Plume
 						check               =                expression
 						check_rp            = require        :RP
 
-						CheckTableConstraint.new(
+						CheckTableConstraint.concrete(
 							full_source:     @lexer.sql,
 							constraint_kw:   Token::Keyword(constraint_kw),
 							name_tk:         Token::Identifier(constraint_name),
@@ -438,12 +438,12 @@ module Plume
 						)
 					elsif (primary_key_kw = maybe_all_of   :PRIMARY, :KEY)
 						primary_key_lp      = require        :LP
-						primary_key_columns = require_some { indexed_column }
+						primary_key_columns = require_some(trailing_sep: :COMMA) { indexed_column }
 						autoincrement_kw    = maybe          :AUTOINCREMENT
 						primary_key_rp      = require        :RP
 						on_conflict         = maybe        { conflict_clause }
 
-						PrimaryKeyTableConstraint.new(
+						PrimaryKeyTableConstraint.concrete(
 							full_source:      @lexer.sql,
 							constraint_kw:    Token::Keyword(constraint_kw),
 							name_tk:          Token::Identifier(constraint_name),
@@ -456,11 +456,11 @@ module Plume
 						)
 					elsif (foreign_key_kw = maybe_all_of   :FOREIGN, :KEY)
 						foreign_key_lp      = require        :LP
-						foreign_key_columns = require_some { indexed_column }
+						foreign_key_columns = require_some(trailing_sep: :COMMA) { indexed_column }
 						foreign_key_rp      = require        :RP
 						clause              =                foreign_key_clause
 
-						ForeignKeyTableConstraint.new(
+						ForeignKeyTableConstraint.concrete(
 							full_source:        @lexer.sql,
 							constraint_kw:      Token::Keyword(constraint_kw),
 							name_tk:            Token::Identifier(constraint_name),
@@ -472,7 +472,7 @@ module Plume
 						)
 					else
 						if constraint_name
-							NoOpTableConstraint.new(
+							NoOpTableConstraint.concrete(
 								full_source:   @lexer.sql,
 								constraint_kw: Token::Keyword(constraint_kw),
 								name_tk:       Token::Identifier(constraint_name),
@@ -484,7 +484,7 @@ module Plume
 				end
 				columns_rp      = require        :RP
 				# inlined `table_options`
-				options         = maybe do
+				options         = maybe_some(trailing_sep: :COMMA) do
 					#
 						# Relevant `parse.y` grammar rules:
 						#   table_option_set ::= . | table_option | table_option_set COMMA table_option
@@ -508,18 +508,16 @@ module Plume
 						# Whether the table is a WITHOUT ROWID table.
 						# Whether the table is subject to STRICT type checking.
 					#
-					require_some do
-						if maybe(:STRICT)
-							StrictTableOption.new
-						elsif maybe_all_of(:WITHOUT, :ROWID)
-							WithoutRowidTableOption.new
-						else
-							expected!(:STRICT, :WITHOUT)
-						end
+					if maybe(:STRICT)
+						StrictTableOption.new
+					elsif maybe_all_of(:WITHOUT, :ROWID)
+						WithoutRowidTableOption.new
+					else
+						expected!(:STRICT, :WITHOUT)
 					end
 				end
 
-				CreateTableStatement.new(
+				CreateTableStatement.concrete(
 					full_source:      @lexer.sql,
 					create_kw:        Token::Keyword(create_kw),
 					temp_kw:          Token::Keyword(temp_kw),
@@ -594,14 +592,23 @@ module Plume
 
 				negated = maybe :NOT
 
-				if maybe :IN
+				if (in_tk = maybe :IN)
 					expression_node = negated ? NotInExpression : InExpression
 
-					if maybe :LP
-						if maybe :RP
-							return expression_node.new(
-								member: left,
-								collection: []
+					if (value_lp = maybe :LP)
+						if (value_rp = maybe :RP)
+							foo = ParentheticalExpression.concrete(
+								full_source: @lexer.sql,
+								value_lp: Token::Punctuation(value_lp),
+								value: nil,
+								value_rp: Token::Punctuation(value_rp),
+							)
+
+							return BinaryExpression.concrete(
+								full_source: @lexer.sql,
+								operator_tk: Token::Punctuation(token_span_from(negated, in_tk)),
+								left: left,
+								right: foo,
 							)
 						# :nocov:
 						# elsif (s = maybe { select_stmt })
@@ -613,12 +620,23 @@ module Plume
 						# 	)
 						# :nocov:
 						elsif (e = maybe { expression(next_precedence) })
-							exprs = require_some(given: e) { expression(next_precedence) }
-							require :RP
+							exprs = require_some(given: e, trailing_sep: :COMMA) do
+								expression(next_precedence)
+							end
+							value_rp = require :RP
 
-							return expression_node.new(
-								member: left,
-								collection: exprs
+							right = ParentheticalExpression.concrete(
+								full_source: @lexer.sql,
+								value_lp: Token::Punctuation(value_lp),
+								value: exprs,
+								value_rp: Token::Punctuation(value_rp),
+							)
+
+							return BinaryExpression.concrete(
+								full_source: @lexer.sql,
+								operator_tk: Token::Punctuation(token_span_from(negated, in_tk)),
+								left: left,
+								right: right,
 							)
 						else
 							expected!(:RP, "select-stmt", "expr")
@@ -630,10 +648,11 @@ module Plume
 
 							if maybe :LP
 								function_name = name
-								arguments = maybe_som { expression(next_precedence) }
+								arguments = maybe_some(trailing_sep: :COMMA) { expression(next_precedence) }
 								require :RP
 
-								collection = FunctionReference.new(
+								collection = FunctionReference.concrete(
+									full_source: @lexer.sql,
 									schema_name:,
 									function_name:,
 									arguments: FunctionArguments.new(
@@ -641,35 +660,40 @@ module Plume
 									),
 								)
 							else
-								table_name = name
-
-								collection = TableName.new(
-									schema_name:,
-									table_name:,
+								right = TableName.concrete(
+									full_source: @lexer.sql,
+									schema_tk: Token::Identifier(schema_name),
+									table_tk: Token::Identifier(name),
 								)
 							end
-						elsif maybe :LP
-							function_name = ref
-							arguments = maybe_som { expression(next_precedence) }
-							require :RP
+						elsif (arguments_lp = maybe :LP)
+							arguments = maybe_some(trailing_sep: :COMMA) { expression(next_precedence) }
+							arguments_rp = require :RP
 
-							collection = FunctionReference.new(
-								function_name:,
-								arguments: FunctionArguments.new(
+							right = FunctionReference.concrete(
+								full_source: @lexer.sql,
+								function_tk: Token::Identifier(ref),
+								arguments_lp: Token::Punctuation(arguments_lp),
+								arguments: FunctionArguments.concrete(
+									full_source: @lexer.sql,
 									expressions: arguments
 								),
+								arguments_rp: Token::Punctuation(arguments_rp),
 							)
 						else
-							table_name = ref
+							table = ref
 
-							collection = TableName.new(
-								table_name:,
+							right = TableName.concrete(
+								full_source: @lexer.sql,
+								table_tk: Token::Identifier(table),
 							)
 						end
 
-						return expression_node.new(
-							member: left,
-							collection:
+						return BinaryExpression.concrete(
+							full_source: @lexer.sql,
+							operator_tk: Token::Punctuation(token_span_from(negated, in_tk)),
+							left: left,
+							right: right,
 						)
 					else
 						expected!(:LP, :ID)
@@ -797,7 +821,7 @@ module Plume
 			#
 			column_name = name
 			column_type = maybe { type_name }
-			constraints = maybe_some(sep: nil) do
+			constraints = maybe_some(trailing_sep: nil) do
 				#
 					# Relevant `parse.y` grammar rules:
 					#   ccons ::= CONSTRAINT nm |
@@ -882,7 +906,7 @@ module Plume
 					on_conflict         = maybe      { conflict_clause }
 					autoincrement_kw    = maybe        :AUTOINCREMENT
 
-					PrimaryKeyColumnConstraint.new(
+					PrimaryKeyColumnConstraint.concrete(
 						full_source:      @lexer.sql,
 						constraint_kw:    Token::Keyword(constraint_kw),
 						name_tk:          Token::Identifier(constraint_name),
@@ -894,7 +918,7 @@ module Plume
 				elsif (not_null_kw    = maybe_all_of :NOT, :NULL)
 					on_conflict         = maybe      { conflict_clause }
 
-					NotNullColumnConstraint.new(
+					NotNullColumnConstraint.concrete(
 						full_source:     @lexer.sql,
 						constraint_kw:   Token::Keyword(constraint_kw),
 						name_tk:         Token::Identifier(constraint_name),
@@ -904,7 +928,7 @@ module Plume
 				elsif (null_kw        = maybe        :NULL)
 					on_conflict         = maybe      { conflict_clause }
 
-					NullColumnConstraint.new(
+					NullColumnConstraint.concrete(
 						full_source:     @lexer.sql,
 						constraint_kw:   Token::Keyword(constraint_kw),
 						name_tk:         Token::Identifier(constraint_name),
@@ -914,7 +938,7 @@ module Plume
 				elsif (unique_kw      = maybe        :UNIQUE)
 					on_conflict         = maybe      { conflict_clause }
 
-					UniqueColumnConstraint.new(
+					UniqueColumnConstraint.concrete(
 						full_source:     @lexer.sql,
 						constraint_kw:   Token::Keyword(constraint_kw),
 						name_tk:         Token::Identifier(constraint_name),
@@ -926,7 +950,7 @@ module Plume
 					check               =              expression
 					check_rp            = require      :RP
 
-					CheckColumnConstraint.new(
+					CheckColumnConstraint.concrete(
 						full_source:   @lexer.sql,
 						constraint_kw: Token::Keyword(constraint_kw),
 						name_tk:       Token::Identifier(constraint_name),
@@ -940,17 +964,19 @@ module Plume
 						value         = expression
 						default_rp    = require :RP
 
-						DefaultColumnConstraint.new(
+						value_attr = Node === value ? { value: value } : { value_tk: value }
+
+						DefaultColumnConstraint.concrete(
 							full_source:   @lexer.sql,
 							constraint_kw: Token::Keyword(constraint_kw),
 							name_tk:       Token::Identifier(constraint_name),
 							default_kw:    Token::Keyword(default_kw),
 							default_lp:    Token::Punctuation(default_lp),
 							default_rp:    Token::Punctuation(default_rp),
-							value:         value,
+							**value_attr,
 						)
 					elsif (number       = maybe      { signed_numeric })
-						DefaultColumnConstraint.new(
+						DefaultColumnConstraint.concrete(
 							full_source:   @lexer.sql,
 							constraint_kw: Token::Keyword(constraint_kw),
 							name_tk:       Token::Identifier(constraint_name),
@@ -958,7 +984,7 @@ module Plume
 							value_tk:      Token::Numeric(number),
 						)
 					elsif (value        = maybe      { literal_value })
-						DefaultColumnConstraint.new(
+						DefaultColumnConstraint.concrete(
 							full_source:   @lexer.sql,
 							constraint_kw: Token::Keyword(constraint_kw),
 							name_tk:       Token::Identifier(constraint_name),
@@ -966,7 +992,7 @@ module Plume
 							value_tk:      value,
 						)
 					elsif (id           = maybe      { identifier })
-						DefaultColumnConstraint.new(
+						DefaultColumnConstraint.concrete(
 							full_source:   @lexer.sql,
 							constraint_kw: Token::Keyword(constraint_kw),
 							name_tk:       Token::Identifier(constraint_name),
@@ -979,7 +1005,7 @@ module Plume
 				elsif (collate_kw     = maybe        :COLLATE)
 					collation = name
 
-					CollateColumnConstraint.new(
+					CollateColumnConstraint.concrete(
 						full_source:   @lexer.sql,
 						constraint_kw: Token::Keyword(constraint_kw),
 						name_tk:       Token::Identifier(constraint_name),
@@ -989,7 +1015,7 @@ module Plume
 				elsif :REFERENCES == current_token
 					clause = foreign_key_clause
 
-					ForeignKeyColumnConstraint.new(
+					ForeignKeyColumnConstraint.concrete(
 						full_source:        @lexer.sql,
 						constraint_kw:      Token::Keyword(constraint_kw),
 						name_tk:            Token::Identifier(constraint_name),
@@ -1001,7 +1027,7 @@ module Plume
 					as_rp      = require :RP
 					type_tk    = maybe_one_of :STORED, :VIRTUAL
 
-					GeneratedAsColumnConstraint.new(
+					GeneratedAsColumnConstraint.concrete(
 						full_source:        @lexer.sql,
 						constraint_kw:      Token::Keyword(constraint_kw),
 						name_tk:            Token::Identifier(constraint_name),
@@ -1013,7 +1039,7 @@ module Plume
 					)
 				else
 					if constraint_name
-						NoOpColumnConstraint.new(
+						NoOpColumnConstraint.concrete(
 							full_source:   @lexer.sql,
 							constraint_kw: Token::Keyword(constraint_kw),
 							name_tk:       Token::Identifier(constraint_name),
@@ -1024,9 +1050,9 @@ module Plume
 				end
 			end
 
-			ColumnDefinition.new(
+			ColumnDefinition.concrete(
 				full_source: @lexer.sql,
-				name:        Token::Identifier(column_name),
+				name_tk:     Token::Identifier(column_name),
 				type:        column_type,
 				constraints: constraints,
 			)
@@ -1079,8 +1105,8 @@ module Plume
 			require :OVER
 			if maybe :LP
 				base_window_name = maybe { identifier(except: [:PARTITION, :ORDER, :RANGE, :ROWS, :GROUPS]) }
-				partition_by = maybe_all_of(:PARTITION, :BY) ? require_some { expression } : nil
-				order_by = maybe_all_of(:ORDER, :BY) ? require_some { ordering_term } : nil
+				partition_by = maybe_all_of(:PARTITION, :BY) ? require_some(trailing_sep: :COMMA) { expression } : nil
+				order_by = maybe_all_of(:ORDER, :BY) ? require_some(trailing_sep: :COMMA) { ordering_term } : nil
 				frame = frame_spec if current_token in :RANGE | :ROWS | :GROUPS
 				require :RP
 
@@ -1143,24 +1169,24 @@ module Plume
 			foreign_table = name(except: [:ON, :MATCH, :DEFERRABLE, :NOT])
 			columns = nil
 			if (columns_lp = maybe :LP)
-				columns = require_some { indexed_column }
+				columns = require_some(trailing_sep: :COMMA) { indexed_column }
 				columns_rp = require :RP
 			end
-			foreign_key_actions = maybe_some(sep: nil) do
+			foreign_key_actions = maybe_some(trailing_sep: nil) do
 				on_kw      = require        :ON
 				trigger_kw = require_one_of :DELETE, :UPDATE
 				action_kw  = require_one_of :CASCADE, :RESTRICT, [:SET, :NULL].freeze, [:SET, :DEFAULT].freeze, [:NO, :ACTION].freeze
-				ForeignKeyAction.new(
+				ForeignKeyAction.concrete(
 					full_source: @lexer.sql,
 					on_kw:       Token::Keyword(on_kw),
 					trigger_kw:  Token::Keyword(trigger_kw),
 					action_kw:   Token::Keyword(action_kw),
 				)
 			end
-			match_clauses = maybe_some(sep: nil) do
+			match_clauses = maybe_some(trailing_sep: nil) do
 				match_kw = require :MATCH
 				type_tk  = name(except: [:ON, :MATCH, :DEFERRABLE, :NOT])
-				MatchClause.new(
+				MatchClause.concrete(
 					full_source: @lexer.sql,
 					match_kw:    Token::Keyword(match_kw),
 					type_tk:     Token::Identifier(type_tk),
@@ -1176,7 +1202,7 @@ module Plume
 				:DEFERRABLE,
 			)
 
-			ForeignKeyClause.new(
+			ForeignKeyClause.concrete(
 				full_source: @lexer.sql,
 				references_kw: Token::Keyword(references_kw),
 				table_tk: Token::Identifier(foreign_table),
@@ -1225,7 +1251,7 @@ module Plume
 			return unless (on_conflict_kw  = maybe_all_of :ON, :CONFLICT)
 
 			if (resolution_kw = maybe_one_of :ROLLBACK, :ABORT, :FAIL, :IGNORE, :REPLACE)
-				ConflictClause.new(
+				ConflictClause.concrete(
 					full_source:    @lexer.sql,
 					on_conflict_kw: Token::Keyword(on_conflict_kw),
 					resolution_kw:  Token::Keyword(resolution_kw),
@@ -1299,7 +1325,7 @@ module Plume
 				)
 			elsif (case_kw = maybe :CASE)
 				if current_token == :WHEN
-					conditions = require_some(prefix: :WHEN) do |when_kw|
+					conditions = require_some(leading_sep: :WHEN) do |when_kw|
 						case_predicate = expression
 						then_kw = require :THEN
 						case_consequence = expression
@@ -1332,8 +1358,7 @@ module Plume
 					)
 				else
 					predicate = expression
-					require :WHEN
-					conditions = require_some(sep: :WHEN) do
+					conditions = require_some(leading_sep: :WHEN) do |when_kw|
 						case_predicate = expression
 						require :THEN
 						case_consequence = expression
@@ -1471,28 +1496,39 @@ module Plume
 		end
 
 		def function_arguments
-			# Relevant `parse.y` grammar rules:
 			#
-			# Syntax diagram:
-			#       ┌─▶{ DISTINCT }─▶┐ ┌──{ , }◀─┐
-			#   ◯─▶─┼────────────────┴▶┴▶[ expr ]┼───────────┬─┬─▶◯
-			#       │ ┌──────────────────────────┘           │ │
-			#       │ └▶{ ORDER }─▶{ BY }┬▶[ ordering-term ]─┤ │
-			#       │                    └───────{ , }◀──────┘ │
-			#       └─────────────────┬▶{ * }┬▶────────────────┘
-			#                         └───▶──┘
-			#
-			# Simplified grammar:
-			#
-			# Relevant SQLite documentation:
-			#   -
-			#
-			# [description]
+				# Relevant `parse.y` grammar rules:
+				#   expr ::= idj LP distinct exprlist RP
+				#            idj LP distinct exprlist ORDER BY sortlist RP
+				#            idj LP STAR RP
+				#            idj LP distinct exprlist RP filter_over
+				#            idj LP distinct exprlist ORDER BY sortlist RP filter_over
+				#            idj LP STAR RP filter_over
+				#            idj LP distinct exprlist RP WITHIN GROUP LP ORDER BY expr RP filter_over
+				#   distinct ::= DISTINCT | ALL | .
+				#   exprlist ::= nexprlist | .
+				#   nexprlist ::= nexprlist COMMA expr | expr
+				#
+				# Syntax diagram:
+				#       ┌─▶{ DISTINCT }─▶┐ ┌──{ , }◀─┐
+				#   ◯─▶─┼────────────────┴▶┴▶[ expr ]┼───────────┬─┬─▶◯
+				#       │ ┌──────────────────────────┘           │ │
+				#       │ └▶{ ORDER }─▶{ BY }┬▶[ ordering-term ]─┤ │
+				#       │                    └───────{ , }◀──────┘ │
+				#       └─────────────────┬▶{ * }┬▶────────────────┘
+				#                         └───▶──┘
+				#
+				# Simplified grammar:
+				#
+				# Relevant SQLite documentation:
+				#   -
+				#
+				# [description]
 			#
 			if maybe :DISTINCT
 				distinct = true
-				expressions = require_some { expression }
-				order_by = maybe_all_of(:ORDER, :BY) ? require_some { ordering_term } : nil
+				expressions = require_some(trailing_sep: :COMMA) { expression }
+				order_by = maybe_all_of(:ORDER, :BY) ? require_some(trailing_sep: :COMMA) { ordering_term } : nil
 
 				FunctionArguments.new(
 					distinct:,
@@ -1503,7 +1539,7 @@ module Plume
 				StarFunctionArgument.new
 			elsif (e = maybe { expression })
 				expressions = require_some(given: e) { expression }
-				order_by = maybe_all_of(:ORDER, :BY) ? require_some { ordering_term } : nil
+				order_by = maybe_all_of(:ORDER, :BY) ? require_some(trailing_sep: :COMMA) { ordering_term } : nil
 
 				FunctionArguments.new(
 					expressions:,
@@ -1686,7 +1722,7 @@ module Plume
 				# Multiple tokens are concatenated to form the value of the typetoken.
 			#
 			text = scan do
-				require_some(sep: nil) do
+				require_some(trailing_sep: nil) do
 					identifier_or_string(
 						# Don't consume tokens that mark the start of a `column_constraint`
 						except: Set[:CONSTRAINT, :PRIMARY, :NOT, :NULL, :UNIQUE, :CHECK, :DEFAULT, :COLLATE, :REFERENCES, :GENERATED, :AS]
@@ -1699,7 +1735,7 @@ module Plume
 				end
 			end
 
-			ColumnType.new(
+			ColumnType.concrete(
 				full_source: @lexer.sql,
 				text_span: Token::Keyword(text),
 			)
@@ -1736,7 +1772,7 @@ module Plume
 				dot_tk    = require :DOT
 				table_tk  = name
 
-				TableName.new(
+				TableName.concrete(
 					full_source: @lexer.sql,
 					schema_tk:   Token::Identifier(schema_tk),
 					dot_tk:      Token::Punctuation(dot_tk),
@@ -1745,7 +1781,7 @@ module Plume
 			else
 				table_tk = name
 
-				TableName.new(
+				TableName.concrete(
 					full_source: @lexer.sql,
 					table_tk:    Token::Identifier(table_tk),
 				)
@@ -1854,7 +1890,7 @@ module Plume
 			end
 			direction_tk = maybe_one_of :ASC, :DESC
 
-			IndexedColumn.new(
+			IndexedColumn.concrete(
 				full_source: @lexer.sql,
 				name_tk:      Token::Identifier(column_name),
 				collate_kw:   Token::Keyword(collate_kw),
@@ -2142,101 +2178,147 @@ module Plume
 
 		def maybe_one_of(*tokens)
 			i, len = 0, tokens.length
+			has_nil = false
 			while i < len
 				check = tokens[i]
 				if Symbol === check && (result = maybe check)
 					return result
 				elsif Array === check && (result = maybe_all_of *check)
 					return result
+				elsif check.nil?
+					has_nil = true
+					i += 1
 				else
 					i += 1
 				end
 			end
 
-			nil
+			has_nil ? false : nil
 		end
 
 		def require_one_of(*tokens)
-			i, len = 0, tokens.length
-			while i < len
-				check = tokens[i]
-				if Symbol === check && (result = maybe check)
-					return result
-				elsif Array === check && (result = maybe_all_of *check)
-					return result
-				else
-					i += 1
-				end
-			end
-
-			expected!(*tokens)
+			maybe_one_of(*tokens) || expected!(*tokens)
 		end
 
-		def require_some(sep: :COMMA, prefix: nil, given: nil, &block)
+		def require_some(trailing_sep: nil, leading_sep: nil, given: nil, &block)
 			a = []
 
-			val = if prefix
-				sep_tk = require(prefix)
-				yield(sep_tk)
-			else
-				(given || yield)
-			end
-			a << val
-
-			if Array === sep
-				i, len = 0, sep.length
-				while i < len
-					collect(into: a, sep: sep[i], &block)
-					i += 1
-				end
-			else
-				collect(into: a, sep: prefix || sep, &block)
-			end
-
-			return a unless a.all?(Array)
-
-			return token_span_from(*a)
-
-			beg = a[0][1]
-			fin = a[-1][2]
-			tks = a.map(&:first)
-			[tks, beg, fin]
-		end
-
-		def maybe_some(sep: :COMMA, &block)
-			a = []
-			first_val = maybe { yield }
-
-			if first_val
-				a << first_val
-
-				if Array === sep
-					i, len = 0, sep.length
-					while i < len
-						collect(into: a, sep: sep[i], &block)
-						i += 1
-					end
+			if leading_sep
+				sep_tk = Array === leading_sep ? require_one_of(*leading_sep) : require(leading_sep)
+				val = yield(sep_tk)
+				insert = if Node === val
+				  val.leading = Token::Punctuation(sep_tk)
+					val
 				else
-					collect(into: a, sep: sep, &block)
+					[sep_tk, val]
 				end
+			elsif trailing_sep
+				val = (given || yield)
+				sep_tk = Array === trailing_sep ? maybe_one_of(*trailing_sep) : maybe(trailing_sep)
+				insert = if Node === val
+				  val.trailing = Token::Punctuation(sep_tk) if sep_tk
+					val
+				else
+					[val, sep_tk]
+				end
+			else
+				val = (given || yield)
+				insert = val
+			end
+			a << insert
 
-				return a unless a.all?(Array)
+			collect(into: a, trailing_sep: trailing_sep, leading_sep: leading_sep, &block)
 
-				beg = a[0][1]
-				fin = a[-1][2]
-				tks = a.map(&:first)
-				[tks, beg, fin]
+			return token_span_from(*a) if a.all?(Array)
+
+			a
+		end
+
+		def maybe_some(trailing_sep: nil, leading_sep: nil, &block)
+			a = []
+
+			if leading_sep
+				sep_tk = Array === leading_sep ? maybe_one_of(*leading_sep) : maybe(leading_sep)
+				return if sep_tk.nil?
+
+				val = yield(sep_tk)
+				insert = if Node === val
+				  val.leading = Token::Punctuation(sep_tk)
+					val
+				else
+					[sep_tk, val]
+				end
+			elsif trailing_sep
+				val = maybe { yield }
+				return a if val.nil?
+
+				sep_tk = Array === trailing_sep ? maybe_one_of(*trailing_sep) : maybe(trailing_sep)
+				insert = if Node === val
+				  val.trailing = Token::Punctuation(sep_tk) if sep_tk
+					val
+				else
+					[val, sep_tk]
+				end
+			else
+				insert = maybe { yield }
+			end
+
+			if insert
+				a << insert
+
+				collect(into: a, trailing_sep: trailing_sep, leading_sep: leading_sep, &block)
+
+				return token_span_from(*a) if a.all?(Array)
+
+				a
+			else
+				a
 			end
 		end
 
-		def collect(into:, sep: :COMMA, &block)
+		def collect(into: [], trailing_sep: nil, leading_sep: nil, &block)
+			break_next = false
 			while true
-				sep_tk = maybe(sep)
-				break unless sep_tk
-				val = maybe { yield(sep_tk) }
+				break if break_next
 
-				val ? into << val : break
+				if leading_sep
+					sep_tk = Array === leading_sep ? maybe_one_of(*leading_sep) : maybe(leading_sep)
+					break if sep_tk.nil?
+
+					val = yield(sep_tk)
+
+					insert = if Node === val
+					  val.leading = Token::Punctuation(sep_tk)
+						val
+					else
+						[sep_tk, val]
+					end
+
+				elsif trailing_sep
+					val = maybe { yield }
+					break if val.nil?
+
+					sep_tk = Array === trailing_sep ? maybe_one_of(*trailing_sep) : maybe(trailing_sep)
+					break_next = sep_tk.nil?
+
+					insert = if Node === val
+					  val.trailing = Token::Punctuation(sep_tk) if sep_tk
+						val
+					else
+						[val, sep_tk]
+					end
+
+				else
+					val = maybe { yield }
+					break if val.nil?
+
+					insert = val
+				end
+
+				into << insert
 			end
+
+			into
 		end
 
 		def token_span_from(*spans)

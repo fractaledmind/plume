@@ -328,7 +328,7 @@ test "parse basic create table with one column and a check constraint" do
 	assert_equal node.columns[0].constraints[0].expression.operator, :ABOVE
 	assert_operator Plume::ColumnName, :===, node.columns[0].constraints[0].expression.left
 	assert_equal node.columns[0].constraints[0].expression.left.column, "c0"
-	assert_equal node.columns[0].constraints[0].expression.right, 0
+	assert_equal node.columns[0].constraints[0].expression.right.value, 0
 end
 
 test "parse basic create table with one column and a named check constraint" do
@@ -343,7 +343,7 @@ test "parse basic create table with one column and a named check constraint" do
 	assert_equal node.columns[0].constraints[0].expression.operator, :ABOVE
 	assert_operator Plume::ColumnName, :===, node.columns[0].constraints[0].expression.left
 	assert_equal node.columns[0].constraints[0].expression.left.column, "c0"
-	assert_equal node.columns[0].constraints[0].expression.right, 0
+	assert_equal node.columns[0].constraints[0].expression.right.value, 0
 end
 
 test "parse basic create table with one column and a default signed number" do
@@ -402,8 +402,8 @@ test "parse basic create table with one column and a default expression" do
 	assert_operator Plume::DefaultColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_operator Plume::BinaryExpression, :===, node.columns[0].constraints[0].value
 	assert_equal node.columns[0].constraints[0].value.operator, :CONCAT
-	assert_equal node.columns[0].constraints[0].value.left, "a"
-	assert_equal node.columns[0].constraints[0].value.right, "b"
+	assert_equal node.columns[0].constraints[0].value.left.value, "a"
+	assert_equal node.columns[0].constraints[0].value.right.value, "b"
 end
 
 test "parse basic create table with one column and a named default expression" do
@@ -416,8 +416,8 @@ test "parse basic create table with one column and a named default expression" d
 	assert_operator Plume::DefaultColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_operator Plume::BinaryExpression, :===, node.columns[0].constraints[0].value
 	assert_equal node.columns[0].constraints[0].value.operator, :CONCAT
-	assert_equal node.columns[0].constraints[0].value.left, "a"
-	assert_equal node.columns[0].constraints[0].value.right, "b"
+	assert_equal node.columns[0].constraints[0].value.left.value, "a"
+	assert_equal node.columns[0].constraints[0].value.right.value, "b"
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
@@ -453,8 +453,8 @@ test "parse basic create table with one column and a generated as constraint" do
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::GeneratedAsColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].expression.operator, :ADD
-	assert_equal node.columns[0].constraints[0].expression.left, 1
-	assert_equal node.columns[0].constraints[0].expression.right, 2
+	assert_equal node.columns[0].constraints[0].expression.left.value, 1
+	assert_equal node.columns[0].constraints[0].expression.right.value, 2
 end
 
 test "parse basic create table with one column and a named generated as constraint" do
@@ -466,8 +466,8 @@ test "parse basic create table with one column and a named generated as constrai
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::GeneratedAsColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].expression.operator, :ADD
-	assert_equal node.columns[0].constraints[0].expression.left, 1
-	assert_equal node.columns[0].constraints[0].expression.right, 2
+	assert_equal node.columns[0].constraints[0].expression.left.value, 1
+	assert_equal node.columns[0].constraints[0].expression.right.value, 2
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
@@ -480,8 +480,8 @@ test "parse basic create table with one column and an as constraint" do
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::GeneratedAsColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].expression.operator, :ADD
-	assert_equal node.columns[0].constraints[0].expression.left, 1
-	assert_equal node.columns[0].constraints[0].expression.right, 2
+	assert_equal node.columns[0].constraints[0].expression.left.value, 1
+	assert_equal node.columns[0].constraints[0].expression.right.value, 2
 end
 
 test "parse basic create table with one column and a named as constraint" do
@@ -493,8 +493,8 @@ test "parse basic create table with one column and a named as constraint" do
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::GeneratedAsColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].expression.operator, :ADD
-	assert_equal node.columns[0].constraints[0].expression.left, 1
-	assert_equal node.columns[0].constraints[0].expression.right, 2
+	assert_equal node.columns[0].constraints[0].expression.left.value, 1
+	assert_equal node.columns[0].constraints[0].expression.right.value, 2
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
@@ -507,8 +507,8 @@ test "parse basic create table with one column and a stored generated as constra
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::GeneratedAsColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].expression.operator, :ADD
-	assert_equal node.columns[0].constraints[0].expression.left, 1
-	assert_equal node.columns[0].constraints[0].expression.right, 2
+	assert_equal node.columns[0].constraints[0].expression.left.value, 1
+	assert_equal node.columns[0].constraints[0].expression.right.value, 2
 	assert_equal node.columns[0].constraints[0].type, :STORED
 end
 
@@ -521,8 +521,8 @@ test "parse basic create table with one column and a stored generated as constra
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::GeneratedAsColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].expression.operator, :ADD
-	assert_equal node.columns[0].constraints[0].expression.left, 1
-	assert_equal node.columns[0].constraints[0].expression.right, 2
+	assert_equal node.columns[0].constraints[0].expression.left.value, 1
+	assert_equal node.columns[0].constraints[0].expression.right.value, 2
 	assert_equal node.columns[0].constraints[0].type, :STORED
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
@@ -536,8 +536,8 @@ test "parse basic create table with one column and a stored as constraint" do
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::GeneratedAsColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].expression.operator, :ADD
-	assert_equal node.columns[0].constraints[0].expression.left, 1
-	assert_equal node.columns[0].constraints[0].expression.right, 2
+	assert_equal node.columns[0].constraints[0].expression.left.value, 1
+	assert_equal node.columns[0].constraints[0].expression.right.value, 2
 	assert_equal node.columns[0].constraints[0].type, :STORED
 end
 
@@ -550,8 +550,8 @@ test "parse basic create table with one column and a named stored as constraint"
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::GeneratedAsColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].expression.operator, :ADD
-	assert_equal node.columns[0].constraints[0].expression.left, 1
-	assert_equal node.columns[0].constraints[0].expression.right, 2
+	assert_equal node.columns[0].constraints[0].expression.left.value, 1
+	assert_equal node.columns[0].constraints[0].expression.right.value, 2
 	assert_equal node.columns[0].constraints[0].type, :STORED
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
@@ -565,8 +565,8 @@ test "parse basic create table with one column and a virtual generated as constr
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::GeneratedAsColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].expression.operator, :ADD
-	assert_equal node.columns[0].constraints[0].expression.left, 1
-	assert_equal node.columns[0].constraints[0].expression.right, 2
+	assert_equal node.columns[0].constraints[0].expression.left.value, 1
+	assert_equal node.columns[0].constraints[0].expression.right.value, 2
 	assert_equal node.columns[0].constraints[0].type, :VIRTUAL
 end
 
@@ -579,8 +579,8 @@ test "parse basic create table with one column and a named virtual generated as 
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::GeneratedAsColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].expression.operator, :ADD
-	assert_equal node.columns[0].constraints[0].expression.left, 1
-	assert_equal node.columns[0].constraints[0].expression.right, 2
+	assert_equal node.columns[0].constraints[0].expression.left.value, 1
+	assert_equal node.columns[0].constraints[0].expression.right.value, 2
 	assert_equal node.columns[0].constraints[0].type, :VIRTUAL
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
@@ -594,8 +594,8 @@ test "parse basic create table with one column and a virtual as constraint" do
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::GeneratedAsColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].expression.operator, :ADD
-	assert_equal node.columns[0].constraints[0].expression.left, 1
-	assert_equal node.columns[0].constraints[0].expression.right, 2
+	assert_equal node.columns[0].constraints[0].expression.left.value, 1
+	assert_equal node.columns[0].constraints[0].expression.right.value, 2
 	assert_equal node.columns[0].constraints[0].type, :VIRTUAL
 end
 
@@ -608,8 +608,8 @@ test "parse basic create table with one column and a named virtual as constraint
 	assert_equal node.columns[0].name, "c0"
 	assert_operator Plume::GeneratedAsColumnConstraint, :===, node.columns[0].constraints[0]
 	assert_equal node.columns[0].constraints[0].expression.operator, :ADD
-	assert_equal node.columns[0].constraints[0].expression.left, 1
-	assert_equal node.columns[0].constraints[0].expression.right, 2
+	assert_equal node.columns[0].constraints[0].expression.left.value, 1
+	assert_equal node.columns[0].constraints[0].expression.right.value, 2
 	assert_equal node.columns[0].constraints[0].type, :VIRTUAL
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
@@ -1037,7 +1037,7 @@ test "parse a basic create table with a check table constraint" do
 	assert_equal node.constraints[0].expression.operator, :ABOVE
 	assert_operator Plume::ColumnName, :===, node.constraints[0].expression.left
 	assert_equal node.constraints[0].expression.left.column, "c0"
-	assert_equal node.constraints[0].expression.right, 0
+	assert_equal node.constraints[0].expression.right.value, 0
 end
 
 test "parse a basic create table with a foreign key table constraint" do
@@ -1141,6 +1141,8 @@ test "parse a basic create table with a foreign key table constraint with on del
 	assert_equal node.constraints[0].foreign_key_clause.deferred, true
 end
 
+# complex statement
+
 test "parse fully complex statement" do
 	node = parse_stmt(<<~SQL)
 		create temp table if not exists `schema0`."tb0" (
@@ -1199,7 +1201,7 @@ test "parse fully complex statement" do
 	assert_equal node.columns[4].constraints[0].expression.operator, :ABOVE
 	assert_operator Plume::ColumnName, :===, node.columns[4].constraints[0].expression.left
 	assert_equal node.columns[4].constraints[0].expression.left.column, "c3"
-	assert_equal node.columns[4].constraints[0].expression.right, 0
+	assert_equal node.columns[4].constraints[0].expression.right.value, 0
 
 	assert_equal node.columns[5].name, "c4"
 	assert_equal node.columns[5].type.text, "real"
@@ -1208,8 +1210,8 @@ test "parse fully complex statement" do
 	assert_equal node.columns[5].constraints[0].name, "defaulted"
 	assert_operator Plume::BinaryExpression, :===, node.columns[5].constraints[0].value
 	assert_equal node.columns[5].constraints[0].value.operator, :MULTIPLY
-	assert_equal node.columns[5].constraints[0].value.left, 1.1
-	assert_equal node.columns[5].constraints[0].value.right, 2.2
+	assert_equal node.columns[5].constraints[0].value.left.value, 1.1
+	assert_equal node.columns[5].constraints[0].value.right.value, 2.2
 
 	assert_equal node.columns[6].name, "c5"
 	assert_equal node.columns[6].type.text, "any"
@@ -1224,8 +1226,8 @@ test "parse fully complex statement" do
 	assert_operator Plume::GeneratedAsColumnConstraint, :===, node.columns[7].constraints[0]
 	assert_equal node.columns[7].constraints[0].name, "generated"
 	assert_equal node.columns[7].constraints[0].expression.operator, :ADD
-	assert_equal node.columns[7].constraints[0].expression.left, 1.1
-	assert_equal node.columns[7].constraints[0].expression.right, 2.2
+	assert_equal node.columns[7].constraints[0].expression.left.value, 1.1
+	assert_equal node.columns[7].constraints[0].expression.right.value, 2.2
 	assert_equal node.columns[7].constraints[0].type, :STORED
 
 	assert_equal node.columns[8].name, "c7"
@@ -1254,7 +1256,7 @@ test "parse fully complex statement" do
 	assert_equal node.constraints[2].expression.operator, :ABOVE
 	assert_operator Plume::ColumnName, :===, node.constraints[2].expression.left
 	assert_equal node.constraints[2].expression.left.column, "c0"
-	assert_equal node.constraints[2].expression.right, 0
+	assert_equal node.constraints[2].expression.right.value, 0
 
 	assert_operator Plume::ForeignKeyTableConstraint, :===, node.constraints[3]
 	assert_equal node.constraints[3].columns[0].name, "c0"

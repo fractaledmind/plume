@@ -2,12 +2,22 @@
 
 module Plume
 	class InExpression < Node
-		prop :member, Expression
-		prop :collection, _Union(
+		token :member_tk          # required
+		token :collection_lp
+		token :collection_rp
+
+		attr :member, Expression # required
+		attr :collection, _Union(
 			SelectStatement,
 			TableName,
 			FunctionReference,
 			_Array(Expression),
 		)
+
+
+
+
+
+
 	end
 end

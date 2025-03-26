@@ -5,6 +5,7 @@ module Plume
 		LiteralValue,
 		Token,
 		ColumnName,
+		TableName,
 		_Deferred {
 			_Union(
 				UnaryExpression,
@@ -19,6 +20,7 @@ module Plume
 				FunctionReference,
 				SignedExpression,
 				LiteralExpression,
+				ParentheticalExpression,
 			)
 		},
 	)

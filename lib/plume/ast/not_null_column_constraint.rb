@@ -2,11 +2,16 @@
 
 module Plume
 	class NotNullColumnConstraint < ColumnConstraint
-		optional_token :constraint_kw
-		optional_token :name_tk,
-			reader: :name,
-			default: -> { name_tk_val }
-		required_token :not_null_kw
-		optional_node :conflict_clause, ConflictClause
+		token :constraint_kw
+		token :name_tk
+		token :not_null_kw
+
+		attr :name, Stringy
+		node :conflict_clause, ConflictClause
+
+		def self.new(*, **) = super
+		def self.concrete(*, not_null_kw:, **) = super
+
+		def name = (@name == LiteralNil) ? name_tk_val : @name
 	end
 end

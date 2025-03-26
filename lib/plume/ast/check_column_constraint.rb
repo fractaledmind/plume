@@ -2,14 +2,19 @@
 
 module Plume
 	class CheckColumnConstraint < ColumnConstraint
-		optional_token :constraint_kw
-		optional_token :name_tk,
-			reader: :name,
-			default: -> { name_tk_val }
-		required_token :check_kw
-		required_token :check_lp
-		required_node :expression, Expression
-		required_token :check_rp
-		optional_node :conflict_clause, ConflictClause
+		token :constraint_kw
+		token :name_tk
+		token :check_kw
+		token :check_lp
+		token :check_rp
+
+		attr :name, Stringy
+		node :expression, Expression
+		node :conflict_clause, ConflictClause
+
+		def self.new(*, expression:, **) = super
+		def self.concrete(*, check_kw:, check_lp:, expression:, check_rp:, **) = super
+
+		def name = (@name == LiteralNil) ? name_tk_val : @name
 	end
 end

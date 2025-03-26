@@ -9,7 +9,7 @@ module Plume
 		def self.new(*, text:, **) = super
 		def self.concrete(*, text_span:, **) = super
 
-		def text = @text || text_span_val
+		def text = (@text == LiteralNil) ? text_span_val : @text
 
 		inspectable def affinity
 			# rules found at: https://www.sqlite.org/datatype3.html#determination_of_column_affinity

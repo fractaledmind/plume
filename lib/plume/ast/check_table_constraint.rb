@@ -2,13 +2,18 @@
 
 module Plume
 	class CheckTableConstraint < TableConstraint
-		optional_token :constraint_kw
-		optional_token :name_tk,
-			reader: :name,
-			default: -> { name_tk_val }
-		optional_token :check_kw
-		optional_token :check_lp
-		required_node :expression, Expression
-		optional_token :check_rp
+		token :constraint_kw
+		token :name_tk
+		token :check_kw
+		token :check_lp
+		token :check_rp
+
+		attr :name, Stringy
+		node :expression, Expression
+
+		def self.new(*, expression:, **) = super
+		def self.concrete(*, expression:, **) = super
+
+		def name = (@name == LiteralNil) ? name_tk_val : @name
 	end
 end
