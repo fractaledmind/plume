@@ -6,7 +6,7 @@ GIT
 
 GIT
   remote: https://github.com/joeldrapper/quickdraw.git
-  revision: ef9e495f9bdec7a82385aedcd1ec355790f527e7
+  revision: 2c5929f79d1e529db2c32953a78eba063736b72a
   specs:
     quickdraw (0.1.0)
       difftastic (~> 0.1)
@@ -24,8 +24,12 @@ GEM
     backport (1.2.0)
     benchmark (0.4.0)
     diff-lcs (1.5.1)
-    difftastic (0.2.0)
-    difftastic (0.2.0-arm64-darwin)
+    difftastic (0.6.0)
+      pretty_please
+    difftastic (0.6.0-arm64-darwin)
+      pretty_please
+    dispersion (0.2.0)
+      prism
     docile (1.4.1)
     e2mmap (0.1.0)
     io-watch (0.6.3)
@@ -47,6 +51,8 @@ GEM
     parser (3.3.7.0)
       ast (~> 2.4.1)
       racc
+    pretty_please (0.2.0)
+      dispersion (~> 0.2)
     prism (1.3.0)
     racc (1.8.1)
     rainbow (3.1.1)
