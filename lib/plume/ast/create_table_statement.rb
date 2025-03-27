@@ -41,7 +41,7 @@ module Plume
 		def temporary = (@temporary == LiteralNil) ? !!@temp_kw : @temporary
 		def if_not_exists = (@if_not_exists == LiteralNil) ? !!@if_not_exists_kw : @if_not_exists
 
-		inspectable def strict         = @options&.any?(StrictTableOption)
-		inspectable def without_row_id = @options&.any?(WithoutRowidTableOption)
+		inspectable def strict         = (@options != LiteralNil) ? @options&.any?(StrictTableOption) : false
+		inspectable def without_row_id = (@options != LiteralNil) ? @options&.any?(WithoutRowidTableOption) : false
 	end
 end

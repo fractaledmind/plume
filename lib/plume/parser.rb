@@ -361,11 +361,14 @@ module Plume
 
 			if maybe :AS
 				as_select = select_stmt
-				CreateTableStatement.new(
-					schema_name:,
-					table_name:,
-					temporary: (true if temporary),
-					if_not_exists: (true if if_not_exists),
+
+				CreateTableStatement.concrete(
+					full_source:      @lexer.sql,
+					create_kw:        Token::Keyword(create_kw),
+					temp_kw:          Token::Keyword(temp_kw),
+					table_kw:         Token::Keyword(table_kw),
+					if_not_exists_kw: Token::Keyword(if_not_exists_kw),
+					table:            table_name,
 					select_statement: as_select
 				)
 			elsif (columns_lp = maybe          :LP)
