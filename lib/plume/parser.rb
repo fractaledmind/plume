@@ -1004,7 +1004,7 @@ module Plume
 							constraint_kw: Token::Keyword(constraint_kw),
 							name_tk:       Token::Identifier(constraint_name),
 							default_kw:    Token::Keyword(default_kw),
-							value_tk:      id,
+							value_tk:      Token::Identifier(id),
 						)
 					else
 						expected! :LP, "literal-value", "signed-number"
