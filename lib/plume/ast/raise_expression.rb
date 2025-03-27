@@ -12,12 +12,12 @@ module Plume
 		token :raise_rp              # required
 
 		attr :type,          Type    # required
-		attr :error_message, Stringy # maybe
+		attr :error_message, Expression # maybe
 
 		def self.new(*, type:, **) = super
 		def self.concrete(*, raise_kw:, raise_lp:, type_kw:, raise_rp:, **) = super
 
-		def type = @type || type_kw_src.to_sym.upcase
-		def error_message = @error_message || error_message_tk_val
+		def type = (@type == LiteralNil) ? type_kw_src.to_sym.upcase : @type
+		def error_message = (@error_message == LiteralNil) ? error_message_tk_val : @error_message
 	end
 end

@@ -982,148 +982,222 @@ test "IN operator with an unqualified function reference" do
 	assert_equal actual.right.arguments.expressions, expected.right.arguments.expressions
 end
 
-# test "IN operator with a qualified function reference" do
-# 	parser = Plume::Parser.new("c0 IN sc0.foobar()")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::InExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: Plume::FunctionReference.new(
-# 			schema_name: "sc0",
-# 			function_name: "foobar",
-# 			arguments: Plume::FunctionArguments.new(
-# 				expressions: [],
-# 			)
-# 		)
-# 	)
-# end
+test "IN operator with a qualified function reference" do
+	parser = Plume::Parser.new("c0 IN sc0.foobar()")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::FunctionReference.new(
+			schema: "sc0",
+			function: "foobar",
+			arguments: Plume::FunctionArguments.new(
+				expressions: [],
+			)
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.schema, expected.right.schema
+	assert_equal actual.right.function, expected.right.function
+	assert_equal actual.right.arguments.expressions, expected.right.arguments.expressions
+end
 
-# test "IN operator with an unqualified function reference with arguments" do
-# 	parser = Plume::Parser.new("c0 IN foobar(1, 2, 3)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::InExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: Plume::FunctionReference.new(
-# 			function_name: "foobar",
-# 			arguments: Plume::FunctionArguments.new(
-# 				expressions: [1, 2, 3],
-# 			)
-# 		)
-# 	)
-# end
+test "IN operator with an unqualified function reference with arguments" do
+	parser = Plume::Parser.new("c0 IN foobar(1, 2, 3)")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::FunctionReference.new(
+			function: "foobar",
+			arguments: Plume::FunctionArguments.new(
+				expressions: [1, 2, 3],
+			)
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.function, expected.right.function
+	assert_equal actual.right.arguments.expressions[0].value, expected.right.arguments.expressions[0]
+	assert_equal actual.right.arguments.expressions[1].value, expected.right.arguments.expressions[1]
+	assert_equal actual.right.arguments.expressions[2].value, expected.right.arguments.expressions[2]
+end
 
-# test "IN operator with a qualified function reference with arguments" do
-# 	parser = Plume::Parser.new("c0 IN sc0.foobar(1, 2, 3)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::InExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: Plume::FunctionReference.new(
-# 			schema_name: "sc0",
-# 			function_name: "foobar",
-# 			arguments: Plume::FunctionArguments.new(
-# 				expressions: [1, 2, 3],
-# 			)
-# 		)
-# 	)
-# end
+test "IN operator with a qualified function reference with arguments" do
+	parser = Plume::Parser.new("c0 IN sc0.foobar(1, 2, 3)")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::FunctionReference.new(
+			schema: "sc0",
+			function: "foobar",
+			arguments: Plume::FunctionArguments.new(
+				expressions: [1, 2, 3],
+			)
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.schema, expected.right.schema
+	assert_equal actual.right.function, expected.right.function
+	assert_equal actual.right.arguments.expressions[0].value, expected.right.arguments.expressions[0]
+	assert_equal actual.right.arguments.expressions[1].value, expected.right.arguments.expressions[1]
+	assert_equal actual.right.arguments.expressions[2].value, expected.right.arguments.expressions[2]
+end
 
-# test "NOT IN operator with list of values" do
-# 	parser = Plume::Parser.new("c0 NOT IN (1, 2, 3)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::NotInExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: [1, 2, 3]
-# 	)
-# end
+test "NOT IN operator with list of values" do
+	parser = Plume::Parser.new("c0 NOT IN (1, 2, 3)")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :NOT_IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::ParentheticalExpression.new(
+			value: [
+				Plume::LiteralExpression.new(value: 1),
+				Plume::LiteralExpression.new(value: 2),
+				Plume::LiteralExpression.new(value: 3),
+			]
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value[0].value, expected.right.value[0].value
+	assert_equal actual.right.value[1].value, expected.right.value[1].value
+	assert_equal actual.right.value[2].value, expected.right.value[2].value
+end
 
-# test "NOT IN operator with empty parens" do
-# 	parser = Plume::Parser.new("c0 NOT IN ()")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::NotInExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: []
-# 	)
-# end
+test "NOT IN operator with empty parens" do
+	parser = Plume::Parser.new("c0 NOT IN ()")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :NOT_IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::ParentheticalExpression.new(
+			value: nil
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "NOT IN operator with an unqualified table reference" do
-# 	parser = Plume::Parser.new("c0 NOT IN tb0")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::NotInExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: Plume::TableName.new(
-# 			table_name: "tb0"
-# 		)
-# 	)
-# end
+test "NOT IN operator with an unqualified table reference" do
+	parser = Plume::Parser.new("c0 NOT IN tb0")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :NOT_IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::TableName.new(
+			table: "tb0",
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.table, expected.right.table
+end
 
-# test "NOT IN operator with a qualified table reference" do
-# 	parser = Plume::Parser.new("c0 NOT IN sc0.tb0")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::NotInExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: Plume::TableName.new(
-# 			schema_name: "sc0",
-# 			table_name: "tb0",
-# 		)
-# 	)
-# end
+test "NOT IN operator with a qualified table reference" do
+	parser = Plume::Parser.new("c0 NOT IN sc0.tb0")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :NOT_IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::TableName.new(
+			schema: "sc0",
+			table: "tb0",
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.schema, expected.right.schema
+	assert_equal actual.right.table, expected.right.table
+end
 
-# test "NOT IN operator with an unqualified function reference" do
-# 	parser = Plume::Parser.new("c0 NOT IN foobar()")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::NotInExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: Plume::FunctionReference.new(
-# 			function_name: "foobar",
-# 			arguments: Plume::FunctionArguments.new(
-# 				expressions: [],
-# 			)
-# 		)
-# 	)
-# end
+test "NOT IN operator with an unqualified function reference" do
+	parser = Plume::Parser.new("c0 NOT IN foobar()")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :NOT_IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::FunctionReference.new(
+			function: "foobar",
+			arguments: Plume::FunctionArguments.new(
+				expressions: [],
+			),
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.function, expected.right.function
+	assert_equal actual.right.arguments.expressions, expected.right.arguments.expressions
+end
 
-# test "NOT IN operator with a qualified function reference" do
-# 	parser = Plume::Parser.new("c0 NOT IN sc0.foobar()")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::NotInExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: Plume::FunctionReference.new(
-# 			schema_name: "sc0",
-# 			function_name: "foobar",
-# 			arguments: Plume::FunctionArguments.new(
-# 				expressions: [],
-# 			)
-# 		)
-# 	)
-# end
+test "NOT IN operator with a qualified function reference" do
+	parser = Plume::Parser.new("c0 NOT IN sc0.foobar()")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :NOT_IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::FunctionReference.new(
+			schema: "sc0",
+			function: "foobar",
+			arguments: Plume::FunctionArguments.new(
+				expressions: [],
+			)
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.schema, expected.right.schema
+	assert_equal actual.right.function, expected.right.function
+	assert_equal actual.right.arguments.expressions, expected.right.arguments.expressions
+end
 
-# test "NOT IN operator with an unqualified function reference with arguments" do
-# 	parser = Plume::Parser.new("c0 NOT IN foobar(1, 2, 3)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::NotInExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: Plume::FunctionReference.new(
-# 			function_name: "foobar",
-# 			arguments: Plume::FunctionArguments.new(
-# 				expressions: [1, 2, 3],
-# 			)
-# 		)
-# 	)
-# end
+test "NOT IN operator with an unqualified function reference with arguments" do
+	parser = Plume::Parser.new("c0 NOT IN foobar(1, 2, 3)")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :NOT_IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::FunctionReference.new(
+			function: "foobar",
+			arguments: Plume::FunctionArguments.new(
+				expressions: [1, 2, 3],
+			)
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.function, expected.right.function
+	assert_equal actual.right.arguments.expressions[0].value, expected.right.arguments.expressions[0]
+	assert_equal actual.right.arguments.expressions[1].value, expected.right.arguments.expressions[1]
+	assert_equal actual.right.arguments.expressions[2].value, expected.right.arguments.expressions[2]
+end
 
-# test "NOT IN operator with a qualified function reference with arguments" do
-# 	parser = Plume::Parser.new("c0 NOT IN sc0.foobar(1, 2, 3)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::NotInExpression.new(
-# 		member: Plume::ColumnName.new(column: "c0"),
-# 		collection: Plume::FunctionReference.new(
-# 			schema_name: "sc0",
-# 			function_name: "foobar",
-# 			arguments: Plume::FunctionArguments.new(
-# 				expressions: [1, 2, 3],
-# 			)
-# 		)
-# 	)
-# end
+test "NOT IN operator with a qualified function reference with arguments" do
+	parser = Plume::Parser.new("c0 NOT IN sc0.foobar(1, 2, 3)")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :NOT_IN,
+		left: Plume::ColumnName.new(column: "c0"),
+		right: Plume::FunctionReference.new(
+			schema: "sc0",
+			function: "foobar",
+			arguments: Plume::FunctionArguments.new(
+				expressions: [1, 2, 3],
+			)
+		)
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.column, expected.left.column
+	assert_equal actual.right.schema, expected.right.schema
+	assert_equal actual.right.function, expected.right.function
+	assert_equal actual.right.arguments.expressions[0].value, expected.right.arguments.expressions[0]
+	assert_equal actual.right.arguments.expressions[1].value, expected.right.arguments.expressions[1]
+	assert_equal actual.right.arguments.expressions[2].value, expected.right.arguments.expressions[2]
+end
 
 # -- CASE expressions
 
@@ -1254,919 +1328,1279 @@ end
 
 # -- CAST expressions
 
-# test "CAST expression with integer type" do
-# 	parser = Plume::Parser.new("CAST(c0 AS INTEGER)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::CastExpression.new(
-# 		expression: Plume::ColumnName.new(column: "c0"),
-# 		as: Plume::IntegerType.new(name: "INTEGER"),
-# 	)
-# end
+test "CAST expression with int type" do
+	parser = Plume::Parser.new("CAST(c0 AS int)")
+	actual = parser.expression
+	expected = Plume::CastExpression.new(
+		expression: Plume::ColumnName.new(column: "c0"),
+		as: Plume::ColumnType.new(text: "int"),
+	)
+	assert_equal actual.expression.column, expected.expression.column
+	assert_equal actual.as.text, "int"
+	assert_equal actual.as.affinity, :INTEGER
+end
 
-# # -- function calls
+test "CAST expression with char type" do
+	parser = Plume::Parser.new("CAST(c0 AS char)")
+	actual = parser.expression
+	expected = Plume::CastExpression.new(
+		expression: Plume::ColumnName.new(column: "c0"),
+		as: Plume::ColumnType.new(text: "char"),
+	)
 
-# test "Simple function call with no argument" do
-# 	parser = Plume::Parser.new("CHANGES()")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :CHANGES,
-# 		arguments: Plume::EmptyFunctionArgument.new
-# 	)
-# end
+	assert_equal actual.expression.column, expected.expression.column
+	assert_equal actual.as.text, "char"
+	assert_equal actual.as.affinity, :TEXT
+end
 
-# test "Simple function call with single numeric expression argument" do
-# 	parser = Plume::Parser.new("ABS(-1)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ABS,
-# 		arguments: Plume::FunctionArguments.new(
-# 			expressions: [
-# 				Plume::UnaryExpression.new(
-# 					operator: :NEGATE,
-# 					operand: 1
-# 				),
-# 			]
-# 		)
-# 	)
-# end
+test "CAST expression with blob type" do
+	parser = Plume::Parser.new("CAST(c0 AS blob)")
+	actual = parser.expression
+	expected = Plume::CastExpression.new(
+		expression: Plume::ColumnName.new(column: "c0"),
+		as: Plume::ColumnType.new(text: "blob"),
+	)
 
-# test "Aggregate function call with STAR argument" do
-# 	parser = Plume::Parser.new("COUNT(*)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :COUNT,
-# 		arguments: Plume::StarFunctionArgument.new
-# 	)
-# end
+	assert_equal actual.expression.column, expected.expression.column
+	assert_equal actual.as.text, "blob"
+	assert_equal actual.as.affinity, :BLOB
+end
 
-# test "Aggregate function call with STAR argument and filter clause" do
-# 	parser = Plume::Parser.new("COUNT(*) FILTER (WHERE c0 > 0)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :COUNT,
-# 		arguments: Plume::StarFunctionArgument.new,
-# 		filter_clause: Plume::BinaryExpression.new(
-# 			operator: :ABOVE,
-# 			left: Plume::ColumnName.new(column: "c0"),
-# 			right: 0
-# 		)
-# 	)
-# end
+test "CAST expression with real type" do
+	parser = Plume::Parser.new("CAST(c0 AS real)")
+	actual = parser.expression
+	expected = Plume::CastExpression.new(
+		expression: Plume::ColumnName.new(column: "c0"),
+		as: Plume::ColumnType.new(text: "real"),
+	)
 
-# test "Aggregate function call with DISTINCT column reference argument" do
-# 	parser = Plume::Parser.new("COUNT(DISTINCT c0)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :COUNT,
-# 		arguments: Plume::FunctionArguments.new(
-# 			distinct: true,
-# 			expressions: [
-# 				Plume::ColumnName.new(column: "c0"),
-# 			]
-# 		)
-# 	)
-# end
+	assert_equal actual.expression.column, expected.expression.column
+	assert_equal actual.as.text, "real"
+	assert_equal actual.as.affinity, :REAL
+end
 
-# test "Aggregate function call with DISTINCT column reference arguments" do
-# 	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :COUNT,
-# 		arguments: Plume::FunctionArguments.new(
-# 			distinct: true,
-# 			expressions: [
-# 				Plume::ColumnName.new(column: "c0"),
-# 				Plume::ColumnName.new(column: "c1"),
-# 			]
-# 		)
-# 	)
-# end
+test "CAST expression with any type" do
+	parser = Plume::Parser.new("CAST(c0 AS any)")
+	actual = parser.expression
+	expected = Plume::CastExpression.new(
+		expression: Plume::ColumnName.new(column: "c0"),
+		as: Plume::ColumnType.new(text: "any"),
+	)
 
-# test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column" do
-# 	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :COUNT,
-# 		arguments: Plume::FunctionArguments.new(
-# 			distinct: true,
-# 			expressions: [
-# 				Plume::ColumnName.new(column: "c0"),
-# 				Plume::ColumnName.new(column: "c1"),
-# 			],
-# 			order_by: [
-# 				Plume::OrderingTerm.new(
-# 					expression: Plume::ColumnName.new(column: "c0")
-# 				),
-# 			]
-# 		)
-# 	)
-# end
+	assert_equal actual.expression.column, expected.expression.column
+	assert_equal actual.as.text, "any"
+	assert_equal actual.as.affinity, :ANY
+end
 
-# test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column with direction" do
-# 	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0 DESC)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :COUNT,
-# 		arguments: Plume::FunctionArguments.new(
-# 			distinct: true,
-# 			expressions: [
-# 				Plume::ColumnName.new(column: "c0"),
-# 				Plume::ColumnName.new(column: "c1"),
-# 			],
-# 			order_by: [
-# 				Plume::OrderingTerm.new(
-# 					expression: Plume::ColumnName.new(column: "c0"),
-# 					direction: :DESC,
-# 				),
-# 			]
-# 		)
-# 	)
-# end
+test "CAST expression with constrained type" do
+	parser = Plume::Parser.new("CAST(c0 AS decimal(4, 6))")
+	actual = parser.expression
+	expected = Plume::CastExpression.new(
+		expression: Plume::ColumnName.new(column: "c0"),
+		as: Plume::ColumnType.new(text: "decimal(4, 6)"),
+	)
 
-# test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column with direction and nulls last" do
-# 	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0 DESC NULLS LAST)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :COUNT,
-# 		arguments: Plume::FunctionArguments.new(
-# 			distinct: true,
-# 			expressions: [
-# 				Plume::ColumnName.new(column: "c0"),
-# 				Plume::ColumnName.new(column: "c1"),
-# 			],
-# 			order_by: [
-# 				Plume::OrderingTerm.new(
-# 					expression: Plume::ColumnName.new(column: "c0"),
-# 					direction: :DESC,
-# 					nulls: :LAST,
-# 				),
-# 			]
-# 		)
-# 	)
-# end
+	assert_equal actual.expression.column, expected.expression.column
+	assert_equal actual.as.text, "decimal(4, 6)"
+	assert_equal actual.as.affinity, :ANY
+end
 
-# test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column with direction and nulls first" do
-# 	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0 DESC NULLS FIRST)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :COUNT,
-# 		arguments: Plume::FunctionArguments.new(
-# 			distinct: true,
-# 			expressions: [
-# 				Plume::ColumnName.new(column: "c0"),
-# 				Plume::ColumnName.new(column: "c1"),
-# 			],
-# 			order_by: [
-# 				Plume::OrderingTerm.new(
-# 					expression: Plume::ColumnName.new(column: "c0"),
-# 					direction: :DESC,
-# 					nulls: :FIRST,
-# 				),
-# 			]
-# 		)
-# 	)
-# end
+# -- function calls
 
-# test "Aggregate function call with column reference argument" do
-# 	parser = Plume::Parser.new("COUNT(c0)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :COUNT,
-# 		arguments: Plume::FunctionArguments.new(
-# 			expressions: [
-# 				Plume::ColumnName.new(column: "c0"),
-# 			]
-# 		)
-# 	)
-# end
+test "Simple function call with no argument" do
+	parser = Plume::Parser.new("CHANGES()")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "CHANGES",
+		arguments: Plume::EmptyFunctionArgument.new
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+end
 
-# test "Aggregate function call with column reference arguments" do
-# 	parser = Plume::Parser.new("COUNT(c0, c1)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :COUNT,
-# 		arguments: Plume::FunctionArguments.new(
-# 			expressions: [
-# 				Plume::ColumnName.new(column: "c0"),
-# 				Plume::ColumnName.new(column: "c1"),
-# 			]
-# 		)
-# 	)
-# end
+test "Simple function call with single numeric expression argument" do
+	parser = Plume::Parser.new("ABS(-1)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ABS",
+		arguments: Plume::FunctionArguments.new(
+			expressions: [
+				Plume::UnaryExpression.new(
+					operator: :NEGATE,
+					operand: Plume::LiteralExpression.new(
+						value: 1
+					)
+				),
+			]
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments.expressions[0].operator, expected.arguments.expressions[0].operator
+	assert_equal actual.arguments.expressions[0].operand.value, expected.arguments.expressions[0].operand.value
+end
 
-# test "Aggregate function call with column reference arguments and ORDER BY one column" do
-# 	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :COUNT,
-# 		arguments: Plume::FunctionArguments.new(
-# 			expressions: [
-# 				Plume::ColumnName.new(column: "c0"),
-# 				Plume::ColumnName.new(column: "c1"),
-# 			],
-# 			order_by: [
-# 				Plume::OrderingTerm.new(
-# 					expression: Plume::ColumnName.new(column: "c0")
-# 				),
-# 			]
-# 		)
-# 	)
-# end
+test "Aggregate function call with STAR argument" do
+	parser = Plume::Parser.new("COUNT(*)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "COUNT",
+		arguments: Plume::StarFunctionArgument.new
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+end
 
-# test "Aggregate function call with column reference arguments and ORDER BY one column with direction" do
-# 	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0 DESC)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :COUNT,
-# 		arguments: Plume::FunctionArguments.new(
-# 			expressions: [
-# 				Plume::ColumnName.new(column: "c0"),
-# 				Plume::ColumnName.new(column: "c1"),
-# 			],
-# 			order_by: [
-# 				Plume::OrderingTerm.new(
-# 					expression: Plume::ColumnName.new(column: "c0"),
-# 					direction: :DESC,
-# 				),
-# 			]
-# 		)
-# 	)
-# end
+test "Aggregate function call with STAR argument and filter clause" do
+	parser = Plume::Parser.new("COUNT(*) FILTER (WHERE c0 > 0)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "COUNT",
+		arguments: Plume::StarFunctionArgument.new,
+		filter_clause: Plume::BinaryExpression.new(
+			operator: :ABOVE,
+			left: Plume::ColumnName.new(column: "c0"),
+			right: Plume::LiteralExpression.new(
+				value: 0
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.filter_clause.operator, expected.filter_clause.operator
+	assert_equal actual.filter_clause.left.column, expected.filter_clause.left.column
+	assert_equal actual.filter_clause.right.value, expected.filter_clause.right.value
+end
 
-# test "Aggregate function call with column reference arguments and ORDER BY one column with direction and nulls last" do
-# 	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0 DESC NULLS LAST)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :COUNT,
-# 		arguments: Plume::FunctionArguments.new(
-# 			expressions: [
-# 				Plume::ColumnName.new(column: "c0"),
-# 				Plume::ColumnName.new(column: "c1"),
-# 			],
-# 			order_by: [
-# 				Plume::OrderingTerm.new(
-# 					expression: Plume::ColumnName.new(column: "c0"),
-# 					direction: :DESC,
-# 					nulls: :LAST,
-# 				),
-# 			]
-# 		)
-# 	)
-# end
+test "Aggregate function call with DISTINCT column reference argument" do
+	parser = Plume::Parser.new("COUNT(DISTINCT c0)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "COUNT",
+		arguments: Plume::FunctionArguments.new(
+			distinct: true,
+			expressions: [
+				Plume::ColumnName.new(column: "c0"),
+			]
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments.distinct, expected.arguments.distinct
+	assert_equal actual.arguments.expressions[0].column, expected.arguments.expressions[0].column
+end
 
-# test "Aggregate function call with column reference arguments and ORDER BY one column with direction and nulls first" do
-# 	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0 DESC NULLS FIRST)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :COUNT,
-# 		arguments: Plume::FunctionArguments.new(
-# 			expressions: [
-# 				Plume::ColumnName.new(column: "c0"),
-# 				Plume::ColumnName.new(column: "c1"),
-# 			],
-# 			order_by: [
-# 				Plume::OrderingTerm.new(
-# 					expression: Plume::ColumnName.new(column: "c0"),
-# 					direction: :DESC,
-# 					nulls: :FIRST,
-# 				),
-# 			]
-# 		)
-# 	)
-# end
+test "Aggregate function call with DISTINCT column reference arguments" do
+	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "COUNT",
+		arguments: Plume::FunctionArguments.new(
+			distinct: true,
+			expressions: [
+				Plume::ColumnName.new(column: "c0"),
+				Plume::ColumnName.new(column: "c1"),
+			]
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments.distinct, expected.arguments.distinct
+	assert_equal actual.arguments.expressions[0].column, expected.arguments.expressions[0].column
+	assert_equal actual.arguments.expressions[1].column, expected.arguments.expressions[1].column
+end
 
-# test "Window function call with no arguments and empty window" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER ()")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new
-# 	)
-# end
+test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column" do
+	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "COUNT",
+		arguments: Plume::FunctionArguments.new(
+			distinct: true,
+			expressions: [
+				Plume::ColumnName.new(column: "c0"),
+				Plume::ColumnName.new(column: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnName.new(column: "c0")
+				),
+			]
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments.distinct, expected.arguments.distinct
+	assert_equal actual.arguments.expressions[0].column, expected.arguments.expressions[0].column
+	assert_equal actual.arguments.expressions[1].column, expected.arguments.expressions[1].column
+	assert_equal actual.arguments.order_by[0].expression.column, expected.arguments.order_by[0].expression.column
+end
 
-# test "Window function call with no arguments and window name" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER win1")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			window_name: "win1"
-# 		)
-# 	)
-# end
+test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column with direction" do
+	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0 DESC)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "COUNT",
+		arguments: Plume::FunctionArguments.new(
+			distinct: true,
+			expressions: [
+				Plume::ColumnName.new(column: "c0"),
+				Plume::ColumnName.new(column: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnName.new(column: "c0"),
+					direction: :DESC,
+				),
+			]
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments.distinct, expected.arguments.distinct
+	assert_equal actual.arguments.expressions[0].column, expected.arguments.expressions[0].column
+	assert_equal actual.arguments.expressions[1].column, expected.arguments.expressions[1].column
+	assert_equal actual.arguments.order_by[0].expression.column, expected.arguments.order_by[0].expression.column
+	assert_equal actual.arguments.order_by[0].direction, expected.arguments.order_by[0].direction
+end
 
-# test "Window function call with no arguments and window definition with only PARTITION BY" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (PARTITION BY y)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			partition_by: [
-# 				Plume::ColumnName.new(column: "y"),
-# 			]
-# 		)
-# 	)
-# end
+test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column with direction and nulls last" do
+	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0 DESC NULLS LAST)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "COUNT",
+		arguments: Plume::FunctionArguments.new(
+			distinct: true,
+			expressions: [
+				Plume::ColumnName.new(column: "c0"),
+				Plume::ColumnName.new(column: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnName.new(column: "c0"),
+					direction: :DESC,
+					nulls: :LAST,
+				),
+			]
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments.distinct, expected.arguments.distinct
+	assert_equal actual.arguments.expressions[0].column, expected.arguments.expressions[0].column
+	assert_equal actual.arguments.expressions[1].column, expected.arguments.expressions[1].column
+	assert_equal actual.arguments.order_by[0].expression.column, expected.arguments.order_by[0].expression.column
+	assert_equal actual.arguments.order_by[0].direction, expected.arguments.order_by[0].direction
+	assert_equal actual.arguments.order_by[0].nulls, expected.arguments.order_by[0].nulls
+end
 
-# test "Window function call with no arguments and window definition with only ORDER BY" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ORDER BY y)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			order_by: [
-# 				Plume::OrderingTerm.new(
-# 					expression: Plume::ColumnName.new(column: "y")
-# 				),
-# 			]
-# 		)
-# 	)
-# end
+test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column with direction and nulls first" do
+	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0 DESC NULLS FIRST)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "COUNT",
+		arguments: Plume::FunctionArguments.new(
+			distinct: true,
+			expressions: [
+				Plume::ColumnName.new(column: "c0"),
+				Plume::ColumnName.new(column: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnName.new(column: "c0"),
+					direction: :DESC,
+					nulls: :FIRST,
+				),
+			]
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments.distinct, expected.arguments.distinct
+	assert_equal actual.arguments.expressions[0].column, expected.arguments.expressions[0].column
+	assert_equal actual.arguments.expressions[1].column, expected.arguments.expressions[1].column
+	assert_equal actual.arguments.order_by[0].expression.column, expected.arguments.order_by[0].expression.column
+	assert_equal actual.arguments.order_by[0].direction, expected.arguments.order_by[0].direction
+	assert_equal actual.arguments.order_by[0].nulls, expected.arguments.order_by[0].nulls
+end
 
-# test "Window function call with no arguments and window definition with RANGE UNBOUNDED PRECEDING frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :RANGE,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: :UNBOUNDED
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Aggregate function call with column reference argument" do
+	parser = Plume::Parser.new("COUNT(c0)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "COUNT",
+		arguments: Plume::FunctionArguments.new(
+			expressions: [
+				Plume::ColumnName.new(column: "c0"),
+			]
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments.distinct, expected.arguments.distinct
+	assert_equal actual.arguments.expressions[0].column, expected.arguments.expressions[0].column
+end
 
-# test "Window function call with no arguments and window definition with ROWS UNBOUNDED PRECEDING frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS UNBOUNDED PRECEDING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: :UNBOUNDED
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Aggregate function call with column reference arguments" do
+	parser = Plume::Parser.new("COUNT(c0, c1)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "COUNT",
+		arguments: Plume::FunctionArguments.new(
+			expressions: [
+				Plume::ColumnName.new(column: "c0"),
+				Plume::ColumnName.new(column: "c1"),
+			]
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments.distinct, expected.arguments.distinct
+	assert_equal actual.arguments.expressions[0].column, expected.arguments.expressions[0].column
+	assert_equal actual.arguments.expressions[1].column, expected.arguments.expressions[1].column
+end
 
-# test "Window function call with no arguments and window definition with GROUPS UNBOUNDED PRECEDING frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (GROUPS UNBOUNDED PRECEDING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :GROUPS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: :UNBOUNDED
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Aggregate function call with column reference arguments and ORDER BY one column" do
+	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "COUNT",
+		arguments: Plume::FunctionArguments.new(
+			expressions: [
+				Plume::ColumnName.new(column: "c0"),
+				Plume::ColumnName.new(column: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnName.new(column: "c0")
+				),
+			]
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments.distinct, expected.arguments.distinct
+	assert_equal actual.arguments.expressions[0].column, expected.arguments.expressions[0].column
+	assert_equal actual.arguments.expressions[1].column, expected.arguments.expressions[1].column
+	assert_equal actual.arguments.order_by[0].expression.column, expected.arguments.order_by[0].expression.column
+end
 
-# test "Window function call with no arguments and window definition with ROWS CURRENT ROW frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS CURRENT ROW)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :CURRENT_ROW,
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Aggregate function call with column reference arguments and ORDER BY one column with direction" do
+	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0 DESC)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "COUNT",
+		arguments: Plume::FunctionArguments.new(
+			expressions: [
+				Plume::ColumnName.new(column: "c0"),
+				Plume::ColumnName.new(column: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnName.new(column: "c0"),
+					direction: :DESC,
+				),
+			]
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments.distinct, expected.arguments.distinct
+	assert_equal actual.arguments.expressions[0].column, expected.arguments.expressions[0].column
+	assert_equal actual.arguments.expressions[1].column, expected.arguments.expressions[1].column
+	assert_equal actual.arguments.order_by[0].expression.column, expected.arguments.order_by[0].expression.column
+	assert_equal actual.arguments.order_by[0].direction, expected.arguments.order_by[0].direction
+end
 
-# test "Window function call with no arguments and window definition with ROWS <expr> PRECEDING frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS 123 PRECEDING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: 123
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Aggregate function call with column reference arguments and ORDER BY one column with direction and nulls last" do
+	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0 DESC NULLS LAST)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "COUNT",
+		arguments: Plume::FunctionArguments.new(
+			expressions: [
+				Plume::ColumnName.new(column: "c0"),
+				Plume::ColumnName.new(column: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnName.new(column: "c0"),
+					direction: :DESC,
+					nulls: :LAST,
+				),
+			]
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments.distinct, expected.arguments.distinct
+	assert_equal actual.arguments.expressions[0].column, expected.arguments.expressions[0].column
+	assert_equal actual.arguments.expressions[1].column, expected.arguments.expressions[1].column
+	assert_equal actual.arguments.order_by[0].expression.column, expected.arguments.order_by[0].expression.column
+	assert_equal actual.arguments.order_by[0].direction, expected.arguments.order_by[0].direction
+	assert_equal actual.arguments.order_by[0].nulls, expected.arguments.order_by[0].nulls
+end
 
-# test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND <expr> PRECEDING frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 123 PRECEDING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: :UNBOUNDED
-# 				),
-# 				ending_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: 123
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Aggregate function call with column reference arguments and ORDER BY one column with direction and nulls first" do
+	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0 DESC NULLS FIRST)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "COUNT",
+		arguments: Plume::FunctionArguments.new(
+			expressions: [
+				Plume::ColumnName.new(column: "c0"),
+				Plume::ColumnName.new(column: "c1"),
+			],
+			order_by: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnName.new(column: "c0"),
+					direction: :DESC,
+					nulls: :FIRST,
+				),
+			]
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments.distinct, expected.arguments.distinct
+	assert_equal actual.arguments.expressions[0].column, expected.arguments.expressions[0].column
+	assert_equal actual.arguments.expressions[1].column, expected.arguments.expressions[1].column
+	assert_equal actual.arguments.order_by[0].expression.column, expected.arguments.order_by[0].expression.column
+	assert_equal actual.arguments.order_by[0].direction, expected.arguments.order_by[0].direction
+	assert_equal actual.arguments.order_by[0].nulls, expected.arguments.order_by[0].nulls
+end
 
-# test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: :UNBOUNDED
-# 				),
-# 				ending_boundary: Plume::FrameBoundary.new(
-# 					type: :CURRENT_ROW,
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and empty window" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER ()")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.base_window_name, expected.over_clause.base_window_name
+end
 
-# test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND <expr> FOLLOWING frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 123 FOLLOWING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: :UNBOUNDED
-# 				),
-# 				ending_boundary: Plume::FrameBoundary.new(
-# 					type: :FOLLOWING,
-# 					value: 123
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window name" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER win1")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			window_name: "win1"
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.window_name, expected.over_clause.window_name
+end
 
-# test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: :UNBOUNDED
-# 				),
-# 				ending_boundary: Plume::FrameBoundary.new(
-# 					type: :FOLLOWING,
-# 					value: :UNBOUNDED
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with only PARTITION BY" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (PARTITION BY y)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			partitions: [
+				Plume::ColumnName.new(column: "y"),
+			]
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.partitions[0].column, expected.over_clause.partitions[0].column
+end
 
-# test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND <expr> PRECEDING frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND 123 PRECEDING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: 123
-# 				),
-# 				ending_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: 123
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with only ORDER BY" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ORDER BY y)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			orderings: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnName.new(column: "y")
+				),
+			]
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.orderings[0].expression.column, expected.over_clause.orderings[0].expression.column
+end
 
-# test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND CURRENT ROW frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND CURRENT ROW)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: 123
-# 				),
-# 				ending_boundary: Plume::FrameBoundary.new(
-# 					type: :CURRENT_ROW,
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with RANGE UNBOUNDED PRECEDING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :RANGE,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value, expected.over_clause.frame.starting_boundary.value
+end
 
-# test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND 123 FOLLOWING frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND 123 FOLLOWING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: 123
-# 				),
-# 				ending_boundary: Plume::FrameBoundary.new(
-# 					type: :FOLLOWING,
-# 					value: 123
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with ROWS UNBOUNDED PRECEDING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS UNBOUNDED PRECEDING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value, expected.over_clause.frame.starting_boundary.value
+end
 
-# test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND UNBOUNDED FOLLOWING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: 123
-# 				),
-# 				ending_boundary: Plume::FrameBoundary.new(
-# 					type: :FOLLOWING,
-# 					value: :UNBOUNDED
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with GROUPS UNBOUNDED PRECEDING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (GROUPS UNBOUNDED PRECEDING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :GROUPS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value, expected.over_clause.frame.starting_boundary.value
+end
 
-# test "Window function call with no arguments and window definition with ROWS BETWEEN CURRENT ROW AND CURRENT ROW frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN CURRENT ROW AND CURRENT ROW)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :CURRENT_ROW,
-# 				),
-# 				ending_boundary: Plume::FrameBoundary.new(
-# 					type: :CURRENT_ROW,
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with ROWS CURRENT ROW frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS CURRENT ROW)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :CURRENT_ROW,
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+end
 
-# test "Window function call with no arguments and window definition with ROWS BETWEEN CURRENT ROW AND 123 FOLLOWING frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN CURRENT ROW AND 123 FOLLOWING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :CURRENT_ROW,
-# 				),
-# 				ending_boundary: Plume::FrameBoundary.new(
-# 					type: :FOLLOWING,
-# 					value: 123
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with ROWS <expr> PRECEDING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS 123 PRECEDING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: Plume::LiteralExpression.new(
+						value: 123,
+					)
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value.value, expected.over_clause.frame.starting_boundary.value.value
+end
 
-# test "Window function call with no arguments and window definition with ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :CURRENT_ROW,
-# 				),
-# 				ending_boundary: Plume::FrameBoundary.new(
-# 					type: :FOLLOWING,
-# 					value: :UNBOUNDED
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND <expr> PRECEDING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 123 PRECEDING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: Plume::LiteralExpression.new(
+						value: 123,
+					)
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value, expected.over_clause.frame.starting_boundary.value
+	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
+	assert_equal actual.over_clause.frame.ending_boundary.value.value, expected.over_clause.frame.ending_boundary.value.value
+end
 
-# test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> FOLLOWING AND 123 FOLLOWING frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 FOLLOWING AND 123 FOLLOWING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :FOLLOWING,
-# 					value: 123
-# 				),
-# 				ending_boundary: Plume::FrameBoundary.new(
-# 					type: :FOLLOWING,
-# 					value: 123
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :CURRENT_ROW,
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value, expected.over_clause.frame.starting_boundary.value
+	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
+end
 
-# test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> FOLLOWING AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :FOLLOWING,
-# 					value: 123
-# 				),
-# 				ending_boundary: Plume::FrameBoundary.new(
-# 					type: :FOLLOWING,
-# 					value: :UNBOUNDED
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND <expr> FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 123 FOLLOWING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: Plume::LiteralExpression.new(
+						value: 123,
+					)
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value, expected.over_clause.frame.starting_boundary.value
+	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
+	assert_equal actual.over_clause.frame.ending_boundary.value.value, expected.over_clause.frame.ending_boundary.value.value
+end
 
-# test "Window function call with no arguments and only base window name" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (win)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			base_window_name: "win"
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value, expected.over_clause.frame.starting_boundary.value
+	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
+	assert_equal actual.over_clause.frame.ending_boundary.value, expected.over_clause.frame.ending_boundary.value
+end
 
-# test "Window function call with no arguments and base window name with ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (win ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			base_window_name: "win",
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :FOLLOWING,
-# 					value: 123
-# 				),
-# 				ending_boundary: Plume::FrameBoundary.new(
-# 					type: :FOLLOWING,
-# 					value: :UNBOUNDED
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND <expr> PRECEDING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND 123 PRECEDING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: Plume::LiteralExpression.new(
+						value: 123,
+					)
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: Plume::LiteralExpression.new(
+						value: 123,
+					)
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value.value, expected.over_clause.frame.starting_boundary.value.value
+	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
+	assert_equal actual.over_clause.frame.ending_boundary.value.value, expected.over_clause.frame.ending_boundary.value.value
+end
 
-# test "Window function call with no arguments and base window name with ordering term and frame spec without exclude clause" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (win ORDER BY c0 ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			base_window_name: "win",
-# 			order_by: [
-# 				Plume::OrderingTerm.new(
-# 					expression: Plume::ColumnName.new(column: "c0")
-# 				),
-# 			],
-# 			frame: Plume::FrameSpec.new(
-# 				type: :ROWS,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :FOLLOWING,
-# 					value: 123
-# 				),
-# 				ending_boundary: Plume::FrameBoundary.new(
-# 					type: :FOLLOWING,
-# 					value: :UNBOUNDED
-# 				),
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND CURRENT ROW frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND CURRENT ROW)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: Plume::LiteralExpression.new(
+						value: 123,
+					)
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :CURRENT_ROW,
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value.value, expected.over_clause.frame.starting_boundary.value.value
+	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
+end
 
-# test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE NO OTHERS" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE NO OTHERS)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :RANGE,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: :UNBOUNDED
-# 				),
-# 				exclude: :NO_OTHERS
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND 123 FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND 123 FOLLOWING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: Plume::LiteralExpression.new(
+						value: 123,
+					)
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: Plume::LiteralExpression.new(
+						value: 123,
+					)
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value.value, expected.over_clause.frame.starting_boundary.value.value
+	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
+	assert_equal actual.over_clause.frame.ending_boundary.value.value, expected.over_clause.frame.ending_boundary.value.value
+end
 
-# test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE CURRENT ROW" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE CURRENT ROW)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :RANGE,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: :UNBOUNDED
-# 				),
-# 				exclude: :CURRENT_ROW
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND UNBOUNDED FOLLOWING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: Plume::LiteralExpression.new(
+						value: 123,
+					)
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value.value, expected.over_clause.frame.starting_boundary.value.value
+	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
+	assert_equal actual.over_clause.frame.ending_boundary.value, expected.over_clause.frame.ending_boundary.value
+end
 
-# test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE GROUP" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE GROUP)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :RANGE,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: :UNBOUNDED
-# 				),
-# 				exclude: :GROUP
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with ROWS BETWEEN CURRENT ROW AND CURRENT ROW frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN CURRENT ROW AND CURRENT ROW)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :CURRENT_ROW,
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :CURRENT_ROW,
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
+end
 
-# test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE TIES" do
-# 	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE TIES)")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::FunctionReference.new(
-# 		function_name: :ROW_NUMBER,
-# 		arguments: Plume::EmptyFunctionArgument.new,
-# 		over_clause: Plume::OverClause.new(
-# 			frame: Plume::FrameSpec.new(
-# 				type: :RANGE,
-# 				starting_boundary: Plume::FrameBoundary.new(
-# 					type: :PRECEDING,
-# 					value: :UNBOUNDED
-# 				),
-# 				exclude: :TIES
-# 			)
-# 		)
-# 	)
-# end
+test "Window function call with no arguments and window definition with ROWS BETWEEN CURRENT ROW AND 123 FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN CURRENT ROW AND 123 FOLLOWING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :CURRENT_ROW,
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: Plume::LiteralExpression.new(
+						value: 123,
+					)
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
+	assert_equal actual.over_clause.frame.ending_boundary.value.value, expected.over_clause.frame.ending_boundary.value.value
+end
 
-# # test "Subquery in expression" do
-# # 	parser = Plume::Parser.new("c0 = (SELECT MAX(c1) FROM t1)")
-# # 	expr = parser.expression
-# # 	assert_equal expr, {:EQ=>["c0", {:SELECT=>{:columns=>[{:MAX=>["c1"]}], :from=>"t1"}}]}
-# # end
+test "Window function call with no arguments and window definition with ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :CURRENT_ROW,
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
+	assert_equal actual.over_clause.frame.ending_boundary.value, expected.over_clause.frame.ending_boundary.value
+end
 
-# # test "Complex nested expression" do
-# # 	parser = Plume::Parser.new("(c0 + 5) * 2 > (SELECT AVG(c1) FROM t1) OR c2 IS NOT NULL")
-# # 	expr = parser.expression
-# # 	assert_equal expr, {:OR=>[{:GT=>[{:MULTIPLY=>[{:PLUS=>["c0", 5]}, 2]}, {:SELECT=>{:columns=>[{:AVG=>["c1"]}], :from=>"t1"}}]}, {:IS_NOT=>["c2", nil]}]}
-# # end
+test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> FOLLOWING AND 123 FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 FOLLOWING AND 123 FOLLOWING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: Plume::LiteralExpression.new(
+						value: 123,
+					)
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: Plume::LiteralExpression.new(
+						value: 123,
+					)
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value.value, expected.over_clause.frame.starting_boundary.value.value
+	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
+	assert_equal actual.over_clause.frame.ending_boundary.value.value, expected.over_clause.frame.ending_boundary.value.value
+end
 
-# test "Bitwise operations" do
-# 	parser = Plume::Parser.new("c0 & 3 | 4")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::BinaryExpression.new(
-# 		operator: :BIT_OR,
-# 		left: Plume::BinaryExpression.new(
-# 			operator: :BIT_AND,
-# 			left: Plume::ColumnName.new(column: "c0"),
-# 			right: 3,
-# 		),
-# 		right: 4,
-# 	)
-# end
+test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> FOLLOWING AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: Plume::LiteralExpression.new(
+						value: 123,
+					)
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value.value, expected.over_clause.frame.starting_boundary.value.value
+	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
+	assert_equal actual.over_clause.frame.ending_boundary.value, expected.over_clause.frame.ending_boundary.value
+end
 
+test "Window function call with no arguments and only base window name" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (win)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			base_window_name: "win"
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.base_window_name, expected.over_clause.base_window_name
+end
 
-# EXISTS
+test "Window function call with no arguments and base window name with ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (win ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			base_window_name: "win",
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: Plume::LiteralExpression.new(
+						value: 123,
+					)
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.base_window_name, expected.over_clause.base_window_name
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value.value, expected.over_clause.frame.starting_boundary.value.value
+	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
+	assert_equal actual.over_clause.frame.ending_boundary.value, expected.over_clause.frame.ending_boundary.value
+end
 
-# test "COLLATE expression" do
-# 	parser = Plume::Parser.new("'foo' COLLATE NOCASE")
+test "Window function call with no arguments and base window name with ordering term and frame spec without exclude clause" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (win ORDER BY c0 ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			base_window_name: "win",
+			orderings: [
+				Plume::OrderingTerm.new(
+					expression: Plume::ColumnName.new(column: "c0")
+				),
+			],
+			frame: Plume::FrameSpec.new(
+				type: :ROWS,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: Plume::LiteralExpression.new(
+						value: 123,
+					)
+				),
+				ending_boundary: Plume::FrameBoundary.new(
+					type: :FOLLOWING,
+					value: :UNBOUNDED
+				),
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.base_window_name, expected.over_clause.base_window_name
+	assert_equal actual.over_clause.orderings[0].expression.column, expected.over_clause.orderings[0].expression.column
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value.value, expected.over_clause.frame.starting_boundary.value.value
+	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
+	assert_equal actual.over_clause.frame.ending_boundary.value, expected.over_clause.frame.ending_boundary.value
+end
+
+test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE NO OTHERS" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE NO OTHERS)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :RANGE,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				exclude: :NO_OTHERS
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value, expected.over_clause.frame.starting_boundary.value
+	assert_equal actual.over_clause.frame.exclude, expected.over_clause.frame.exclude
+end
+
+test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE CURRENT ROW" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE CURRENT ROW)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :RANGE,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				exclude: :CURRENT_ROW
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value, expected.over_clause.frame.starting_boundary.value
+	assert_equal actual.over_clause.frame.exclude, expected.over_clause.frame.exclude
+end
+
+test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE GROUP" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE GROUP)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :RANGE,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				exclude: :GROUP
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value, expected.over_clause.frame.starting_boundary.value
+	assert_equal actual.over_clause.frame.exclude, expected.over_clause.frame.exclude
+end
+
+test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE TIES" do
+	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE TIES)")
+	actual = parser.expression
+	expected = Plume::FunctionReference.new(
+		function: "ROW_NUMBER",
+		arguments: Plume::EmptyFunctionArgument.new,
+		over_clause: Plume::OverClause.new(
+			frame: Plume::FrameSpec.new(
+				type: :RANGE,
+				starting_boundary: Plume::FrameBoundary.new(
+					type: :PRECEDING,
+					value: :UNBOUNDED
+				),
+				exclude: :TIES
+			)
+		)
+	)
+	assert_equal actual.function, expected.function
+	assert_equal actual.arguments, expected.arguments
+	assert_equal actual.over_clause.frame.type, expected.over_clause.frame.type
+	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
+	assert_equal actual.over_clause.frame.starting_boundary.value, expected.over_clause.frame.starting_boundary.value
+	assert_equal actual.over_clause.frame.exclude, expected.over_clause.frame.exclude
+end
+
+# test "Subquery in expression" do
+# 	parser = Plume::Parser.new("c0 = (SELECT MAX(c1) FROM t1)")
 # 	actual = parser.expression
-# 	expected = Plume::CollationExpression.new(
-# 		expression: "foo",
-# 		sequence: :NOCASE,
-# 	)
-# 	assert_equal "foo", expected.expression
-# 	assert_equal :NOCASE, expected.sequence
+# 	assert_equal expr, {:EQ=>["c0", {:SELECT=>{:columns=>[{:MAX=>["c1"]}], :from=>"t1"}}]}
 # end
 
-# test "RAISE expression with IGNORE" do
-# 	parser = Plume::Parser.new("RAISE (IGNORE)")
+# test "Complex nested expression" do
+# 	parser = Plume::Parser.new("(c0 + 5) * 2 > (SELECT AVG(c1) FROM t1) OR c2 IS NOT NULL")
 # 	actual = parser.expression
-# 	expected = Plume::RaiseExpression.new(
-# 		type: :IGNORE
-# 	)
-# 	assert_equal :IGNORE, actual.type
+# 	assert_equal expr, {:OR=>[{:GT=>[{:MULTIPLY=>[{:PLUS=>["c0", 5]}, 2]}, {:SELECT=>{:columns=>[{:AVG=>["c1"]}], :from=>"t1"}}]}, {:IS_NOT=>["c2", nil]}]}
 # end
 
-# test "RAISE expression with ROLLBACK" do
-# 	parser = Plume::Parser.new("RAISE (ROLLBACK, 'error message')")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::RaiseExpression.new(
-# 		type: :ROLLBACK,
-# 		message: "error message"
-# 	)
-# end
+test "Bitwise operations" do
+	parser = Plume::Parser.new("c0 & 3 | 4")
+	actual = parser.expression
+	expected = Plume::BinaryExpression.new(
+		operator: :BIT_OR,
+		left: Plume::BinaryExpression.new(
+			operator: :BIT_AND,
+			left: Plume::ColumnName.new(column: "c0"),
+			right: Plume::LiteralExpression.new(value: 3),
+		),
+		right: Plume::LiteralExpression.new(value: 4),
+	)
+	assert_equal actual.operator, expected.operator
+	assert_equal actual.left.operator, expected.left.operator
+	assert_equal actual.left.left.column, expected.left.left.column
+	assert_equal actual.left.right.value, expected.left.right.value
+	assert_equal actual.right.value, expected.right.value
+end
 
-# test "RAISE expression with ABORT" do
-# 	parser = Plume::Parser.new("RAISE (ABORT, 'error message')")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::RaiseExpression.new(
-# 		type: :ABORT,
-# 		message: "error message"
-# 	)
-# end
 
-# test "RAISE expression with FAIL" do
-# 	parser = Plume::Parser.new("RAISE (FAIL, 'error message')")
-# 	expr = parser.expression
-# 	assert_equal expr, Plume::RaiseExpression.new(
-# 		type: :FAIL,
-# 		message: "error message"
-# 	)
-# end
+# Expressions
+
+test "COLLATE expression" do
+	parser = Plume::Parser.new("'foo' COLLATE NOCASE")
+	actual = parser.expression
+	expected = Plume::CollationExpression.new(
+		expression: Plume::LiteralExpression.new(value: "foo"),
+		sequence: :NOCASE,
+	)
+	assert_equal actual.expression.value, expected.expression.value
+	assert_equal actual.sequence, expected.sequence
+end
+
+test "RAISE expression with IGNORE" do
+	parser = Plume::Parser.new("RAISE (IGNORE)")
+	actual = parser.expression
+	expected = Plume::RaiseExpression.new(
+		type: :IGNORE
+	)
+	assert_equal actual.type, expected.type
+end
+
+test "RAISE expression with ROLLBACK" do
+	parser = Plume::Parser.new("RAISE (ROLLBACK, 'error message')")
+	actual = parser.expression
+	expected = Plume::RaiseExpression.new(
+		type: :ROLLBACK,
+		error_message: Plume::LiteralExpression.new(
+			value: "error message"
+		),
+	)
+	assert_equal actual.type, expected.type
+	assert_equal actual.error_message.value, expected.error_message.value
+end
+
+test "RAISE expression with ABORT" do
+	parser = Plume::Parser.new("RAISE (ABORT, 'error message')")
+	actual = parser.expression
+	expected = Plume::RaiseExpression.new(
+		type: :ABORT,
+		error_message: Plume::LiteralExpression.new(
+			value: "error message"
+		),
+	)
+	assert_equal actual.type, expected.type
+	assert_equal actual.error_message.value, expected.error_message.value
+end
+
+test "RAISE expression with FAIL" do
+	parser = Plume::Parser.new("RAISE (FAIL, 'error message')")
+	actual = parser.expression
+	expected = Plume::RaiseExpression.new(
+		type: :FAIL,
+		error_message: Plume::LiteralExpression.new(
+			value: "error message"
+		),
+	)
+	assert_equal actual.type, expected.type
+	assert_equal actual.error_message.value, expected.error_message.value
+end

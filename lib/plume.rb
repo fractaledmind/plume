@@ -28,7 +28,6 @@ module Plume
 	autoload :CreateTableStatement, "plume/ast/create_table_statement"
 	autoload :CrossJoinOperator, "plume/ast/cross_join_operator"
 	autoload :DefaultColumnConstraint, "plume/ast/default_column_constraint"
-	autoload :Direction, "plume/ast/direction"
 	autoload :EmptyFunctionArgument, "plume/ast/empty_function_argument"
 	autoload :ExceptCompoundOperator, "plume/ast/except_compound_operator"
 	autoload :Expression, "plume/ast/expression"

@@ -643,26 +643,28 @@ module Plume
 						end
 					elsif (ref = maybe { identifier })
 						if maybe :DOT
-							schema_name = ref
 							name = identifier
 
-							if maybe :LP
+							if (arguments_lp = maybe :LP)
 								function_name = name
 								arguments = maybe_some(trailing_sep: :COMMA) { expression(next_precedence) }
-								require :RP
+								arguments_rp = require :RP
 
-								collection = FunctionReference.concrete(
+								right = FunctionReference.concrete(
 									full_source: @lexer.sql,
-									schema_name:,
-									function_name:,
-									arguments: FunctionArguments.new(
+									schema_tk: Token::Identifier(ref),
+									function_tk: Token::Identifier(name),
+									arguments_lp: Token::Punctuation(arguments_lp),
+									arguments: FunctionArguments.concrete(
+										full_source: @lexer.sql,
 										expressions: arguments
 									),
+									arguments_rp: Token::Punctuation(arguments_rp),
 								)
 							else
 								right = TableName.concrete(
 									full_source: @lexer.sql,
-									schema_tk: Token::Identifier(schema_name),
+									schema_tk: Token::Identifier(ref),
 									table_tk: Token::Identifier(name),
 								)
 							end
@@ -766,13 +768,15 @@ module Plume
 						**left_attr,
 						**right_attr,
 					)
-				elsif maybe :COLLATE
+				elsif (collate_kw = maybe :COLLATE)
 					expression_attr = Node === left ? { expression: left } : { expression_tk: left }
-					collating_sequence = identifier_or_string()
+					sequence = identifier_or_string()
 
-					left = CollationExpression.new(
+					left = CollationExpression.concrete(
+						full_source: @lexer.sql,
+						collate_kw: Token::Keyword(collate_kw),
 						**expression_attr,
-						sequence_tk: Token::Keyword(collating_sequence),
+						sequence_tk: Token::Keyword(sequence),
 					)
 				else
 					operator_tk = require operator
@@ -1079,45 +1083,86 @@ module Plume
 		end
 
 		def over_clause
-			# Relevant `parse.y` grammar rules:
 			#
-			# Syntax diagram:
-			#   ◯─▶{ OVER }┬─▶{ window-name }───────────────────────────────┬─▶◯
-			#              └─▶{ ( }┬───────────▶────────────┐               │
-			#                      └─▶{ base-window-name }─▶┤               │
-			#                   ┌───────────────◀───────────┘               │
-			#                   ├─▶{ PARTITION }─▶{ BY }┬[ expr ]┐          │
-			#                   │                       └─{ , }◀─┤          │
-			#                   ├────────────◀───────────────────┘          │
-			#                   ├─▶{ ORDER }─▶{ BY }┬[ ordering-term ]┐     │
-			#                   │                   └──────{ , }◀─────┤     │
-			#                   ├─────────────◀───────────────────────┘     │
-			#                   ├─▶[ frame-spec ]┬─▶──────────────────{ ) }─┘
-			#                   └─────────▶──────┘
+				# Relevant `parse.y` grammar rules:
+				#   over_clause ::= OVER LP window RP |
+				#                   OVER nm
+				#   window ::= nm frame_opt |
+				#              frame_opt |
+				#              nm ORDER BY sortlist frame_opt |
+				#              ORDER BY sortlist frame_opt |
+				#              nm PARTITION BY nexprlist orderby_opt frame_opt |
+				#              PARTITION BY nexprlist orderby_opt frame_opt
+				#   frame_opt ::= range_or_rows BETWEEN frame_bound_s AND frame_bound_e frame_exclude_opt |
+				#                 range_or_rows frame_bound_s frame_exclude_opt  |
+				#                 .
+				#   range_or_rows ::= RANGE | ROWS | GROUPS
+				#   frame_bound_s ::= frame_bound |
+				#                     UNBOUNDED PRECEDING
+				#   frame_bound_e ::= frame_bound |
+				#                     UNBOUNDED FOLLOWING
+				#   frame_exclude_opt ::= . |
+				#                         EXCLUDE frame_exclude
+				#   frame_bound ::= CURRENT ROW |
+				#                   expr PRECEDING | FOLLOWING
+				#   frame_exclude ::= NO OTHERS | CURRENT ROW | GROUP | TIES
+				#   filter_clause ::= FILTER LP WHERE expr RP
+				#
+				# Syntax diagram:
+				#   ◯─▶{ OVER }┬─▶{ window-name }───────────────────────────────┬─▶◯
+				#              └─▶{ ( }┬───────────▶────────────┐               │
+				#                      └─▶{ base-window-name }─▶┤               │
+				#                   ┌───────────────◀───────────┘               │
+				#                   ├─▶{ PARTITION }─▶{ BY }┬[ expr ]┐          │
+				#                   │                       └─{ , }◀─┤          │
+				#                   ├────────────◀───────────────────┘          │
+				#                   ├─▶{ ORDER }─▶{ BY }┬[ ordering-term ]┐     │
+				#                   │                   └──────{ , }◀─────┤     │
+				#                   ├─────────────◀───────────────────────┘     │
+				#                   ├─▶[ frame-spec ]┬─▶──────────────────{ ) }─┘
+				#                   └─────────▶──────┘
+				#
+				# Simplified grammar:
+				#
+				# Relevant SQLite documentation:
+				#   -
+				#
+				# [description]
 			#
-			# Simplified grammar:
-			#
-			# Relevant SQLite documentation:
-			#   -
-			#
-			# [description]
-			#
-			require :OVER
-			if maybe :LP
-				base_window_name = maybe { identifier(except: [:PARTITION, :ORDER, :RANGE, :ROWS, :GROUPS]) }
-				partition_by = maybe_all_of(:PARTITION, :BY) ? require_some(trailing_sep: :COMMA) { expression } : nil
-				order_by = maybe_all_of(:ORDER, :BY) ? require_some(trailing_sep: :COMMA) { ordering_term } : nil
-				frame = frame_spec if current_token in :RANGE | :ROWS | :GROUPS
-				require :RP
+			over_kw = require :OVER
+			if (window_lp = maybe :LP)
+				base_window_name_tk = maybe { identifier(except: [:PARTITION, :ORDER, :RANGE, :ROWS, :GROUPS]) }
+				if (partition_by_kw = maybe_all_of(:PARTITION, :BY))
+					partitions = require_some(trailing_sep: :COMMA) { expression }
+				end
+				if (order_by_kw = maybe_all_of(:ORDER, :BY))
+					orderings = require_some(trailing_sep: :COMMA) { ordering_term }
+				end
+				if current_token in :RANGE | :ROWS | :GROUPS
+					frame = frame_spec
+				end
+				window_rp = require :RP
 
-				OverClause.new(
-					base_window_name:,
-					partition_by:,
-					order_by:,
-					frame:,
+				OverClause.concrete(
+					full_source: @lexer.sql,
+					over_kw: Token::Keyword(over_kw),
+					window_lp: Token::Punctuation(window_lp),
+					base_window_name_tk: Token::Identifier(base_window_name_tk),
+					partition_by_kw: Token::Keyword(partition_by_kw),
+					partitions: partitions,
+					order_by_kw: Token::Keyword(order_by_kw),
+					orderings: orderings,
+					frame: frame,
+					window_rp: Token::Punctuation(window_rp),
 				)
 			else
-				OverClause.new(window_name: identifier)
+				window_name_tk = identifier
+
+				OverClause.concrete(
+					full_source: @lexer.sql,
+					over_kw: Token::Keyword(over_kw),
+					window_name_tk: Token::Identifier(window_name_tk),
+				)
 			end
 		end
 
@@ -1312,16 +1357,21 @@ module Plume
 					**value_attr,
 					value_rp: Token::Punctuation(value_rp),
 				)
-			elsif maybe :CAST
-				require :LP
+			elsif (cast_kw = maybe :CAST)
+				expression_lp = require :LP
 				e = expression
-				require :AS
+				as_kw = require :AS
 				t = type_name
-				require :RP
+				expression_rp = require :RP
 
-				CastExpression.new(
+				CastExpression.concrete(
+					full_source: @lexer.sql,
+					cast_kw: Token::Keyword(cast_kw),
+					expression_lp: Token::Punctuation(expression_lp),
 					expression: e,
+					as_kw: Token::Keyword(as_kw),
 					as: t,
+					expression_rp: Token::Punctuation(expression_rp),
 				)
 			elsif (case_kw = maybe :CASE)
 				if current_token == :WHEN
@@ -1392,16 +1442,18 @@ module Plume
 						column_tk: Token::Identifier(id),
 					)
 				in :LP
-					function_name = id.to_sym.upcase
-					require :LP
+					arguments_lp = require :LP
 					arguments = function_arguments
-					require :RP
+					arguments_rp = require :RP
 					filter = maybe { filter_clause }
 					over = maybe { over_clause }
 
-					FunctionReference.new(
-						function_name:,
-						arguments:,
+					FunctionReference.concrete(
+						full_source: @lexer.sql,
+						function_tk: Token::Identifier(id),
+						arguments_lp: Token::Punctuation(arguments_lp),
+						arguments: arguments,
+						arguments_rp: Token::Punctuation(arguments_rp),
 						filter_clause: filter,
 						over_clause: over,
 					)
@@ -1476,20 +1528,47 @@ module Plume
 					raise_rp: Token::Punctuation(raise_rp),
 				)
 			elsif (rollback_kw = maybe :ROLLBACK)
-				require :COMMA
-				error_message = identifier
-				require_rp = require :RP
-				RaiseExpression.new(type: :ROLLBACK, message: error_message)
+				comma_tk = require :COMMA
+				error_message = expression
+				error_message.leading = Token::Punctuation(comma_tk)
+				raise_rp = require :RP
+
+				RaiseExpression.concrete(
+					full_source: @lexer.sql,
+					raise_kw: Token::Keyword(raise_kw),
+					raise_lp: Token::Punctuation(raise_lp),
+					type_kw: Token::Keyword(rollback_kw),
+					raise_rp: Token::Punctuation(raise_rp),
+					error_message: error_message,
+				)
 			elsif (abort_kw = maybe :ABORT)
-				require :COMMA
-				error_message = identifier
-				require_rp = require :RP
-				RaiseExpression.new(type: :ABORT, message: error_message)
+				comma_tk = require :COMMA
+				error_message = expression
+				error_message.leading = Token::Punctuation(comma_tk)
+				raise_rp = require :RP
+
+				RaiseExpression.concrete(
+					full_source: @lexer.sql,
+					raise_kw: Token::Keyword(raise_kw),
+					raise_lp: Token::Punctuation(raise_lp),
+					type_kw: Token::Keyword(abort_kw),
+					raise_rp: Token::Punctuation(raise_rp),
+					error_message: error_message,
+				)
 			elsif (fail_kw = maybe :FAIL)
-				require :COMMA
-				error_message = identifier
-				require_rp = require :RP
-				RaiseExpression.new(type: :FAIL, message: error_message)
+				comma_tk = require :COMMA
+				error_message = expression
+				error_message.leading = Token::Punctuation(comma_tk)
+				raise_rp = require :RP
+
+				RaiseExpression.concrete(
+					full_source: @lexer.sql,
+					raise_kw: Token::Keyword(raise_kw),
+					raise_lp: Token::Punctuation(raise_lp),
+					type_kw: Token::Keyword(fail_kw),
+					raise_rp: Token::Punctuation(raise_rp),
+					error_message: error_message,
+				)
 			else
 				expected!(:IGNORE, :ROLLBACK, :ABORT, :FAIL)
 			end
@@ -1538,7 +1617,7 @@ module Plume
 			elsif maybe :STAR
 				StarFunctionArgument.new
 			elsif (e = maybe { expression })
-				expressions = require_some(given: e) { expression }
+				expressions = require_some(given: e, trailing_sep: :COMMA) { expression }
 				order_by = maybe_all_of(:ORDER, :BY) ? require_some(trailing_sep: :COMMA) { ordering_term } : nil
 
 				FunctionArguments.new(
@@ -1579,30 +1658,35 @@ module Plume
 			#
 			if current_token in :RANGE | :ROWS | :GROUPS
 				type = current_token
-				require current_token
-				if maybe :BETWEEN
-					if maybe_all_of :UNBOUNDED, :PRECEDING
+				type_tk = require current_token
+				if (between_kw = maybe :BETWEEN)
+					if (unbounded_kw = maybe :UNBOUNDED)
 						precedence = 1
-						starting_boundary = FrameBoundary.new(
-							type: :PRECEDING,
-							value: :UNBOUNDED
+						preceding_kw = maybe :PRECEDING
+						starting_boundary = FrameBoundary.concrete(
+							full_source: @lexer.sql,
+							type_tk: Token::Keyword(preceding_kw),
+							value_tk: Token::Keyword(unbounded_kw),
 						)
-					elsif maybe_all_of :CURRENT, :ROW
+					elsif (current_row_kw = maybe_all_of :CURRENT, :ROW)
 						precedence = 3
-						starting_boundary = FrameBoundary.new(
-							type: :CURRENT_ROW
+						starting_boundary = FrameBoundary.concrete(
+							full_source: @lexer.sql,
+							type_tk: Token::Keyword(current_row_kw),
 						)
 					elsif (e = maybe { expression })
-						if maybe :PRECEDING
+						if (preceding_kw = maybe :PRECEDING)
 							precedence = 2
-							starting_boundary = FrameBoundary.new(
-								type: :PRECEDING,
+							starting_boundary = FrameBoundary.concrete(
+								full_source: @lexer.sql,
+								type_tk: Token::Keyword(preceding_kw),
 								value: e
 							)
-						elsif maybe :FOLLOWING
+						elsif (following_kw = maybe :FOLLOWING)
 							precedence = 4
-							starting_boundary = FrameBoundary.new(
-								type: :FOLLOWING,
+							starting_boundary = FrameBoundary.concrete(
+								full_source: @lexer.sql,
+								type_tk: Token::Keyword(following_kw),
 								value: e
 							)
 						else
@@ -1611,28 +1695,33 @@ module Plume
 					else
 						expected!("UNBOUNDED PRECEDING", "CURRENT ROW", "expr")
 					end
-					require :AND
-					if maybe_all_of :CURRENT, :ROW
+					and_kw = require :AND
+					if (current_row_kw = maybe_all_of :CURRENT, :ROW)
 						expected!("UNBOUNDED FOLLOWING", "expr") if 3 < precedence
-						ending_boundary = FrameBoundary.new(
-							type: :CURRENT_ROW,
+						ending_boundary = FrameBoundary.concrete(
+							full_source: @lexer.sql,
+							type_tk: Token::Keyword(current_row_kw),
 						)
-					elsif maybe_all_of :UNBOUNDED, :FOLLOWING
-						ending_boundary = FrameBoundary.new(
-							type: :FOLLOWING,
-							value: :UNBOUNDED
+					elsif (unbounded_kw = maybe :UNBOUNDED)
+						following_kw = maybe :FOLLOWING
+						ending_boundary = FrameBoundary.concrete(
+							full_source: @lexer.sql,
+							type_tk: Token::Keyword(following_kw),
+							value_tk: Token::Keyword(unbounded_kw),
 						)
 					elsif (e = maybe { expression })
-						if maybe :PRECEDING
+						if (preceding_kw = maybe :PRECEDING)
 							expected!("CURRENT ROW", "UNBOUNDED FOLLOWING", "expr") if 2 < precedence
-							ending_boundary = FrameBoundary.new(
-								type: :PRECEDING,
+							ending_boundary = FrameBoundary.concrete(
+								full_source: @lexer.sql,
+								type_tk: Token::Keyword(preceding_kw),
 								value: e
 							)
-						elsif maybe :FOLLOWING
+						elsif (following_kw = maybe :FOLLOWING)
 							expected!("UNBOUNDED FOLLOWING") if 4 < precedence
-							ending_boundary = FrameBoundary.new(
-								type: :FOLLOWING,
+							ending_boundary = FrameBoundary.concrete(
+								full_source: @lexer.sql,
+								type_tk: Token::Keyword(following_kw),
 								value: e
 							)
 						else
@@ -1641,47 +1730,45 @@ module Plume
 					else
 						expected!("CURRENT ROW", "UNBOUNDED FOLLOWING", "expr")
 					end
-				elsif maybe_all_of :UNBOUNDED, :PRECEDING
-					starting_boundary = FrameBoundary.new(
-						type: :PRECEDING,
-						value: :UNBOUNDED
+				elsif (unbounded_kw = maybe :UNBOUNDED)
+					preceding_kw = maybe :PRECEDING
+					starting_boundary = FrameBoundary.concrete(
+						full_source: @lexer.sql,
+						type_tk: Token::Keyword(preceding_kw),
+						value_tk: Token::Keyword(unbounded_kw),
 					)
 					ending_boundary = nil
-				elsif maybe_all_of :CURRENT, :ROW
-					starting_boundary = FrameBoundary.new(
-						type: :CURRENT_ROW
+				elsif (current_row_kw = maybe_all_of :CURRENT, :ROW)
+					starting_boundary = FrameBoundary.concrete(
+						full_source: @lexer.sql,
+						type_tk: Token::Keyword(current_row_kw),
 					)
 					ending_boundary = nil
 				elsif (e = maybe { expression })
-					require :PRECEDING
-					starting_boundary = FrameBoundary.new(
-						type: :PRECEDING,
+					preceding_kw = require :PRECEDING
+					starting_boundary = FrameBoundary.concrete(
+						full_source: @lexer.sql,
+						type_tk: Token::Keyword(preceding_kw),
 						value: e
 					)
 					ending_boundary = nil
 				else
 					expected!(:BETWEEN, :UNBOUNDED, :CURRENT, "expr")
 				end
-				exclude = nil
-				if maybe :EXCLUDE
-					if maybe :GROUP
-						exclude = :GROUP
-					elsif maybe :TIES
-						exclude = :TIES
-					elsif maybe_all_of :NO, :OTHERS
-						exclude = :NO_OTHERS
-					elsif maybe_all_of :CURRENT, :ROW
-						exclude = :CURRENT_ROW
-					else
-						expected!(:GROUP, :TIES, "NO OTHERS", "CURRENT ROW")
-					end
+
+				if (exclude_kw = maybe :EXCLUDE)
+					exclude_tk = require_one_of(:GROUP, :TIES, [:NO, :OTHERS].freeze, [:CURRENT, :ROW].freeze)
 				end
 
-				FrameSpec.new(
-					type:,
-					starting_boundary:,
-					ending_boundary:,
-					exclude:,
+				FrameSpec.concrete(
+					full_source: @lexer.sql,
+					type_tk: Token::Keyword(type_tk),
+					between_kw: Token::Keyword(between_kw),
+					and_kw: Token::Keyword(and_kw),
+					starting_boundary: starting_boundary,
+					ending_boundary: ending_boundary,
+					exclude_kw: Token::Keyword(exclude_kw),
+					exclude_tk: Token::Keyword(exclude_tk),
 				)
 			else
 				expected!(:RANGE, :ROWS, :GROUPS)
@@ -1936,36 +2023,48 @@ module Plume
 		end
 
 		def ordering_term
-			# Relevant `parse.y` grammar rules:
 			#
-			# Syntax diagram:
-			#   ◯─▶[ expr ]┬───────────────▶────────────────┬▶┬──────▶─────┬▶┬──────────▶─────────────┬─▶◯
-			#              └▶{ COLLATE }─▶{ collation-name }┘ ├▶{ ASC }──▶─┤ ├▶{ NULLS }─▶{ FIRST }─▶─┤
-			#                                                 └▶{ DESC }─▶─┘ └▶{ NULLS }─▶{ LAST }──▶─┘
-			#
-			# Simplified grammar:
-			#
-			# Relevant SQLite documentation:
-			#   -
-			#
-			# [description]
+				# Relevant `parse.y` grammar rules:
+				#   sortlist ::= sortlist COMMA expr sortorder nulls |
+				#                expr sortorder nulls
+				#   sortorder ::= ASC | DESC | .
+				#   nulls ::= NULLS FIRST | NULLS LAST | .
+				#   eidlist ::= eidlist COMMA nm collate sortorder |
+				#               nm collate sortorder
+				#   collate ::= . |
+				#               COLLATE ids.
+				#
+				# Syntax diagram:
+				#   ◯─▶[ expr ]┬───────────────▶────────────────┬▶┬──────▶─────┬▶┬──────────▶─────────────┬─▶◯
+				#              └▶{ COLLATE }─▶{ collation-name }┘ ├▶{ ASC }──▶─┤ ├▶{ NULLS }─▶{ FIRST }─▶─┤
+				#                                                 └▶{ DESC }─▶─┘ └▶{ NULLS }─▶{ LAST }──▶─┘
+				#
+				# Simplified grammar:
+				#
+				# Relevant SQLite documentation:
+				#   -
+				#
+				# [description]
 			#
 			e = expression
-			collation = maybe(:COLLATE) ? identifier : nil
-			if current_token in :ASC | :DESC
-				direction = current_token
-				require current_token
+			if (collate_kw = maybe(:COLLATE))
+				collation = identifier
 			end
-			if maybe(:NULLS)
-				nulls = current_token
-				require current_token
+			if current_token in :ASC | :DESC
+				direction = require current_token
+			end
+			if (nulls_kw = maybe(:NULLS))
+				nulls = require current_token
 			end
 
-			OrderingTerm.new(
+			OrderingTerm.concrete(
+				full_source: @lexer.sql,
 				expression: e,
-				collation: collation,
-				direction: direction,
-				nulls: nulls
+				collate_kw: Token::Keyword(collate_kw),
+				collation_tk: Token::Identifier(collation),
+				direction_tk: Token::Keyword(direction),
+				nulls_kw: Token::Keyword(nulls_kw),
+				nulls_tk: Token::Keyword(nulls),
 			)
 		end
 
