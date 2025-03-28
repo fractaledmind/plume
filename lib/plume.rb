@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "plume/version"
-require 'set'
+require "set"
 require "literal"
 
 module Plume
@@ -10,6 +10,7 @@ module Plume
 	autoload :Lexer, "plume/lexer"
 	autoload :Parser, "plume/parser"
 	autoload :Token, "plume/ast/token"
+	autoload :SQLiteGrammar, "plume/sqlite_grammar"
 
 	autoload :BinaryExpression, "plume/ast/binary_expression"
 	autoload :ParentheticalExpression, "plume/ast/parenthetical_expression"
