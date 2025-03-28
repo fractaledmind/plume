@@ -23,19 +23,33 @@ module Plume
 			end
 		end
 
-		alias_method :full_inspect, :inspect
-		def inspect
-			inspectable_props = self.class.all_inspectable_props
-			return super if inspectable_props.nil? || inspectable_props.empty?
-
-			prop_values = inspectable_props.map do |prop|
+		def inspectable_props
+			all_inspectable_props = self.class.all_inspectable_props
+			all_inspectable_props.map do |prop|
 				val = __send__(prop)
 				next if val.nil? || (val.respond_to?(:empty?) && val.empty?)
 
-				"#{prop}=#{val.inspect}"
+				[prop, val]
 			end.tap(&:compact!)
+		end
+
+		alias_method :full_inspect, :inspect
+		def inspect
+			return super if inspectable_props.nil? || inspectable_props.empty?
+
+			prop_values = inspectable_props.map do |prop, val|
+				"#{prop}=#{val.inspect}"
+			end
 
 			"#<#{self.class.name}:#{object_id} #{prop_values&.join(", ")}>"
+		end
+
+		def pretty_please(pp)
+			pp.push "#{self.class.name}("
+			pp.map(inspectable_props) do |prop, val|
+				"#{prop} = #{pp.capture { pp.prettify(val) }}"
+			end
+			pp.push ")"
 		end
 
 		def self.concrete(*a, full_source:, **kw)
