@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-test "error when parsing a create table with no columns" do
+test "create table tb0 ()" do
 	error = assert_raises(Plume::SyntaxError) do
 		parse_stmt(<<~SQL)
 			create table tb0 ()
@@ -15,7 +15,7 @@ test "error when parsing a create table with no columns" do
 	]
 end
 
-test "parse a basic create table with one column" do
+test "create table tb0 (c0)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0)
 	SQL
@@ -24,7 +24,7 @@ test "parse a basic create table with one column" do
 	assert_equal node.columns[0].name, "c0"
 end
 
-test "parse a basic create table with schema and one column" do
+test "create table schema0.tb0 (c0)" do
 	node = parse_stmt(<<~SQL)
 		create table schema0.tb0 (c0)
 	SQL
@@ -34,7 +34,7 @@ test "parse a basic create table with schema and one column" do
 	assert_equal node.columns[0].name, "c0"
 end
 
-test "parse a basic create table with one column and double-quoted identifiers" do
+test 'create table "tb0" ("c0")' do
 	node = parse_stmt(<<~SQL)
 		create table "tb0" ("c0")
 	SQL
@@ -43,7 +43,7 @@ test "parse a basic create table with one column and double-quoted identifiers" 
 	assert_equal node.columns[0].name, "c0"
 end
 
-test "parse a basic create table with one column and single-quoted identifiers" do
+test "create table 'tb0' ('c0')" do
 	node = parse_stmt(<<~SQL)
 		create table 'tb0' ('c0')
 	SQL
@@ -52,7 +52,7 @@ test "parse a basic create table with one column and single-quoted identifiers" 
 	assert_equal node.columns[0].name, "c0"
 end
 
-test "parse a basic create table with one column and tick-quoted identifiers" do
+test "create table `tb0` (`c0`)" do
 	node = parse_stmt(<<~SQL)
 		create table `tb0` (`c0`)
 	SQL
@@ -61,7 +61,7 @@ test "parse a basic create table with one column and tick-quoted identifiers" do
 	assert_equal node.columns[0].name, "c0"
 end
 
-test "parse a basic create table with one column and bracket-quoted identifiers" do
+test "create table [tb0] ([c0])" do
 	node = parse_stmt(<<~SQL)
 		create table [tb0] ([c0])
 	SQL
@@ -70,7 +70,7 @@ test "parse a basic create table with one column and bracket-quoted identifiers"
 	assert_equal node.columns[0].name, "c0"
 end
 
-test "parse a basic create temp table with one column" do
+test "create temp table tb0 (c0)" do
 	node = parse_stmt(<<~SQL)
 		create temp table tb0 (c0)
 	SQL
@@ -80,7 +80,7 @@ test "parse a basic create temp table with one column" do
 	assert_equal node.temporary, true
 end
 
-test "parse a basic temporary create table with one column" do
+test "create temporary table tb0 (c0)" do
 	node = parse_stmt(<<~SQL)
 		create temporary table tb0 (c0)
 	SQL
@@ -90,7 +90,7 @@ test "parse a basic temporary create table with one column" do
 	assert_equal node.temporary, true
 end
 
-test "parse a basic create table if not exists with one column" do
+test "create table if not exists tb0 (c0)" do
 	node = parse_stmt(<<~SQL)
 		create table if not exists tb0 (c0)
 	SQL
@@ -100,7 +100,7 @@ test "parse a basic create table if not exists with one column" do
 	assert_equal node.if_not_exists, true
 end
 
-test "parse a basic create temp table if not exists with one column" do
+test "create temp table if not exists tb0 (c0)" do
 	node = parse_stmt(<<~SQL)
 		create temp table if not exists tb0 (c0)
 	SQL
@@ -113,7 +113,7 @@ end
 
 # column types
 
-test "parse a basic create table with one column with a int type" do
+test "create table tb0 (c0 int)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 int)
 	SQL
@@ -124,7 +124,7 @@ test "parse a basic create table with one column with a int type" do
 	assert_equal node.columns[0].type.affinity, :INTEGER
 end
 
-test "parse a basic create table with one column with a char type" do
+test "create table tb0 (c0 char)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 char)
 	SQL
@@ -135,7 +135,7 @@ test "parse a basic create table with one column with a char type" do
 	assert_equal node.columns[0].type.affinity, :TEXT
 end
 
-test "parse a basic create table with one column with a blob type" do
+test "create table tb0 (c0 blob)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 blob)
 	SQL
@@ -146,7 +146,7 @@ test "parse a basic create table with one column with a blob type" do
 	assert_equal node.columns[0].type.affinity, :BLOB
 end
 
-test "parse a basic create table with one column with a real type" do
+test "create table tb0 (c0 real)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 real)
 	SQL
@@ -157,7 +157,7 @@ test "parse a basic create table with one column with a real type" do
 	assert_equal node.columns[0].type.affinity, :REAL
 end
 
-test "parse a basic create table with one column with a any type" do
+test "create table tb0 (c0 any)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 any)
 	SQL
@@ -168,7 +168,7 @@ test "parse a basic create table with one column with a any type" do
 	assert_equal node.columns[0].type.affinity, :ANY
 end
 
-test "parse a basic create table with one column with a constrained type" do
+test "create table tb0 (c0 decimal(4, 6))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 decimal(4, 6))
 	SQL
@@ -181,7 +181,7 @@ end
 
 # column constraints
 
-test "parse basic create table with one column and a primary key constraint" do
+test "create table tb0 (c0 primary key)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 primary key)
 	SQL
@@ -191,7 +191,7 @@ test "parse basic create table with one column and a primary key constraint" do
 	assert_operator Plume::PrimaryKeyColumnConstraint, :===, node.columns[0].constraints[0]
 end
 
-test "parse basic create table with one column and a named primary key constraint" do
+test "create table tb0 (c0 constraint 'name' primary key)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' primary key)
 	SQL
@@ -202,7 +202,7 @@ test "parse basic create table with one column and a named primary key constrain
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
-test "parse basic create table with one column and a primary key constraint with options" do
+test "create table tb0 (c0 primary key desc on conflict abort autoincrement)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 primary key desc on conflict abort autoincrement)
 	SQL
@@ -215,7 +215,7 @@ test "parse basic create table with one column and a primary key constraint with
 	assert_equal node.columns[0].constraints[0].autoincrement, true
 end
 
-test "parse basic create table with one column and a named primary key constraint with options" do
+test "create table tb0 (c0 constraint 'name' primary key desc on conflict abort autoincrement)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' primary key desc on conflict abort autoincrement)
 	SQL
@@ -229,7 +229,7 @@ test "parse basic create table with one column and a named primary key constrain
 	assert_equal node.columns[0].constraints[0].autoincrement, true
 end
 
-test "parse basic create table with one column and a not null constraint" do
+test "create table tb0 (c0 not null)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 not null)
 	SQL
@@ -239,7 +239,7 @@ test "parse basic create table with one column and a not null constraint" do
 	assert_operator Plume::NotNullColumnConstraint, :===, node.columns[0].constraints[0]
 end
 
-test "parse basic create table with one column and a named not null constraint" do
+test "create table tb0 (c0 constraint 'name' not null)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' not null)
 	SQL
@@ -250,7 +250,7 @@ test "parse basic create table with one column and a named not null constraint" 
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
-test "parse basic create table with one column and a not null constraint with options" do
+test "create table tb0 (c0 not null on conflict abort)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 not null on conflict abort)
 	SQL
@@ -261,7 +261,7 @@ test "parse basic create table with one column and a not null constraint with op
 	assert_equal node.columns[0].constraints[0].conflict_clause.resolution, :ABORT
 end
 
-test "parse basic create table with one column and a named not null constraint with options" do
+test "create table tb0 (c0 constraint 'name' not null on conflict abort)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' not null on conflict abort)
 	SQL
@@ -273,7 +273,7 @@ test "parse basic create table with one column and a named not null constraint w
 	assert_equal node.columns[0].constraints[0].conflict_clause.resolution, :ABORT
 end
 
-test "parse basic create table with one column and a unique constraint" do
+test "create table tb0 (c0 unique)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 unique)
 	SQL
@@ -283,7 +283,7 @@ test "parse basic create table with one column and a unique constraint" do
 	assert_operator Plume::UniqueColumnConstraint, :===, node.columns[0].constraints[0]
 end
 
-test "parse basic create table with one column and a named unique constraint" do
+test "create table tb0 (c0 constraint 'name' unique)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' unique)
 	SQL
@@ -294,7 +294,7 @@ test "parse basic create table with one column and a named unique constraint" do
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
-test "parse basic create table with one column and a unique constraint with options" do
+test "create table tb0 (c0 unique on conflict abort)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 unique on conflict abort)
 	SQL
@@ -305,7 +305,7 @@ test "parse basic create table with one column and a unique constraint with opti
 	assert_equal node.columns[0].constraints[0].conflict_clause.resolution, :ABORT
 end
 
-test "parse basic create table with one column and a named unique constraint with options" do
+test "create table tb0 (c0 constraint 'name' unique on conflict abort)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' unique on conflict abort)
 	SQL
@@ -317,7 +317,7 @@ test "parse basic create table with one column and a named unique constraint wit
 	assert_equal node.columns[0].constraints[0].conflict_clause.resolution, :ABORT
 end
 
-test "parse basic create table with one column and a check constraint" do
+test "create table tb0 (c0 check (c0 > 0))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 check (c0 > 0))
 	SQL
@@ -331,7 +331,7 @@ test "parse basic create table with one column and a check constraint" do
 	assert_equal node.columns[0].constraints[0].expression.right.value, 0
 end
 
-test "parse basic create table with one column and a named check constraint" do
+test "create table tb0 (c0 constraint 'name' check (c0 > 0))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' check (c0 > 0))
 	SQL
@@ -346,7 +346,7 @@ test "parse basic create table with one column and a named check constraint" do
 	assert_equal node.columns[0].constraints[0].expression.right.value, 0
 end
 
-test "parse basic create table with one column and a default signed number" do
+test "create table tb0 (c0 default 123)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 default 123)
 	SQL
@@ -357,7 +357,7 @@ test "parse basic create table with one column and a default signed number" do
 	assert_equal node.columns[0].constraints[0].value, 123
 end
 
-test "parse basic create table with one column and a named default signed number" do
+test "create table tb0 (c0 constraint 'name' default 123)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' default 123)
 	SQL
@@ -369,7 +369,7 @@ test "parse basic create table with one column and a named default signed number
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
-test "parse basic create table with one column and a default literal value" do
+test "create table tb0 (c0 default 'foo')" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 default 'foo')
 	SQL
@@ -380,7 +380,7 @@ test "parse basic create table with one column and a default literal value" do
 	assert_equal node.columns[0].constraints[0].value, "foo"
 end
 
-test "parse basic create table with one column and a named default literal value" do
+test "create table tb0 (c0 constraint 'name' default 'foo')" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' default 'foo')
 	SQL
@@ -392,7 +392,7 @@ test "parse basic create table with one column and a named default literal value
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
-test "parse basic create table with one column and a default expression" do
+test "create table tb0 (c0 default ('a' || 'b'))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 default ('a' || 'b'))
 	SQL
@@ -406,7 +406,7 @@ test "parse basic create table with one column and a default expression" do
 	assert_equal node.columns[0].constraints[0].value.right.value, "b"
 end
 
-test "parse basic create table with one column and a named default expression" do
+test "create table tb0 (c0 constraint 'name' default ('a' || 'b'))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' default ('a' || 'b'))
 	SQL
@@ -421,7 +421,7 @@ test "parse basic create table with one column and a named default expression" d
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
-test "parse basic create table with one column and a collate constraint" do
+test "create table tb0 (c0 collate rtrim)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 collate rtrim)
 	SQL
@@ -432,7 +432,7 @@ test "parse basic create table with one column and a collate constraint" do
 	assert_equal node.columns[0].constraints[0].collation, :RTRIM
 end
 
-test "parse basic create table with one column and a named collate constraint" do
+test "create table tb0 (c0 constraint 'name' collate rtrim)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' collate rtrim)
 	SQL
@@ -444,7 +444,7 @@ test "parse basic create table with one column and a named collate constraint" d
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
-test "parse basic create table with one column and a generated as constraint" do
+test "create table tb0 (c0 generated always as (1 + 2))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 generated always as (1 + 2))
 	SQL
@@ -457,7 +457,7 @@ test "parse basic create table with one column and a generated as constraint" do
 	assert_equal node.columns[0].constraints[0].expression.right.value, 2
 end
 
-test "parse basic create table with one column and a named generated as constraint" do
+test "create table tb0 (c0 constraint 'name' generated always as (1 + 2))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' generated always as (1 + 2))
 	SQL
@@ -471,7 +471,7 @@ test "parse basic create table with one column and a named generated as constrai
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
-test "parse basic create table with one column and an as constraint" do
+test "create table tb0 (c0 as (1 + 2))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 as (1 + 2))
 	SQL
@@ -484,7 +484,7 @@ test "parse basic create table with one column and an as constraint" do
 	assert_equal node.columns[0].constraints[0].expression.right.value, 2
 end
 
-test "parse basic create table with one column and a named as constraint" do
+test "create table tb0 (c0 constraint 'name' as (1 + 2))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' as (1 + 2))
 	SQL
@@ -498,7 +498,7 @@ test "parse basic create table with one column and a named as constraint" do
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
-test "parse basic create table with one column and a stored generated as constraint" do
+test "create table tb0 (c0 generated always as (1 + 2) stored)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 generated always as (1 + 2) stored)
 	SQL
@@ -512,7 +512,7 @@ test "parse basic create table with one column and a stored generated as constra
 	assert_equal node.columns[0].constraints[0].type, :STORED
 end
 
-test "parse basic create table with one column and a stored generated as constraint" do
+test "create table tb0 (c0 constraint 'name' generated always as (1 + 2) stored)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' generated always as (1 + 2) stored)
 	SQL
@@ -527,7 +527,7 @@ test "parse basic create table with one column and a stored generated as constra
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
-test "parse basic create table with one column and a stored as constraint" do
+test "create table tb0 (c0 as (1 + 2) stored)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 as (1 + 2) stored)
 	SQL
@@ -541,7 +541,7 @@ test "parse basic create table with one column and a stored as constraint" do
 	assert_equal node.columns[0].constraints[0].type, :STORED
 end
 
-test "parse basic create table with one column and a named stored as constraint" do
+test "create table tb0 (c0 constraint 'name' as (1 + 2) stored)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' as (1 + 2) stored)
 	SQL
@@ -556,7 +556,7 @@ test "parse basic create table with one column and a named stored as constraint"
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
-test "parse basic create table with one column and a virtual generated as constraint" do
+test "create table tb0 (c0 generated always as (1 + 2) virtual)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 generated always as (1 + 2) virtual)
 	SQL
@@ -570,7 +570,7 @@ test "parse basic create table with one column and a virtual generated as constr
 	assert_equal node.columns[0].constraints[0].type, :VIRTUAL
 end
 
-test "parse basic create table with one column and a named virtual generated as constraint" do
+test "create table tb0 (c0 constraint 'name' generated always as (1 + 2) virtual)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' generated always as (1 + 2) virtual)
 	SQL
@@ -585,7 +585,7 @@ test "parse basic create table with one column and a named virtual generated as 
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
-test "parse basic create table with one column and a virtual as constraint" do
+test "create table tb0 (c0 as (1 + 2) virtual)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 as (1 + 2) virtual)
 	SQL
@@ -599,7 +599,7 @@ test "parse basic create table with one column and a virtual as constraint" do
 	assert_equal node.columns[0].constraints[0].type, :VIRTUAL
 end
 
-test "parse basic create table with one column and a named virtual as constraint" do
+test "create table tb0 (c0 constraint 'name' as (1 + 2) virtual)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' as (1 + 2) virtual)
 	SQL
@@ -614,7 +614,7 @@ test "parse basic create table with one column and a named virtual as constraint
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
-test "parse basic create table with one column and a foreign key constraint" do
+test "create table tb0 (c0 references tb1(c1))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1))
 	SQL
@@ -626,7 +626,7 @@ test "parse basic create table with one column and a foreign key constraint" do
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.columns[0].name, "c1"
 end
 
-test "parse basic create table with one column and a named foreign key constraint" do
+test "create table tb0 (c0 constraint 'name' references tb1(c1))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 constraint 'name' references tb1(c1))
 	SQL
@@ -639,7 +639,7 @@ test "parse basic create table with one column and a named foreign key constrain
 	assert_equal node.columns[0].constraints[0].name, "name"
 end
 
-test "parse basic create table with one column and a foreign key constraint with on delete set null" do
+test "create table tb0 (c0 references tb1(c1) on delete set null)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) on delete set null)
 	SQL
@@ -652,7 +652,7 @@ test "parse basic create table with one column and a foreign key constraint with
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.on_delete, :SET_NULL
 end
 
-test "parse basic create table with one column and a foreign key constraint with on delete set default" do
+test "create table tb0 (c0 references tb1(c1) on delete set default)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) on delete set default)
 	SQL
@@ -665,7 +665,7 @@ test "parse basic create table with one column and a foreign key constraint with
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.on_delete, :SET_DEFAULT
 end
 
-test "parse basic create table with one column and a foreign key constraint with on delete cascade" do
+test "create table tb0 (c0 references tb1(c1) on delete cascade)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) on delete cascade)
 	SQL
@@ -678,7 +678,7 @@ test "parse basic create table with one column and a foreign key constraint with
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.on_delete, :CASCADE
 end
 
-test "parse basic create table with one column and a foreign key constraint with on delete restrict" do
+test "create table tb0 (c0 references tb1(c1) on delete restrict)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) on delete restrict)
 	SQL
@@ -691,7 +691,7 @@ test "parse basic create table with one column and a foreign key constraint with
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.on_delete, :RESTRICT
 end
 
-test "parse basic create table with one column and a foreign key constraint with on delete no action" do
+test "create table tb0 (c0 references tb1(c1) on delete no action)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) on delete no action)
 	SQL
@@ -704,7 +704,7 @@ test "parse basic create table with one column and a foreign key constraint with
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.on_delete, :NO_ACTION
 end
 
-test "parse basic create table with one column and a foreign key constraint with on update set null" do
+test "create table tb0 (c0 references tb1(c1) on update set null)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) on update set null)
 	SQL
@@ -717,7 +717,7 @@ test "parse basic create table with one column and a foreign key constraint with
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.on_update, :SET_NULL
 end
 
-test "parse basic create table with one column and a foreign key constraint with on update set default" do
+test "create table tb0 (c0 references tb1(c1) on update set default)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) on update set default)
 	SQL
@@ -730,7 +730,7 @@ test "parse basic create table with one column and a foreign key constraint with
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.on_update, :SET_DEFAULT
 end
 
-test "parse basic create table with one column and a foreign key constraint with on update cascade" do
+test "create table tb0 (c0 references tb1(c1) on update cascade)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) on update cascade)
 	SQL
@@ -743,7 +743,7 @@ test "parse basic create table with one column and a foreign key constraint with
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.on_update, :CASCADE
 end
 
-test "parse basic create table with one column and a foreign key constraint with on update restrict" do
+test "create table tb0 (c0 references tb1(c1) on update restrict)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) on update restrict)
 	SQL
@@ -756,7 +756,7 @@ test "parse basic create table with one column and a foreign key constraint with
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.on_update, :RESTRICT
 end
 
-test "parse basic create table with one column and a foreign key constraint with on update no action" do
+test "create table tb0 (c0 references tb1(c1) on update no action)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) on update no action)
 	SQL
@@ -769,7 +769,7 @@ test "parse basic create table with one column and a foreign key constraint with
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.on_update, :NO_ACTION
 end
 
-test "parse basic create table with one column and a foreign key constraint with on update no action and on delete no action" do
+test "create table tb0 (c0 references tb1(c1) on update no action on delete no action)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) on update no action on delete no action)
 	SQL
@@ -783,7 +783,7 @@ test "parse basic create table with one column and a foreign key constraint with
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.on_delete, :NO_ACTION
 end
 
-test "parse basic create table with one column and a foreign key constraint with match" do
+test "create table tb0 (c0 references tb1(c1) match full)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) match full)
 	SQL
@@ -796,7 +796,7 @@ test "parse basic create table with one column and a foreign key constraint with
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.match_type, :FULL
 end
 
-test "parse basic create table with one column and a deferred foreign key constraint" do
+test "create table tb0 (c0 references tb1(c1) deferrable initially deferred)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) deferrable initially deferred)
 	SQL
@@ -809,7 +809,7 @@ test "parse basic create table with one column and a deferred foreign key constr
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.deferred, true
 end
 
-test "parse basic create table with one column and an immediate foreign key constraint" do
+test "create table tb0 (c0 references tb1(c1) deferrable)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) deferrable)
 	SQL
@@ -822,7 +822,7 @@ test "parse basic create table with one column and an immediate foreign key cons
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.deferred, false
 end
 
-test "parse basic create table with one column and an immediate foreign key constraint" do
+test "create table tb0 (c0 references tb1(c1) not deferrable)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) not deferrable)
 	SQL
@@ -835,7 +835,7 @@ test "parse basic create table with one column and an immediate foreign key cons
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.deferred, false
 end
 
-test "parse basic create table with one column and an immediate foreign key constraint" do
+test "create table tb0 (c0 references tb1(c1) deferrable initially immediate)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) deferrable initially immediate)
 	SQL
@@ -848,7 +848,7 @@ test "parse basic create table with one column and an immediate foreign key cons
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.deferred, false
 end
 
-test "parse basic create table with one column and an immediate foreign key constraint" do
+test "create table tb0 (c0 references tb1(c1) not deferrable initially deferred)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) not deferrable initially deferred)
 	SQL
@@ -861,7 +861,7 @@ test "parse basic create table with one column and an immediate foreign key cons
 	assert_equal node.columns[0].constraints[0].foreign_key_clause.deferred, false
 end
 
-test "parse basic create table with one column and an immediate foreign key constraint" do
+test "create table tb0 (c0 references tb1(c1) not deferrable initially immediate)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0 references tb1(c1) not deferrable initially immediate)
 	SQL
@@ -876,7 +876,7 @@ end
 
 # table options
 
-test "parse a basic create table with STRICT table option" do
+test "create table tb0 (c0) STRICT" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0) STRICT
 	SQL
@@ -887,7 +887,7 @@ test "parse a basic create table with STRICT table option" do
 	assert_operator Plume::StrictTableOption, :===, node.options[0]
 end
 
-test "parse a basic create table with WITHOUT ROWID table option" do
+test "create table tb0 (c0) WITHOUT ROWID" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0) WITHOUT ROWID
 	SQL
@@ -898,7 +898,7 @@ test "parse a basic create table with WITHOUT ROWID table option" do
 	assert_operator Plume::WithoutRowidTableOption, :===, node.options[0]
 end
 
-test "parse a basic create table with STRICT and WITHOUT ROWID table options" do
+test "create table tb0 (c0) STRICT, WITHOUT ROWID" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0) STRICT, WITHOUT ROWID
 	SQL
@@ -913,7 +913,7 @@ end
 
 # table constraints
 
-test "parse a basic create table with a primary key table constraint" do
+test "create table tb0 (c0, primary key (c0))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, primary key (c0))
 	SQL
@@ -924,7 +924,7 @@ test "parse a basic create table with a primary key table constraint" do
 	assert_equal node.constraints[0].columns[0].name, "c0"
 end
 
-test "parse a basic create table with a composite primary key table constraint" do
+test "create table tb0 (c0, c1, primary key (c0, c1))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, c1, primary key (c0, c1))
 	SQL
@@ -937,7 +937,7 @@ test "parse a basic create table with a composite primary key table constraint" 
 	assert_equal node.constraints[0].columns[1].name, "c1"
 end
 
-test "parse a basic create table with an autoincrement primary key table constraint" do
+test "create table tb0 (c0, primary key (c0 autoincrement))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, primary key (c0 autoincrement))
 	SQL
@@ -949,7 +949,7 @@ test "parse a basic create table with an autoincrement primary key table constra
 	assert_equal node.constraints[0].autoincrement, true
 end
 
-test "parse a basic create table with a primary key table constraint with a conflict clause" do
+test "create table tb0 (c0, primary key (c0) on conflict abort)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, primary key (c0) on conflict abort)
 	SQL
@@ -961,7 +961,7 @@ test "parse a basic create table with a primary key table constraint with a conf
 	assert_equal node.constraints[0].conflict_clause.resolution, :ABORT
 end
 
-test "parse a basic create table with an autoincrement composite primary key table constraint with a conflict clause" do
+test "create table tb0 (c0, c1, primary key (c0, c1 autoincrement) on conflict abort)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, c1, primary key (c0, c1 autoincrement) on conflict abort)
 	SQL
@@ -976,7 +976,7 @@ test "parse a basic create table with an autoincrement composite primary key tab
 	assert_equal node.constraints[0].conflict_clause.resolution, :ABORT
 end
 
-test "parse a basic create table with a unique table constraint" do
+test "create table tb0 (c0, unique (c0))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, unique (c0))
 	SQL
@@ -987,7 +987,7 @@ test "parse a basic create table with a unique table constraint" do
 	assert_equal node.constraints[0].columns[0].name, "c0"
 end
 
-test "parse a basic create table with a composite unique table constraint" do
+test "create table tb0 (c0, c1, unique (c0, c1))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, c1, unique (c0, c1))
 	SQL
@@ -1000,7 +1000,7 @@ test "parse a basic create table with a composite unique table constraint" do
 	assert_equal node.constraints[0].columns[1].name, "c1"
 end
 
-test "parse a basic create table with a unique table constraint with a conflict clause" do
+test "create table tb0 (c0, unique (c0) on conflict rollback)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, unique (c0) on conflict rollback)
 	SQL
@@ -1012,7 +1012,7 @@ test "parse a basic create table with a unique table constraint with a conflict 
 	assert_equal node.constraints[0].conflict_clause.resolution, :ROLLBACK
 end
 
-test "parse a basic create table with a composite unique table constraint with a conflict clause" do
+test "create table tb0 (c0, c1, unique (c0, c1) on conflict rollback)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, c1, unique (c0, c1) on conflict rollback)
 	SQL
@@ -1026,7 +1026,7 @@ test "parse a basic create table with a composite unique table constraint with a
 	assert_equal node.constraints[0].conflict_clause.resolution, :ROLLBACK
 end
 
-test "parse a basic create table with a check table constraint" do
+test "create table tb0 (c0, check (c0 > 0))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, check (c0 > 0))
 	SQL
@@ -1040,7 +1040,7 @@ test "parse a basic create table with a check table constraint" do
 	assert_equal node.constraints[0].expression.right.value, 0
 end
 
-test "parse a basic create table with a foreign key table constraint" do
+test "create table tb0 (c0, foreign key (c0) references tb1(c1))" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, foreign key (c0) references tb1(c1))
 	SQL
@@ -1053,7 +1053,7 @@ test "parse a basic create table with a foreign key table constraint" do
 	assert_equal node.constraints[0].foreign_key_clause.columns[0].name, "c1"
 end
 
-test "parse a basic create table with a foreign key table constraint with on delete clause" do
+test "create table tb0 (c0, foreign key (c0) references tb1(c1) on delete no action)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, foreign key (c0) references tb1(c1) on delete no action)
 	SQL
@@ -1067,7 +1067,7 @@ test "parse a basic create table with a foreign key table constraint with on del
 	assert_equal node.constraints[0].foreign_key_clause.on_delete, :NO_ACTION
 end
 
-test "parse a basic create table with a foreign key table constraint with on update clause" do
+test "create table tb0 (c0, foreign key (c0) references tb1(c1) on update no action)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, foreign key (c0) references tb1(c1) on update no action)
 	SQL
@@ -1081,7 +1081,7 @@ test "parse a basic create table with a foreign key table constraint with on upd
 	assert_equal node.constraints[0].foreign_key_clause.on_update, :NO_ACTION
 end
 
-test "parse a basic create table with a foreign key table constraint with on delete and on update clauses" do
+test "create table tb0 (c0, foreign key (c0) references tb1(c1) on delete cascade on update set null)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, foreign key (c0) references tb1(c1) on delete cascade on update set null)
 	SQL
@@ -1096,7 +1096,7 @@ test "parse a basic create table with a foreign key table constraint with on del
 	assert_equal node.constraints[0].foreign_key_clause.on_update, :SET_NULL
 end
 
-test "parse a basic create table with a foreign key table constraint with match clause" do
+test "create table tb0 (c0, foreign key (c0) references tb1(c1) match full)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, foreign key (c0) references tb1(c1) match full)
 	SQL
@@ -1110,7 +1110,7 @@ test "parse a basic create table with a foreign key table constraint with match 
 	assert_equal node.constraints[0].foreign_key_clause.match_type, :FULL
 end
 
-test "parse a basic create table with a foreign key table constraint with deferred clause" do
+test "create table tb0 (c0, foreign key (c0) references tb1(c1) deferrable initially deferred)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, foreign key (c0) references tb1(c1) deferrable initially deferred)
 	SQL
@@ -1124,7 +1124,7 @@ test "parse a basic create table with a foreign key table constraint with deferr
 	assert_equal node.constraints[0].foreign_key_clause.deferred, true
 end
 
-test "parse a basic create table with a foreign key table constraint with on delete, on update, match, and deferred clauses" do
+test "create table tb0 (c0, foreign key (c0) references tb1(c1) on delete cascade on update restrict match full deferrable initially deferred)" do
 	node = parse_stmt(<<~SQL)
 		create table tb0 (c0, foreign key (c0) references tb1(c1) on delete cascade on update restrict match full deferrable initially deferred)
 	SQL

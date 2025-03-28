@@ -2,7 +2,7 @@
 
 # -- literal values
 
-test "Single integer literal expression" do
+test "2" do
 	parser = Plume::Parser.new("2")
 	actual = parser.expression
 	expected = Plume::LiteralExpression.new(
@@ -11,7 +11,7 @@ test "Single integer literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Single float literal expression" do
+test "1.2" do
 	parser = Plume::Parser.new("1.2")
 	actual = parser.expression
 	expected = Plume::LiteralExpression.new(
@@ -20,7 +20,7 @@ test "Single float literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Single string literal expression" do
+test "'foo'" do
 	parser = Plume::Parser.new("'foo'")
 	actual = parser.expression
 	expected = Plume::LiteralExpression.new(
@@ -29,7 +29,7 @@ test "Single string literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Single blob literal expression" do
+test "X'53514C697465'" do
 	parser = Plume::Parser.new("X'53514C697465'")
 	actual = parser.expression
 	expected = Plume::LiteralExpression.new(
@@ -38,7 +38,7 @@ test "Single blob literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Single NULL literal expression" do
+test "null" do
 	parser = Plume::Parser.new("null")
 	actual = parser.expression
 	expected = Plume::LiteralExpression.new(
@@ -47,7 +47,7 @@ test "Single NULL literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Single TRUE literal expression" do
+test "true" do
 	parser = Plume::Parser.new("true")
 	actual = parser.expression
 	expected = Plume::LiteralExpression.new(
@@ -56,7 +56,7 @@ test "Single TRUE literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Single FALSE literal expression" do
+test "false" do
 	parser = Plume::Parser.new("false")
 	actual = parser.expression
 	expected = Plume::LiteralExpression.new(
@@ -65,7 +65,7 @@ test "Single FALSE literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Single CURRENT_TIME literal expression" do
+test "current_time" do
 	parser = Plume::Parser.new("current_time")
 	actual = parser.expression
 	expected = Plume::LiteralExpression.new(
@@ -74,7 +74,7 @@ test "Single CURRENT_TIME literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Single CURRENT_DATE literal expression" do
+test "current_date" do
 	parser = Plume::Parser.new("current_date")
 	actual = parser.expression
 	expected = Plume::LiteralExpression.new(
@@ -83,7 +83,7 @@ test "Single CURRENT_DATE literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Single CURRENT_TIMESTAMP literal expression" do
+test "current_timestamp" do
 	parser = Plume::Parser.new("current_timestamp")
 	actual = parser.expression
 	expected = Plume::LiteralExpression.new(
@@ -92,14 +92,14 @@ test "Single CURRENT_TIMESTAMP literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Single unqualified column reference expression" do
+test "c0" do
 	parser = Plume::Parser.new("c0")
 	actual = parser.expression
 	expected = Plume::ColumnName.new(column: "c0")
 	assert_equal actual.column, expected.column
 end
 
-test "Single table-qualified column reference expression" do
+test "tb1.c0" do
 	parser = Plume::Parser.new("tb1.c0")
 	actual = parser.expression
 	expected = Plume::ColumnName.new(
@@ -110,7 +110,7 @@ test "Single table-qualified column reference expression" do
 	assert_equal actual.table, expected.table
 end
 
-test "Single fully qualified column reference expression" do
+test "sc1.tb1.c0" do
 	parser = Plume::Parser.new("sc1.tb1.c0")
 	actual = parser.expression
 	expected = Plume::ColumnName.new(
@@ -123,7 +123,7 @@ test "Single fully qualified column reference expression" do
 	assert_equal actual.schema, expected.schema
 end
 
-test "Parenthetical integer literal expression" do
+test "(2)" do
 	parser = Plume::Parser.new("(2)")
 	actual = parser.expression
 	expected = Plume::ParentheticalExpression.new(
@@ -132,7 +132,7 @@ test "Parenthetical integer literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Parenthetical float literal expression" do
+test "(1.2)" do
 	parser = Plume::Parser.new("(1.2)")
 	actual = parser.expression
 	expected = Plume::ParentheticalExpression.new(
@@ -141,7 +141,7 @@ test "Parenthetical float literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Parenthetical string literal expression" do
+test "('foo')" do
 	parser = Plume::Parser.new("('foo')")
 	actual = parser.expression
 	expected = Plume::ParentheticalExpression.new(
@@ -150,7 +150,7 @@ test "Parenthetical string literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Parenthetical blob literal expression" do
+test "(X'53514C697465')" do
 	parser = Plume::Parser.new("(X'53514C697465')")
 	actual = parser.expression
 	expected = Plume::ParentheticalExpression.new(
@@ -159,7 +159,7 @@ test "Parenthetical blob literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Parenthetical NULL literal expression" do
+test "(null)" do
 	parser = Plume::Parser.new("(null)")
 	actual = parser.expression
 	expected = Plume::ParentheticalExpression.new(
@@ -168,7 +168,7 @@ test "Parenthetical NULL literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Parenthetical TRUE literal expression" do
+test "(true)" do
 	parser = Plume::Parser.new("(true)")
 	actual = parser.expression
 	expected = Plume::ParentheticalExpression.new(
@@ -177,7 +177,7 @@ test "Parenthetical TRUE literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Parenthetical FALSE literal expression" do
+test "(false)" do
 	parser = Plume::Parser.new("(false)")
 	actual = parser.expression
 	expected = Plume::ParentheticalExpression.new(
@@ -186,7 +186,7 @@ test "Parenthetical FALSE literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Parenthetical CURRENT_TIME literal expression" do
+test "(current_time)" do
 	parser = Plume::Parser.new("(current_time)")
 	actual = parser.expression
 	expected = Plume::ParentheticalExpression.new(
@@ -195,7 +195,7 @@ test "Parenthetical CURRENT_TIME literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Parenthetical CURRENT_DATE literal expression" do
+test "(current_date)" do
 	parser = Plume::Parser.new("(current_date)")
 	actual = parser.expression
 	expected = Plume::ParentheticalExpression.new(
@@ -204,7 +204,7 @@ test "Parenthetical CURRENT_DATE literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Parenthetical CURRENT_TIMESTAMP literal expression" do
+test "(current_timestamp)" do
 	parser = Plume::Parser.new("(current_timestamp)")
 	actual = parser.expression
 	expected = Plume::ParentheticalExpression.new(
@@ -213,7 +213,7 @@ test "Parenthetical CURRENT_TIMESTAMP literal expression" do
 	assert_equal actual.value, expected.value
 end
 
-test "Parenthetical unqualified column reference expression" do
+test "(c0)" do
 	parser = Plume::Parser.new("(c0)")
 	actual = parser.expression
 	expected = Plume::ParentheticalExpression.new(
@@ -222,7 +222,7 @@ test "Parenthetical unqualified column reference expression" do
 	assert_equal actual.value.column, expected.value.column
 end
 
-test "Parenthetical table-qualified column reference expression" do
+test "(tb1.c0)" do
 	parser = Plume::Parser.new("(tb1.c0)")
 	actual = parser.expression
 	expected = Plume::ParentheticalExpression.new(
@@ -235,7 +235,7 @@ test "Parenthetical table-qualified column reference expression" do
 	assert_equal actual.value.table, expected.value.table
 end
 
-test "Parenthetical fully qualified column reference expression" do
+test "(sc1.tb1.c0)" do
 	parser = Plume::Parser.new("(sc1.tb1.c0)")
 	actual = parser.expression
 	expected = Plume::ParentheticalExpression.new(
@@ -252,7 +252,7 @@ end
 
 # -- unary operations
 
-test "Bitwise NOT operation" do
+test "~c0" do
 	parser = Plume::Parser.new("~c0")
 	actual = parser.expression
 	expected = Plume::UnaryExpression.new(
@@ -264,7 +264,7 @@ test "Bitwise NOT operation" do
 	assert_equal actual.operand.column, expected.operand.column
 end
 
-test "Unary plus operation" do
+test "+c0" do
 	parser = Plume::Parser.new("+c0")
 	actual = parser.expression
 	expected = Plume::UnaryExpression.new(
@@ -276,7 +276,7 @@ test "Unary plus operation" do
 	assert_equal actual.operand.column, expected.operand.column
 end
 
-test "Unary minus operation" do
+test "-c0" do
 	parser = Plume::Parser.new("-c0")
 	actual = parser.expression
 	expected = Plume::UnaryExpression.new(
@@ -288,7 +288,7 @@ test "Unary minus operation" do
 	assert_equal actual.operand.column, expected.operand.column
 end
 
-test "Logical NOT operation" do
+test "NOT c0" do
 	parser = Plume::Parser.new("NOT c0")
 	actual = parser.expression
 	expected = Plume::UnaryExpression.new(
@@ -300,7 +300,7 @@ test "Logical NOT operation" do
 	assert_equal actual.operand.column, expected.operand.column
 end
 
-test "Logical NOT operation with addition expression" do
+test "NOT 0 + 1" do
 	parser = Plume::Parser.new("NOT 0 + 1")
 	actual = parser.expression
 	expected = Plume::UnaryExpression.new(
@@ -317,7 +317,7 @@ test "Logical NOT operation with addition expression" do
 	assert_equal actual.operand.right.value, expected.operand.right.value
 end
 
-test "ISNULL operator" do
+test "c0 ISNULL" do
 	parser = Plume::Parser.new("c0 ISNULL")
 	actual = parser.expression
 	expected = Plume::UnaryExpression.new(
@@ -329,7 +329,7 @@ test "ISNULL operator" do
 	assert_equal actual.operand.column, expected.operand.column
 end
 
-test "NOTNULL operator" do
+test "c0 NOTNULL" do
 	parser = Plume::Parser.new("c0 NOTNULL")
 	actual = parser.expression
 	expected = Plume::UnaryExpression.new(
@@ -343,7 +343,7 @@ end
 
 # -- binary operations
 
-test "Binary concat operation" do
+test "c0 || 'suffix'" do
 	parser = Plume::Parser.new("c0 || 'suffix'")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -357,7 +357,7 @@ test "Binary concat operation" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Binary extract operation" do
+test "c0 -> '$.key'" do
 	parser = Plume::Parser.new("c0 -> '$.key'")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -370,7 +370,7 @@ test "Binary extract operation" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Binary retrieve operation" do
+test "c0 ->> '$.key'" do
 	parser = Plume::Parser.new("c0 ->> '$.key'")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -383,7 +383,7 @@ test "Binary retrieve operation" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Multiplication operation" do
+test "c0 * 5" do
 	parser = Plume::Parser.new("c0 * 5")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -396,7 +396,7 @@ test "Multiplication operation" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Division operation" do
+test "c0 / 2" do
 	parser = Plume::Parser.new("c0 / 2")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -409,7 +409,7 @@ test "Division operation" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Modulo operation" do
+test "c0 % 3" do
 	parser = Plume::Parser.new("c0 % 3")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -422,7 +422,7 @@ test "Modulo operation" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Addition operation" do
+test "c0 + 10" do
 	parser = Plume::Parser.new("c0 + 10")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -435,7 +435,7 @@ test "Addition operation" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Subtraction operation" do
+test "c0 - 5" do
 	parser = Plume::Parser.new("c0 - 5")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -448,7 +448,7 @@ test "Subtraction operation" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Bitwise AND operation" do
+test "c0 & 7" do
 	parser = Plume::Parser.new("c0 & 7")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -461,7 +461,7 @@ test "Bitwise AND operation" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Bitwise OR operation" do
+test "c0 | 8" do
 	parser = Plume::Parser.new("c0 | 8")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -474,7 +474,7 @@ test "Bitwise OR operation" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Bitwise left shift operation" do
+test "c0 << 2" do
 	parser = Plume::Parser.new("c0 << 2")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -487,7 +487,7 @@ test "Bitwise left shift operation" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Bitwise right shift operation" do
+test "c0 >> 1" do
 	parser = Plume::Parser.new("c0 >> 1")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -500,7 +500,7 @@ test "Bitwise right shift operation" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Less than comparison" do
+test "c0 < 100" do
 	parser = Plume::Parser.new("c0 < 100")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -513,7 +513,7 @@ test "Less than comparison" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Less than or equal comparison" do
+test "c0 <= 50" do
 	parser = Plume::Parser.new("c0 <= 50")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -526,7 +526,7 @@ test "Less than or equal comparison" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Greater than or equal comparison" do
+test "c0 >= 20" do
 	parser = Plume::Parser.new("c0 >= 20")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -539,7 +539,7 @@ test "Greater than or equal comparison" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Equality comparison" do
+test "c0 = 42" do
 	parser = Plume::Parser.new("c0 = 42")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -552,7 +552,7 @@ test "Equality comparison" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Inequality comparison" do
+test "c0 != 42" do
 	parser = Plume::Parser.new("c0 != 42")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -565,7 +565,7 @@ test "Inequality comparison" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "IS comparison" do
+test "c0 IS TRUE" do
 	parser = Plume::Parser.new("c0 IS TRUE")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -578,7 +578,7 @@ test "IS comparison" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "IS DISTINCT FROM comparison" do
+test "c0 IS DISTINCT FROM TRUE" do
 	parser = Plume::Parser.new("c0 IS DISTINCT FROM TRUE")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -591,7 +591,7 @@ test "IS DISTINCT FROM comparison" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "IS NOT comparison" do
+test "c0 IS NOT FALSE" do
 	parser = Plume::Parser.new("c0 IS NOT FALSE")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -604,7 +604,7 @@ test "IS NOT comparison" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "IS NOT DISTINCT FROM comparison" do
+test "c0 IS NOT DISTINCT FROM TRUE" do
 	parser = Plume::Parser.new("c0 IS NOT DISTINCT FROM TRUE")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -617,7 +617,7 @@ test "IS NOT DISTINCT FROM comparison" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "IS NOT comparison" do
+test "c0 IS NOT FALSE" do
 	parser = Plume::Parser.new("c0 IS NOT FALSE")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -630,7 +630,7 @@ test "IS NOT comparison" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Greater than comparison with positive integer" do
+test "c0 > 0" do
 	parser = Plume::Parser.new("c0 > 0")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -643,7 +643,7 @@ test "Greater than comparison with positive integer" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Greater than comparison with negative integer" do
+test "c0 > -1" do
 	parser = Plume::Parser.new("c0 > -1")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -660,7 +660,7 @@ test "Greater than comparison with negative integer" do
 	assert_equal actual.right.operand.value, expected.right.operand.value
 end
 
-test "Greater than comparison with negative integer on left side" do
+test "-1 > c0" do
 	parser = Plume::Parser.new("-1 > c0")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -677,7 +677,7 @@ test "Greater than comparison with negative integer on left side" do
 	assert_equal actual.right.column, expected.right.column
 end
 
-test "IS NOT NULL operator" do
+test "c0 IS NOT NULL" do
 	parser = Plume::Parser.new("c0 IS NOT NULL")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -690,7 +690,7 @@ test "IS NOT NULL operator" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "GLOB operator" do
+test "c0 GLOB '*.txt'" do
 	parser = Plume::Parser.new("c0 GLOB '*.txt'")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -703,7 +703,7 @@ test "GLOB operator" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "REGEXP operator" do
+test "c0 REGEXP '^[A-Z]+'" do
 	parser = Plume::Parser.new("c0 REGEXP '^[A-Z]+'")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -716,7 +716,7 @@ test "REGEXP operator" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "MATCH operator" do
+test "c0 MATCH 'patten'" do
 	parser = Plume::Parser.new("c0 MATCH 'patten'")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -729,7 +729,7 @@ test "MATCH operator" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "NOT GLOB operator" do
+test "c0 NOT GLOB '*.txt'" do
 	parser = Plume::Parser.new("c0 NOT GLOB '*.txt'")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -742,7 +742,7 @@ test "NOT GLOB operator" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "NOT REGEXP operator" do
+test "c0 NOT REGEXP '^[A-Z]+'" do
 	parser = Plume::Parser.new("c0 NOT REGEXP '^[A-Z]+'")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -755,7 +755,7 @@ test "NOT REGEXP operator" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "NOT MATCH operator" do
+test "c0 NOT MATCH 'patten'" do
 	parser = Plume::Parser.new("c0 NOT MATCH 'patten'")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -768,7 +768,7 @@ test "NOT MATCH operator" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "Compound AND condition with greater than and less than" do
+test "c0 > 0 AND c1 < 0" do
 	parser = Plume::Parser.new("c0 > 0 AND c1 < 0")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -793,7 +793,7 @@ test "Compound AND condition with greater than and less than" do
 	assert_equal actual.right.right.value, expected.right.right.value
 end
 
-test "Compound OR condition with greater than and less than" do
+test "c0 > 0 OR c1 LIKE 'foo%'" do
 	parser = Plume::Parser.new("c0 > 0 OR c1 LIKE 'foo%'")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -817,7 +817,7 @@ end
 
 # -- comparison operators
 
-test "LIKE operator with string literals" do
+test "'str' like 'foo'" do
 	parser = Plume::Parser.new("'str' like 'foo'")
 	actual = parser.expression
 	expected = Plume::LikeExpression.new(
@@ -828,7 +828,7 @@ test "LIKE operator with string literals" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "NOT LIKE operator with string literals" do
+test "'str' not like 'foo'" do
 	parser = Plume::Parser.new("'str' not like 'foo'")
 	actual = parser.expression
 	expected = Plume::NotLikeExpression.new(
@@ -839,7 +839,7 @@ test "NOT LIKE operator with string literals" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "LIKE operator with string literals and ESCAPE clause" do
+test "'str' like 'foo' escape '|'" do
 	parser = Plume::Parser.new("'str' like 'foo' escape '|'")
 	actual = parser.expression
 	expected = Plume::LikeExpression.new(
@@ -852,7 +852,7 @@ test "LIKE operator with string literals and ESCAPE clause" do
 	assert_equal actual.escape.value, expected.escape.value
 end
 
-test "NOT LIKE operator with string literals and ESCAPE clause" do
+test "'str' not like 'foo' escape '|'" do
 	parser = Plume::Parser.new("'str' not like 'foo' escape '|'")
 	actual = parser.expression
 	expected = Plume::NotLikeExpression.new(
@@ -867,7 +867,7 @@ end
 
 # -- ternary expressions
 
-test "BETWEEN operator with integer values" do
+test "2 between 1 and 10" do
 	parser = Plume::Parser.new("2 between 1 and 10")
 	actual = parser.expression
 	expected = Plume::TernaryExpression.new(
@@ -881,7 +881,7 @@ test "BETWEEN operator with integer values" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "NOT BETWEEN operator with integer values" do
+test "2 not between 1 and 10" do
 	parser = Plume::Parser.new("2 not between 1 and 10")
 	actual = parser.expression
 	expected = Plume::TernaryExpression.new(
@@ -895,7 +895,7 @@ test "NOT BETWEEN operator with integer values" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "IN operator with list of values" do
+test "c0 IN (1, 2, 3)" do
 	parser = Plume::Parser.new("c0 IN (1, 2, 3)")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -916,7 +916,7 @@ test "IN operator with list of values" do
 	assert_equal actual.right.value[2].value, expected.right.value[2].value
 end
 
-test "IN operator with empty parens" do
+test "c0 IN ()" do
 	parser = Plume::Parser.new("c0 IN ()")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -931,7 +931,7 @@ test "IN operator with empty parens" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "IN operator with an unqualified table reference" do
+test "c0 IN tb0" do
 	parser = Plume::Parser.new("c0 IN tb0")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -946,7 +946,7 @@ test "IN operator with an unqualified table reference" do
 	assert_equal actual.right.table, expected.right.table
 end
 
-test "IN operator with a qualified table reference" do
+test "c0 IN sc0.tb0" do
 	parser = Plume::Parser.new("c0 IN sc0.tb0")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -963,7 +963,7 @@ test "IN operator with a qualified table reference" do
 	assert_equal actual.right.table, expected.right.table
 end
 
-test "IN operator with an unqualified function reference" do
+test "c0 IN foobar()" do
 	parser = Plume::Parser.new("c0 IN foobar()")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -982,7 +982,7 @@ test "IN operator with an unqualified function reference" do
 	assert_equal actual.right.arguments.expressions, expected.right.arguments.expressions
 end
 
-test "IN operator with a qualified function reference" do
+test "c0 IN sc0.foobar()" do
 	parser = Plume::Parser.new("c0 IN sc0.foobar()")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -1003,7 +1003,7 @@ test "IN operator with a qualified function reference" do
 	assert_equal actual.right.arguments.expressions, expected.right.arguments.expressions
 end
 
-test "IN operator with an unqualified function reference with arguments" do
+test "c0 IN foobar(1, 2, 3)" do
 	parser = Plume::Parser.new("c0 IN foobar(1, 2, 3)")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -1024,7 +1024,7 @@ test "IN operator with an unqualified function reference with arguments" do
 	assert_equal actual.right.arguments.expressions[2].value, expected.right.arguments.expressions[2]
 end
 
-test "IN operator with a qualified function reference with arguments" do
+test "c0 IN sc0.foobar(1, 2, 3)" do
 	parser = Plume::Parser.new("c0 IN sc0.foobar(1, 2, 3)")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -1047,7 +1047,7 @@ test "IN operator with a qualified function reference with arguments" do
 	assert_equal actual.right.arguments.expressions[2].value, expected.right.arguments.expressions[2]
 end
 
-test "NOT IN operator with list of values" do
+test "c0 NOT IN (1, 2, 3)" do
 	parser = Plume::Parser.new("c0 NOT IN (1, 2, 3)")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -1068,7 +1068,7 @@ test "NOT IN operator with list of values" do
 	assert_equal actual.right.value[2].value, expected.right.value[2].value
 end
 
-test "NOT IN operator with empty parens" do
+test "c0 NOT IN ()" do
 	parser = Plume::Parser.new("c0 NOT IN ()")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -1083,7 +1083,7 @@ test "NOT IN operator with empty parens" do
 	assert_equal actual.right.value, expected.right.value
 end
 
-test "NOT IN operator with an unqualified table reference" do
+test "c0 NOT IN tb0" do
 	parser = Plume::Parser.new("c0 NOT IN tb0")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -1098,7 +1098,7 @@ test "NOT IN operator with an unqualified table reference" do
 	assert_equal actual.right.table, expected.right.table
 end
 
-test "NOT IN operator with a qualified table reference" do
+test "c0 NOT IN sc0.tb0" do
 	parser = Plume::Parser.new("c0 NOT IN sc0.tb0")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -1115,7 +1115,7 @@ test "NOT IN operator with a qualified table reference" do
 	assert_equal actual.right.table, expected.right.table
 end
 
-test "NOT IN operator with an unqualified function reference" do
+test "c0 NOT IN foobar()" do
 	parser = Plume::Parser.new("c0 NOT IN foobar()")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -1134,7 +1134,7 @@ test "NOT IN operator with an unqualified function reference" do
 	assert_equal actual.right.arguments.expressions, expected.right.arguments.expressions
 end
 
-test "NOT IN operator with a qualified function reference" do
+test "c0 NOT IN sc0.foobar()" do
 	parser = Plume::Parser.new("c0 NOT IN sc0.foobar()")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -1155,7 +1155,7 @@ test "NOT IN operator with a qualified function reference" do
 	assert_equal actual.right.arguments.expressions, expected.right.arguments.expressions
 end
 
-test "NOT IN operator with an unqualified function reference with arguments" do
+test "c0 NOT IN foobar(1, 2, 3)" do
 	parser = Plume::Parser.new("c0 NOT IN foobar(1, 2, 3)")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -1176,7 +1176,7 @@ test "NOT IN operator with an unqualified function reference with arguments" do
 	assert_equal actual.right.arguments.expressions[2].value, expected.right.arguments.expressions[2]
 end
 
-test "NOT IN operator with a qualified function reference with arguments" do
+test "c0 NOT IN sc0.foobar(1, 2, 3)" do
 	parser = Plume::Parser.new("c0 NOT IN sc0.foobar(1, 2, 3)")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -1201,7 +1201,7 @@ end
 
 # -- CASE expressions
 
-test "CASE expression without base expression but with ELSE" do
+test "CASE WHEN c0 > 0 THEN 'Positive' WHEN c0 < 0 THEN 'Negative' ELSE 'Zero' END" do
 	parser = Plume::Parser.new("CASE WHEN c0 > 0 THEN 'Positive' WHEN c0 < 0 THEN 'Negative' ELSE 'Zero' END")
 	actual = parser.expression
 	expected = Plume::CaseExpression.new(
@@ -1238,7 +1238,7 @@ test "CASE expression without base expression but with ELSE" do
 	assert_equal actual.else_clause.value, expected.else_clause.value
 end
 
-test "CASE expression without base expression and without ELSE" do
+test "CASE WHEN c0 > 0 THEN 'Positive' WHEN c0 < 0 THEN 'Negative' END" do
 	parser = Plume::Parser.new("CASE WHEN c0 > 0 THEN 'Positive' WHEN c0 < 0 THEN 'Negative' END")
 	actual = parser.expression
 	expected = Plume::CaseExpression.new(
@@ -1274,7 +1274,7 @@ test "CASE expression without base expression and without ELSE" do
 	assert_equal actual.else_clause, expected.else_clause
 end
 
-test "CASE expression with base expression and with ELSE" do
+test "CASE x WHEN w1 THEN r1 WHEN w2 THEN r2 ELSE r3 END" do
 	parser = Plume::Parser.new("CASE x WHEN w1 THEN r1 WHEN w2 THEN r2 ELSE r3 END")
 	actual = parser.expression
 	expected = Plume::CaseExpression.new(
@@ -1300,7 +1300,7 @@ test "CASE expression with base expression and with ELSE" do
 	assert_equal expected.else_clause.column, actual.else_clause.column
 end
 
-test "CASE expression with base expression and without ELSE" do
+test "CASE x WHEN w1 THEN r1 WHEN w2 THEN r2 END" do
 	parser = Plume::Parser.new("CASE x WHEN w1 THEN r1 WHEN w2 THEN r2 END")
 	actual = parser.expression
 	expected = Plume::CaseExpression.new(
@@ -1328,7 +1328,7 @@ end
 
 # -- CAST expressions
 
-test "CAST expression with int type" do
+test "CAST(c0 AS int)" do
 	parser = Plume::Parser.new("CAST(c0 AS int)")
 	actual = parser.expression
 	expected = Plume::CastExpression.new(
@@ -1340,7 +1340,7 @@ test "CAST expression with int type" do
 	assert_equal actual.as.affinity, :INTEGER
 end
 
-test "CAST expression with char type" do
+test "CAST(c0 AS char)" do
 	parser = Plume::Parser.new("CAST(c0 AS char)")
 	actual = parser.expression
 	expected = Plume::CastExpression.new(
@@ -1353,7 +1353,7 @@ test "CAST expression with char type" do
 	assert_equal actual.as.affinity, :TEXT
 end
 
-test "CAST expression with blob type" do
+test "CAST(c0 AS blob)" do
 	parser = Plume::Parser.new("CAST(c0 AS blob)")
 	actual = parser.expression
 	expected = Plume::CastExpression.new(
@@ -1366,7 +1366,7 @@ test "CAST expression with blob type" do
 	assert_equal actual.as.affinity, :BLOB
 end
 
-test "CAST expression with real type" do
+test "CAST(c0 AS real)" do
 	parser = Plume::Parser.new("CAST(c0 AS real)")
 	actual = parser.expression
 	expected = Plume::CastExpression.new(
@@ -1379,7 +1379,7 @@ test "CAST expression with real type" do
 	assert_equal actual.as.affinity, :REAL
 end
 
-test "CAST expression with any type" do
+test "CAST(c0 AS any)" do
 	parser = Plume::Parser.new("CAST(c0 AS any)")
 	actual = parser.expression
 	expected = Plume::CastExpression.new(
@@ -1392,7 +1392,7 @@ test "CAST expression with any type" do
 	assert_equal actual.as.affinity, :ANY
 end
 
-test "CAST expression with constrained type" do
+test "CAST(c0 AS decimal(4, 6))" do
 	parser = Plume::Parser.new("CAST(c0 AS decimal(4, 6))")
 	actual = parser.expression
 	expected = Plume::CastExpression.new(
@@ -1407,7 +1407,7 @@ end
 
 # -- function calls
 
-test "Simple function call with no argument" do
+test "CHANGES()" do
 	parser = Plume::Parser.new("CHANGES()")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1418,7 +1418,7 @@ test "Simple function call with no argument" do
 	assert_equal actual.arguments, expected.arguments
 end
 
-test "Simple function call with single numeric expression argument" do
+test "ABS(-1)" do
 	parser = Plume::Parser.new("ABS(-1)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1439,7 +1439,7 @@ test "Simple function call with single numeric expression argument" do
 	assert_equal actual.arguments.expressions[0].operand.value, expected.arguments.expressions[0].operand.value
 end
 
-test "Aggregate function call with STAR argument" do
+test "COUNT(*)" do
 	parser = Plume::Parser.new("COUNT(*)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1450,7 +1450,7 @@ test "Aggregate function call with STAR argument" do
 	assert_equal actual.arguments, expected.arguments
 end
 
-test "Aggregate function call with STAR argument and filter clause" do
+test "COUNT(*) FILTER (WHERE c0 > 0)" do
 	parser = Plume::Parser.new("COUNT(*) FILTER (WHERE c0 > 0)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1471,7 +1471,7 @@ test "Aggregate function call with STAR argument and filter clause" do
 	assert_equal actual.filter_clause.right.value, expected.filter_clause.right.value
 end
 
-test "Aggregate function call with DISTINCT column reference argument" do
+test "COUNT(DISTINCT c0)" do
 	parser = Plume::Parser.new("COUNT(DISTINCT c0)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1488,7 +1488,7 @@ test "Aggregate function call with DISTINCT column reference argument" do
 	assert_equal actual.arguments.expressions[0].column, expected.arguments.expressions[0].column
 end
 
-test "Aggregate function call with DISTINCT column reference arguments" do
+test "COUNT(DISTINCT c0, c1)" do
 	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1507,7 +1507,7 @@ test "Aggregate function call with DISTINCT column reference arguments" do
 	assert_equal actual.arguments.expressions[1].column, expected.arguments.expressions[1].column
 end
 
-test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column" do
+test "COUNT(DISTINCT c0, c1 ORDER BY c0)" do
 	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1532,7 +1532,7 @@ test "Aggregate function call with DISTINCT column reference arguments and ORDER
 	assert_equal actual.arguments.order_by[0].expression.column, expected.arguments.order_by[0].expression.column
 end
 
-test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column with direction" do
+test "COUNT(DISTINCT c0, c1 ORDER BY c0 DESC)" do
 	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0 DESC)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1559,7 +1559,7 @@ test "Aggregate function call with DISTINCT column reference arguments and ORDER
 	assert_equal actual.arguments.order_by[0].direction, expected.arguments.order_by[0].direction
 end
 
-test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column with direction and nulls last" do
+test "COUNT(DISTINCT c0, c1 ORDER BY c0 DESC NULLS LAST)" do
 	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0 DESC NULLS LAST)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1588,7 +1588,7 @@ test "Aggregate function call with DISTINCT column reference arguments and ORDER
 	assert_equal actual.arguments.order_by[0].nulls, expected.arguments.order_by[0].nulls
 end
 
-test "Aggregate function call with DISTINCT column reference arguments and ORDER BY one column with direction and nulls first" do
+test "COUNT(DISTINCT c0, c1 ORDER BY c0 DESC NULLS FIRST)" do
 	parser = Plume::Parser.new("COUNT(DISTINCT c0, c1 ORDER BY c0 DESC NULLS FIRST)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1617,7 +1617,7 @@ test "Aggregate function call with DISTINCT column reference arguments and ORDER
 	assert_equal actual.arguments.order_by[0].nulls, expected.arguments.order_by[0].nulls
 end
 
-test "Aggregate function call with column reference argument" do
+test "COUNT(c0)" do
 	parser = Plume::Parser.new("COUNT(c0)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1633,7 +1633,7 @@ test "Aggregate function call with column reference argument" do
 	assert_equal actual.arguments.expressions[0].column, expected.arguments.expressions[0].column
 end
 
-test "Aggregate function call with column reference arguments" do
+test "COUNT(c0, c1)" do
 	parser = Plume::Parser.new("COUNT(c0, c1)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1651,7 +1651,7 @@ test "Aggregate function call with column reference arguments" do
 	assert_equal actual.arguments.expressions[1].column, expected.arguments.expressions[1].column
 end
 
-test "Aggregate function call with column reference arguments and ORDER BY one column" do
+test "COUNT(c0, c1 ORDER BY c0)" do
 	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1675,7 +1675,7 @@ test "Aggregate function call with column reference arguments and ORDER BY one c
 	assert_equal actual.arguments.order_by[0].expression.column, expected.arguments.order_by[0].expression.column
 end
 
-test "Aggregate function call with column reference arguments and ORDER BY one column with direction" do
+test "COUNT(c0, c1 ORDER BY c0 DESC)" do
 	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0 DESC)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1701,7 +1701,7 @@ test "Aggregate function call with column reference arguments and ORDER BY one c
 	assert_equal actual.arguments.order_by[0].direction, expected.arguments.order_by[0].direction
 end
 
-test "Aggregate function call with column reference arguments and ORDER BY one column with direction and nulls last" do
+test "COUNT(c0, c1 ORDER BY c0 DESC NULLS LAST)" do
 	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0 DESC NULLS LAST)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1729,7 +1729,7 @@ test "Aggregate function call with column reference arguments and ORDER BY one c
 	assert_equal actual.arguments.order_by[0].nulls, expected.arguments.order_by[0].nulls
 end
 
-test "Aggregate function call with column reference arguments and ORDER BY one column with direction and nulls first" do
+test "COUNT(c0, c1 ORDER BY c0 DESC NULLS FIRST)" do
 	parser = Plume::Parser.new("COUNT(c0, c1 ORDER BY c0 DESC NULLS FIRST)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1757,7 +1757,7 @@ test "Aggregate function call with column reference arguments and ORDER BY one c
 	assert_equal actual.arguments.order_by[0].nulls, expected.arguments.order_by[0].nulls
 end
 
-test "Window function call with no arguments and empty window" do
+test "ROW_NUMBER() OVER ()" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER ()")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1770,7 +1770,7 @@ test "Window function call with no arguments and empty window" do
 	assert_equal actual.over_clause.base_window_name, expected.over_clause.base_window_name
 end
 
-test "Window function call with no arguments and window name" do
+test "ROW_NUMBER() OVER win1" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER win1")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1785,7 +1785,7 @@ test "Window function call with no arguments and window name" do
 	assert_equal actual.over_clause.window_name, expected.over_clause.window_name
 end
 
-test "Window function call with no arguments and window definition with only PARTITION BY" do
+test "ROW_NUMBER() OVER (PARTITION BY y)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (PARTITION BY y)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1802,7 +1802,7 @@ test "Window function call with no arguments and window definition with only PAR
 	assert_equal actual.over_clause.partitions[0].column, expected.over_clause.partitions[0].column
 end
 
-test "Window function call with no arguments and window definition with only ORDER BY" do
+test "ROW_NUMBER() OVER (ORDER BY y)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ORDER BY y)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1821,7 +1821,7 @@ test "Window function call with no arguments and window definition with only ORD
 	assert_equal actual.over_clause.orderings[0].expression.column, expected.over_clause.orderings[0].expression.column
 end
 
-test "Window function call with no arguments and window definition with RANGE UNBOUNDED PRECEDING frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1844,7 +1844,7 @@ test "Window function call with no arguments and window definition with RANGE UN
 	assert_equal actual.over_clause.frame.starting_boundary.value, expected.over_clause.frame.starting_boundary.value
 end
 
-test "Window function call with no arguments and window definition with ROWS UNBOUNDED PRECEDING frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS UNBOUNDED PRECEDING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS UNBOUNDED PRECEDING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1867,7 +1867,7 @@ test "Window function call with no arguments and window definition with ROWS UNB
 	assert_equal actual.over_clause.frame.starting_boundary.value, expected.over_clause.frame.starting_boundary.value
 end
 
-test "Window function call with no arguments and window definition with GROUPS UNBOUNDED PRECEDING frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (GROUPS UNBOUNDED PRECEDING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (GROUPS UNBOUNDED PRECEDING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1890,7 +1890,7 @@ test "Window function call with no arguments and window definition with GROUPS U
 	assert_equal actual.over_clause.frame.starting_boundary.value, expected.over_clause.frame.starting_boundary.value
 end
 
-test "Window function call with no arguments and window definition with ROWS CURRENT ROW frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS CURRENT ROW)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS CURRENT ROW)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1911,7 +1911,7 @@ test "Window function call with no arguments and window definition with ROWS CUR
 	assert_equal actual.over_clause.frame.starting_boundary.type, expected.over_clause.frame.starting_boundary.type
 end
 
-test "Window function call with no arguments and window definition with ROWS <expr> PRECEDING frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS 123 PRECEDING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS 123 PRECEDING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1936,7 +1936,7 @@ test "Window function call with no arguments and window definition with ROWS <ex
 	assert_equal actual.over_clause.frame.starting_boundary.value.value, expected.over_clause.frame.starting_boundary.value.value
 end
 
-test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND <expr> PRECEDING frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 123 PRECEDING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 123 PRECEDING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1967,7 +1967,7 @@ test "Window function call with no arguments and window definition with ROWS BET
 	assert_equal actual.over_clause.frame.ending_boundary.value.value, expected.over_clause.frame.ending_boundary.value.value
 end
 
-test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -1994,7 +1994,7 @@ test "Window function call with no arguments and window definition with ROWS BET
 	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
 end
 
-test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND <expr> FOLLOWING frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 123 FOLLOWING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND 123 FOLLOWING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2025,7 +2025,7 @@ test "Window function call with no arguments and window definition with ROWS BET
 	assert_equal actual.over_clause.frame.ending_boundary.value.value, expected.over_clause.frame.ending_boundary.value.value
 end
 
-test "Window function call with no arguments and window definition with ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2054,7 +2054,7 @@ test "Window function call with no arguments and window definition with ROWS BET
 	assert_equal actual.over_clause.frame.ending_boundary.value, expected.over_clause.frame.ending_boundary.value
 end
 
-test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND <expr> PRECEDING frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND 123 PRECEDING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND 123 PRECEDING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2087,7 +2087,7 @@ test "Window function call with no arguments and window definition with ROWS BET
 	assert_equal actual.over_clause.frame.ending_boundary.value.value, expected.over_clause.frame.ending_boundary.value.value
 end
 
-test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND CURRENT ROW frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND CURRENT ROW)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND CURRENT ROW)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2116,7 +2116,7 @@ test "Window function call with no arguments and window definition with ROWS BET
 	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
 end
 
-test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND 123 FOLLOWING frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND 123 FOLLOWING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND 123 FOLLOWING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2149,7 +2149,7 @@ test "Window function call with no arguments and window definition with ROWS BET
 	assert_equal actual.over_clause.frame.ending_boundary.value.value, expected.over_clause.frame.ending_boundary.value.value
 end
 
-test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> PRECEDING AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND UNBOUNDED FOLLOWING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 PRECEDING AND UNBOUNDED FOLLOWING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2180,7 +2180,7 @@ test "Window function call with no arguments and window definition with ROWS BET
 	assert_equal actual.over_clause.frame.ending_boundary.value, expected.over_clause.frame.ending_boundary.value
 end
 
-test "Window function call with no arguments and window definition with ROWS BETWEEN CURRENT ROW AND CURRENT ROW frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS BETWEEN CURRENT ROW AND CURRENT ROW)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN CURRENT ROW AND CURRENT ROW)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2205,7 +2205,7 @@ test "Window function call with no arguments and window definition with ROWS BET
 	assert_equal actual.over_clause.frame.ending_boundary.type, expected.over_clause.frame.ending_boundary.type
 end
 
-test "Window function call with no arguments and window definition with ROWS BETWEEN CURRENT ROW AND 123 FOLLOWING frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS BETWEEN CURRENT ROW AND 123 FOLLOWING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN CURRENT ROW AND 123 FOLLOWING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2234,7 +2234,7 @@ test "Window function call with no arguments and window definition with ROWS BET
 	assert_equal actual.over_clause.frame.ending_boundary.value.value, expected.over_clause.frame.ending_boundary.value.value
 end
 
-test "Window function call with no arguments and window definition with ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2261,7 +2261,7 @@ test "Window function call with no arguments and window definition with ROWS BET
 	assert_equal actual.over_clause.frame.ending_boundary.value, expected.over_clause.frame.ending_boundary.value
 end
 
-test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> FOLLOWING AND 123 FOLLOWING frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS BETWEEN 123 FOLLOWING AND 123 FOLLOWING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 FOLLOWING AND 123 FOLLOWING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2294,7 +2294,7 @@ test "Window function call with no arguments and window definition with ROWS BET
 	assert_equal actual.over_clause.frame.ending_boundary.value.value, expected.over_clause.frame.ending_boundary.value.value
 end
 
-test "Window function call with no arguments and window definition with ROWS BETWEEN <expr> FOLLOWING AND UNBOUNDED FOLLOWING frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2325,7 +2325,7 @@ test "Window function call with no arguments and window definition with ROWS BET
 	assert_equal actual.over_clause.frame.ending_boundary.value, expected.over_clause.frame.ending_boundary.value
 end
 
-test "Window function call with no arguments and only base window name" do
+test "ROW_NUMBER() OVER (win)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (win)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2340,7 +2340,7 @@ test "Window function call with no arguments and only base window name" do
 	assert_equal actual.over_clause.base_window_name, expected.over_clause.base_window_name
 end
 
-test "Window function call with no arguments and base window name with ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (win ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (win ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2373,7 +2373,7 @@ test "Window function call with no arguments and base window name with ROWS BETW
 	assert_equal actual.over_clause.frame.ending_boundary.value, expected.over_clause.frame.ending_boundary.value
 end
 
-test "Window function call with no arguments and base window name with ordering term and frame spec without exclude clause" do
+test "ROW_NUMBER() OVER (win ORDER BY c0 ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (win ORDER BY c0 ROWS BETWEEN 123 FOLLOWING AND UNBOUNDED FOLLOWING)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2412,7 +2412,7 @@ test "Window function call with no arguments and base window name with ordering 
 	assert_equal actual.over_clause.frame.ending_boundary.value, expected.over_clause.frame.ending_boundary.value
 end
 
-test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE NO OTHERS" do
+test "ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE NO OTHERS)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE NO OTHERS)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2437,7 +2437,7 @@ test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLU
 	assert_equal actual.over_clause.frame.exclude, expected.over_clause.frame.exclude
 end
 
-test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE CURRENT ROW" do
+test "ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE CURRENT ROW)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE CURRENT ROW)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2462,7 +2462,7 @@ test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLU
 	assert_equal actual.over_clause.frame.exclude, expected.over_clause.frame.exclude
 end
 
-test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE GROUP" do
+test "ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE GROUP)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE GROUP)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2487,7 +2487,7 @@ test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLU
 	assert_equal actual.over_clause.frame.exclude, expected.over_clause.frame.exclude
 end
 
-test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLUDE TIES" do
+test "ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE TIES)" do
 	parser = Plume::Parser.new("ROW_NUMBER() OVER (RANGE UNBOUNDED PRECEDING EXCLUDE TIES)")
 	actual = parser.expression
 	expected = Plume::FunctionReference.new(
@@ -2512,19 +2512,19 @@ test "Window function call with no arguments and RANGE UNBOUNDED PRECEDING EXCLU
 	assert_equal actual.over_clause.frame.exclude, expected.over_clause.frame.exclude
 end
 
-# test "Subquery in expression" do
+# test "c0 = (SELECT MAX(c1) FROM t1)" do
 # 	parser = Plume::Parser.new("c0 = (SELECT MAX(c1) FROM t1)")
 # 	actual = parser.expression
 # 	assert_equal expr, {:EQ=>["c0", {:SELECT=>{:columns=>[{:MAX=>["c1"]}], :from=>"t1"}}]}
 # end
 
-# test "Complex nested expression" do
+# test "(c0 + 5) * 2 > (SELECT AVG(c1) FROM t1) OR c2 IS NOT NULL" do
 # 	parser = Plume::Parser.new("(c0 + 5) * 2 > (SELECT AVG(c1) FROM t1) OR c2 IS NOT NULL")
 # 	actual = parser.expression
 # 	assert_equal expr, {:OR=>[{:GT=>[{:MULTIPLY=>[{:PLUS=>["c0", 5]}, 2]}, {:SELECT=>{:columns=>[{:AVG=>["c1"]}], :from=>"t1"}}]}, {:IS_NOT=>["c2", nil]}]}
 # end
 
-test "Bitwise operations" do
+test "c0 & 3 | 4" do
 	parser = Plume::Parser.new("c0 & 3 | 4")
 	actual = parser.expression
 	expected = Plume::BinaryExpression.new(
@@ -2546,7 +2546,7 @@ end
 
 # Expressions
 
-test "COLLATE expression" do
+test "'foo' COLLATE NOCASE" do
 	parser = Plume::Parser.new("'foo' COLLATE NOCASE")
 	actual = parser.expression
 	expected = Plume::CollationExpression.new(
@@ -2557,7 +2557,7 @@ test "COLLATE expression" do
 	assert_equal actual.sequence, expected.sequence
 end
 
-test "RAISE expression with IGNORE" do
+test "RAISE (IGNORE)" do
 	parser = Plume::Parser.new("RAISE (IGNORE)")
 	actual = parser.expression
 	expected = Plume::RaiseExpression.new(
@@ -2566,7 +2566,7 @@ test "RAISE expression with IGNORE" do
 	assert_equal actual.type, expected.type
 end
 
-test "RAISE expression with ROLLBACK" do
+test "RAISE (ROLLBACK, 'error message')" do
 	parser = Plume::Parser.new("RAISE (ROLLBACK, 'error message')")
 	actual = parser.expression
 	expected = Plume::RaiseExpression.new(
@@ -2579,7 +2579,7 @@ test "RAISE expression with ROLLBACK" do
 	assert_equal actual.error_message.value, expected.error_message.value
 end
 
-test "RAISE expression with ABORT" do
+test "RAISE (ABORT, 'error message')" do
 	parser = Plume::Parser.new("RAISE (ABORT, 'error message')")
 	actual = parser.expression
 	expected = Plume::RaiseExpression.new(
@@ -2592,7 +2592,7 @@ test "RAISE expression with ABORT" do
 	assert_equal actual.error_message.value, expected.error_message.value
 end
 
-test "RAISE expression with FAIL" do
+test "RAISE (FAIL, 'error message')" do
 	parser = Plume::Parser.new("RAISE (FAIL, 'error message')")
 	actual = parser.expression
 	expected = Plume::RaiseExpression.new(
