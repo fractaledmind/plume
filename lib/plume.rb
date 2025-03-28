@@ -88,8 +88,13 @@ module Plume
 
 	SyntaxError = Class.new(StandardError)
 
-	def self.tokenize(str)
-		Lexer.new(str).tokenize
+	def self.tokenize(str, with_values: false, skip_spaces: true)
+		lex = Lexer.new(str, skip_spaces: skip_spaces)
+		[].tap do |tokens|
+			while (token = lex.next_token)
+				tokens << (with_values ? [token, lex.value] : token)
+			end
+		end
 	end
 
 	def self.parse(sql)
