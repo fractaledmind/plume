@@ -11,10 +11,10 @@ permissions:
 
 jobs:
   ruby-versions:
-    uses: ruby/actions/.github/workflows/ruby_versions.yml@3fbf038d6f0d8043b914f923764c61bc2a114a77
+    uses: ruby/actions/.github/workflows/ruby_versions.yml@f0adcbc13299b38a289a1c914af4ad137ca6bb54
     with:
       engine: all
-      min_version: 3.2
+      min_version: 3.1
 
   test:
     needs: ruby-versions
@@ -25,12 +25,13 @@ jobs:
         ruby-version: ${{ fromJson(needs.ruby-versions.outputs.versions) }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
-          bundler-args: --without development
+      - name: Install dependencies
+        run: bundle install --without development
       - name: Quickdraw tests
         run: bundle exec qt -t 1 "./test/**/*.test.rb"

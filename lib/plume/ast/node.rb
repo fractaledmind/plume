@@ -38,9 +38,9 @@ module Plume
 			"#<#{self.class.name}:#{object_id} #{prop_values&.join(", ")}>"
 		end
 
-		def self.concrete(*, full_source:, **)
+		def self.concrete(*a, full_source:, **kw)
 			object = allocate
-			object.send(:initialize, *, full_source:, **)
+			object.send(:initialize, *a, full_source: full_source, **kw)
 			object
 		end
 

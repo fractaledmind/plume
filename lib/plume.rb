@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "plume/version"
+require 'set'
 require "literal"
 
 module Plume

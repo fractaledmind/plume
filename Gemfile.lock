@@ -1,8 +1,8 @@
 GIT
   remote: https://github.com/joeldrapper/literal.git
-  revision: bd242e057b28c6d293cfb6a084e62c8b07f335fc
+  revision: d8bc1be483a2a44aedb432433d549677457a22ad
   specs:
-    literal (1.5.0)
+    literal (1.6.0)
 
 GIT
   remote: https://github.com/joeldrapper/quickdraw.git
