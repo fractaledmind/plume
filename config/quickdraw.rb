@@ -8,7 +8,10 @@ if ENV["COVERAGE"] == "true"
 		enable_coverage_for_eval
 		enable_for_subprocesses true
 		enable_coverage :branch
+		primary_coverage :branch
 		add_filter %r{^/fixtures/}
+		add_group "Core", ["lib/plume/parser.rb", "lib/plume/lexer.rb"]
+		add_group "AST", "lib/plume/ast"
 	end
 end
 
