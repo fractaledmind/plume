@@ -538,6 +538,64 @@ module Plume
 			end
 		end
 
+		def select_stmt
+			#
+				# Relevant `parse.y` grammar rules:
+				#   "cmd"=>[["select"]],
+				#   "select"=>[["WITH", "wqlist", "selectnowith"], ["WITH", "RECURSIVE", "wqlist", "selectnowith"], ["selectnowith"]],
+				#   "selectnowith"=>[["oneselect"], ["selectnowith", "multiselect_op", "oneselect"]],
+				#   "multiselect_op"=>[["UNION"], ["UNION", "ALL"], ["EXCEPT"], ["INTERSECT"]],
+				#   "oneselect"=>[
+				#     ["SELECT", "distinct", "selcollist", "from", "where_opt", "groupby_opt", "having_opt", "orderby_opt", "limit_opt"],
+				#     ["SELECT", "distinct", "selcollist", "from", "where_opt", "groupby_opt", "having_opt", "window_clause", "orderby_opt", "limit_opt"],
+				#     ["values"],
+				#     ["mvalues"]
+				#   ],
+				#   "orderby_opt"=>[[], ["ORDER", "BY", "sortlist"]],
+				#   "limit_opt"=>[[], ["LIMIT", "expr"], ["LIMIT", "expr", "OFFSET", "expr"], ["LIMIT", "expr", "COMMA", "expr"]],
+				#
+				# Syntax diagram:
+				#   ◯─▶┬▶[ with-stmt ]─┐
+				#      ├───────◀───────┘
+				#   ┌──┴──────────────▶[ select-core ]───────────────────┐
+				#   └──────────◀────[ compound-operator ]◀───────────────┤
+				#    ┌──────────────────◀────────────────────────────────┘
+				#    ├─▶{ ORDER }─▶{ BY }┬▶[ ordering-term ]─┬┐
+				#    ▼                   └───────{ , }◀──────┘│
+				#    ├────────────────◀───────────────────────┘
+				#    ├─▶{ LIMIT }─▶[ expr ]─▶┬───────────────────────▶─┐
+				#    │                       ├─▶{ OFFSET }─▶[ expr ]─▶─┤
+				#    │                       └─▶{ , }─▶[ expr ]──────▶─┤
+				#    └───────────────────────────────────────────────▶─┴───────▶◯
+				#
+				# Simplified grammar:
+				#
+				# Relevant SQLite documentation:
+				#   - https://www.sqlite.org/lang_select.html
+				#
+				# The SELECT statement is used to query the database.
+			#
+			select_core
+
+			# compound = []
+			# while (op = maybe { compound_operator })
+			# 	compound << [op, select_stmt]
+			# end
+			# if maybe :ORDER
+			# 	require :BY
+			# 	order_by = require_some { ordering_term }
+			# end
+			# if maybe :LIMIT
+			# 	limit = expression
+			# 	if maybe :OFFSET
+			# 		offset = expression
+			# 	elsif maybe :COMMA
+			# 		offset = limit
+			# 		limit = expression
+			# 	end
+			# end
+		end
+
 		# ---------- Clauses ----------
 
 		def expression(min_precedence = 0)
@@ -1063,6 +1121,101 @@ module Plume
 				type:        column_type,
 				constraints: constraints,
 			)
+		end
+
+		def select_core
+			#
+				# Relevant `parse.y` grammar rules:
+				#   "oneselect"=>[
+				#     ["SELECT", "distinct", "selcollist", "from", "where_opt", "groupby_opt", "having_opt", "orderby_opt", "limit_opt"],
+				#     ["SELECT", "distinct", "selcollist", "from", "where_opt", "groupby_opt", "having_opt", "window_clause", "orderby_opt", "limit_opt"],
+				#     ["values"],
+				#     ["mvalues"]
+				#   ],
+				#   "distinct"=>[["DISTINCT"], ["ALL"], []],
+				#   "selcollist"=>[["sclp", "expr", "as"], ["sclp", "STAR"], ["sclp", "nm", "DOT", "STAR"]],
+				#   "from"=>[[], ["FROM", "seltablist"]],
+				#   "where_opt"=>[[], ["WHERE", "expr"]],
+				#   "groupby_opt"=>[[], ["GROUP", "BY", "nexprlist"]],
+				#   "having_opt"=>[[], ["HAVING", "expr"]],
+				#   "orderby_opt"=>[[], ["ORDER", "BY", "sortlist"]],
+				#   "limit_opt"=>[[], ["LIMIT", "expr"], ["LIMIT", "expr", "OFFSET", "expr"], ["LIMIT", "expr", "COMMA", "expr"]],
+				#   "window_clause"=>[["WINDOW", "windowdefn_list"]],
+				#
+				# Syntax diagram:
+				#   ◯─┬───▶{ SELECT }─┬───────▶──────┬─┬▶[ result-column ]─┐
+				#     │               ├▶{ DISTINCT }─┤ └─────{ , }◀────────┤
+				#     │               └▶{ ALL }─────▶┘                     │
+				#     │  ┌──────────────────────────◀──────────────────────┘
+				#     │  ├─▶{ FROM }┬─┬▶[ table-or-subquery ]─┬─┬─▶───┐
+				#     │  │          │ └────────{ , }◀─────────┘ ▲     ▼
+				#     │  │          └──▶[ join-clause ]─────────┘     │
+				#     │  ├──────────────────────◀─────────────────────┘
+				#     │  ├─▶{ WHERE }─▶[ expr ]─┐
+				#     │  ├──────────◀───────────┘
+				#     │  ├────────────▶─────────────────┐
+				#     │  ├─▶{ GROUP }─▶{ BY }┬▶[ expr ]┬┴▶┬─▶{ HAVING }─▶[ expr ]─┬─┐
+				#     │  ▼                   └──{ , }◀─┘  └────────▶──────────────┘ ▼
+				#     │  ├─────────────────────────────◀────────────────────────────┘
+				#     │  ├─▶{ WINDOW }┬▶{ window-name }─▶{ AS }─▶[ window-defn ]─┐
+				#     │  │            └───────────────────{ , }◀─────────────────┤
+				#     │  └──────────────────────▶─────────────────────────────▶──┴─┬───▶◯
+				#     │                    ┌──{ , }◀─┐                             │
+				#     └─▶{ VALUES }┬▶{ ( }─┴▶[ expr ]┴─▶{ ) }─┬─────────────────▶──┘
+				#                  └──────────{ , }◀──────────┘
+				#
+				# Simplified grammar:
+				#
+				# Relevant SQLite documentation:
+				#   -
+				#
+				# [description]
+			#
+			if (select_kw = maybe :SELECT)
+				type_tk = maybe_one_of :DISTINCT, :ALL
+				columns = require_some { result_column }
+				if (from_kw = maybe :FROM)
+					source = from_source
+					# join_clause
+				end
+				# if (where_kw = maybe :WHERE)
+				# 	condition = expression
+				# end
+				# if (group_by_kw = maybe_all_of :GROUP, :BY)
+				# 	groupings = require_some { expression }
+				# end
+				# if (having_kw = maybe :HAVING)
+				# 	having = expression
+				# end
+				# if (window_kw = maybe :WINDOW)
+				# 	windows = require_some do
+				# 		window_name = identifier
+				# 		require :AS
+				# 		window_def = window_defn
+				# 		[window_name, window_def]
+				# 	end
+				# end
+
+
+				SelectStatement.new(
+					select_kw: Token::Keyword(select_kw),
+					type_tk: Token::Keyword(type_tk),
+					columns:,
+					from_kw: Token::Keyword(from_kw),
+					source:,
+					# where_kw: Token::Keyword(where_kw),
+					# condition: condition,
+					# group_by_kw: Token::Keyword(group_by_kw),
+					# groupings: groupings,
+					# having_kw: Token::Keyword(having_kw),
+					# having: having,
+					# window_kw: Token::Keyword(window_kw),
+					# windows: windows,
+				)
+			elsif maybe :VALUES
+			else
+				expected!(:SELECT, :VALUES)
+			end
 		end
 
 		def filter_clause
@@ -1875,6 +2028,168 @@ module Plume
 					full_source: @lexer.sql,
 					table_tk:    Token::Identifier(table_tk),
 				)
+			end
+		end
+
+		def result_column
+			#
+				# Relevant `parse.y` grammar rules:
+				#   "selcollist"=>[["sclp", "expr", "as"], ["sclp", "STAR"], ["sclp", "nm", "DOT", "STAR"]],
+				#   "sclp"=>[["selcollist", "COMMA"], []],
+				#   "as"=>[["AS", "nm"], ["ids"], []],
+				#   "nm"=>[["idj"], ["STRING"]]
+				#
+				# Syntax diagram:
+				#   ◯┬─▶[ expr ]─┬─────────────▶───────────────┬─▶◯
+				#    │           ├─▶{ AS }┬▶{ column-alias }─▶─┤
+				#    │           └────▶───┘                    │
+				#    ├─▶{ * }────────────────────────────────▶─┤
+				#    └─▶{ table-name }─▶{ . }─▶{ * }─────────▶─┘
+				#
+				# Simplified grammar:
+				#
+				# Relevant SQLite documentation:
+				#   -
+				#
+				# [description]
+			#
+			if (star_tk = maybe :STAR)
+				StarResultColumn.concrete(
+					full_source: @lexer.sql,
+					star_tk: Token::Punctuation(star_tk),
+				)
+			elsif peek == :DOT
+				table_tk = identifier
+				dot_tk = require :DOT
+				star_tk = require :STAR
+
+				StarResultColumn.concrete(
+					full_source: @lexer.sql,
+					table_tk: Token::Identifier(table_tk),
+					dot_tk: Token::Punctuation(dot_tk),
+					star_tk: Token::Punctuation(star_tk),
+				)
+			elsif (result = maybe { expression })
+				as_kw = maybe :AS
+				alias_tk = maybe { identifier }
+
+				ResultColumn.concrete(
+					full_source: @lexer.sql,
+					result: result,
+					as_kw: Token::Keyword(as_kw),
+					alias_tk: Token::Identifier(alias_tk),
+				)
+			else
+				expected!(:STAR, :ID, "expression")
+			end
+		end
+
+		def from_source
+			#
+				# Relevant `parse.y` grammar rules:
+				#   "from"=>[[], ["FROM", "seltablist"]],
+				#   "seltablist"=>[
+				#     ["stl_prefix", "nm", "dbnm", "as", "on_using"],
+				#     ["stl_prefix", "nm", "dbnm", "as", "indexed_by", "on_using"],
+				#     ["stl_prefix", "nm", "dbnm", "LP", "exprlist", "RP", "as", "on_using"],
+				#     ["stl_prefix", "LP", "select", "RP", "as", "on_using"],
+				#     ["stl_prefix", "LP", "seltablist", "RP", "as", "on_using"]
+				#   ],
+				#   "stl_prefix"=>[["seltablist", "joinop"], []],
+				#   "joinop"=>[["COMMA"], ["JOIN"], ["JOIN_KW", "JOIN"], ["JOIN_KW", "nm", "JOIN"], ["JOIN_KW", "nm", "nm", "JOIN"]],
+				#   "on_using"=>[["ON", "expr"], ["USING", "LP", "idlist", "RP"], []],
+				#   "indexed_by"=>[["INDEXED", "BY", "nm"], ["NOT", "INDEXED"]],
+				#   "as"=>[["AS", "nm"], ["ids"], []],
+				#   "nm"=>[["idj"], ["STRING"]],
+				#   "dbnm"=>[[], ["DOT", "nm"]],
+				#
+				# Syntax diagram:
+				#                                              ┌───────┬────────────────┐
+				#   ◯┬─────────────────────────┬─{ table-name }┴▶{ AS }┴▶{ table-alias }┴┬──────────┬─▶◯
+				#    ├─▶{ schema-name }─▶{ . }─┤   ┌───────────────────◀─────────────────┘          │
+				#    │                         │   ├─▶{ INDEXED }─▶{ BY }─▶{ index-name }─────────▶─┤
+				#    │                         │   └─▶{ NOT }─▶{ INDEXED }────────────────────────▶─┤
+				#    │                         │                                 ┌──{ , }◀─┐        │
+				#    ├─▶───────────────────────┴───{ table-function-name }─▶{ ( }┴▶[ expr ]┴▶{ ) }┬─┤
+				#    │                                               ┌────────┬───────◀───────────┘ │
+				#    │                                ┌──────────────┴▶{ AS }┬┴▶{ table-alias }───▶─┤
+				#    ├─▶{ ( }─▶[ select-stmt ]─▶{ ) }─┴──────────────────────┴────────────────────▶─┤
+				#    └─▶{ ( }┬┬▶[ table-or-subquery ]┬┬▶{ ) }─────────────────────────────────────▶─┘
+				#            │└─────────{ , }◀───────┘│
+				#            └─▶────[ join-clause ]───┘
+				#
+				#   ◯─▶[ table-or-subquery ]┬───────────────────────────────▶────────────────────────────────┬─▶◯
+				#                           └┬▶[ join-operator ]─▶[ table-or-subquery ]─▶[ join-constraint ]┬┘
+				#                            └───────────────────────────────◀──────────────────────────────┘
+				#
+				# Simplified grammar:
+				#
+				# Relevant SQLite documentation:
+				#   -
+				#
+				# [description]
+			#
+			if (source_lp = maybe :LP)
+			elsif (ref = maybe { name })
+				if (dot_tk = maybe :DOT)
+					table_tk = name
+
+					if (arguments_lp = maybe :LP)
+						function_name = name
+						arguments = maybe_some(trailing_sep: :COMMA) { expression(next_precedence) }
+						arguments_rp = require :RP
+
+						right = FunctionReference.concrete(
+							full_source: @lexer.sql,
+							schema_tk: Token::Identifier(ref),
+							function_tk: Token::Identifier(name),
+							arguments_lp: Token::Punctuation(arguments_lp),
+							arguments: FunctionArguments.concrete(
+								full_source: @lexer.sql,
+								expressions: arguments
+							),
+							arguments_rp: Token::Punctuation(arguments_rp),
+						)
+					else
+						as_kw = maybe :AS
+						alias_tk = maybe { identifier }
+
+						TableName.concrete(
+							full_source: @lexer.sql,
+							schema_tk: Token::Identifier(ref),
+							dot_tk: Token::Punctuation(dot_tk),
+							table_tk: Token::Identifier(table_tk),
+							as_kw: Token::Keyword(as_kw),
+							alias_tk: Token::Identifier(alias_tk)
+						)
+					end
+				elsif (arguments_lp = maybe :LP)
+					arguments = maybe_some(trailing_sep: :COMMA) { expression(next_precedence) }
+					arguments_rp = require :RP
+
+					right = FunctionReference.concrete(
+						full_source: @lexer.sql,
+						function_tk: Token::Identifier(ref),
+						arguments_lp: Token::Punctuation(arguments_lp),
+						arguments: FunctionArguments.concrete(
+							full_source: @lexer.sql,
+							expressions: arguments
+						),
+						arguments_rp: Token::Punctuation(arguments_rp),
+					)
+				else
+					as_kw = maybe :AS
+					alias_tk = maybe { identifier }
+
+					TableName.concrete(
+						full_source: @lexer.sql,
+						table_tk: Token::Identifier(ref),
+						as_kw: Token::Keyword(as_kw),
+						alias_tk: Token::Identifier(alias_tk)
+					)
+				end
+			else
+				expected!(:LP, "name")
 			end
 		end
 
